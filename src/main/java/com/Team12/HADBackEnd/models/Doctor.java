@@ -12,6 +12,7 @@ public class Doctor {
     private int age;
     private String gender;
     private String specialty;
+    private String email;
     private String username;
     private String password;
 
@@ -77,5 +78,13 @@ public class Doctor {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
