@@ -103,7 +103,9 @@ public class DoctorService {
     // Autowire the JavaMailSender
 
     public Doctor addDoctor(Doctor doctor) {
+
         // Check if a doctor with the same license ID already exists
+
         String generatedUsername = generateUniqueUsername();
         String generatedRandomPassword = generateRandomPassword();
         //paste here
