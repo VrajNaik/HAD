@@ -6,6 +6,8 @@ import com.Team12.HADBackEnd.repository.RoleRepository;
 import com.Team12.HADBackEnd.repository.SupervisorRepository;
 import com.Team12.HADBackEnd.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,61 +22,27 @@ public class SupervisorService {
 
     @Autowired
     private SupervisorRepository supervisorRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private UserRepository userRepository;
+//
+//    @Autowired
+//    private RoleRepository roleRepository;
+//    @Autowired
+//    private UserRepository userRepository;
     @Autowired
     private PasswordEncoder encoder;
+
+    @Autowired
+    private JavaMailSender javaMailSender; // Autowire the JavaMailSender
 
     public Supervisor addSupervisor(Supervisor supervisor) {
         String generatedUsername = generateUniqueUsername();
         String generatedRandomPassword = generateRandomPassword();
 
-
-        // Create new user's account
-        User user = new User(generatedUsername,
-                supervisor.getEmail(),
-                encoder.encode(generatedRandomPassword));
-
-        Set<String> strRoles = new HashSet<>();
-        strRoles.add("supervisor");
-        Set<Role> roles = new HashSet<>();
-
-        if (strRoles == null) {
-            Role userRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
-                    .orElseThrow(() -> new RuntimeException("Error: DOCTOR is not found."));
-            roles.add(userRole);
-        } else {
-            strRoles.forEach(role -> {
-                switch (role) {
-                    case "admin":
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(adminRole);
-
-                        break;
-                    case "supervisor":
-                        Role modRole = roleRepository.findByName(ERole.ROLE_SUPERVISOR)
-                                .orElseThrow(() -> new RuntimeException("Error: SUPERVISOR is not found."));
-                        roles.add(modRole);
-
-                        break;
-                    default:
-                        Role userRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(userRole);
-                }
-            });
-        }
-
-        user.setRoles(roles);
-        userRepository.save(user);
+        // paste here
         supervisor.setUsername(generatedUsername);
 
         // Generate a random password
         supervisor.setPassword(generatedRandomPassword);
+        sendCredentialsByEmail(supervisor.getEmail(), generatedUsername, generatedRandomPassword);
 
         return supervisorRepository.save(supervisor);
     }
@@ -104,4 +72,53 @@ public class SupervisorService {
         }
         return password.toString();
     }
+    private void sendCredentialsByEmail(String email, String username, String password) {
+        // Prepare email message
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(email);
+        mailMessage.setSubject("Credentials for accessing the system");
+        mailMessage.setText("Your username: " + username + "\nYour password: " + password);
+
+        // Send email
+        javaMailSender.send(mailMessage);
+    }
 }
+
+//// Create new user's account
+//User user = new User(generatedUsername,
+//        supervisor.getEmail(),
+//        encoder.encode(generatedRandomPassword));
+//
+//Set<String> strRoles = new HashSet<>();
+//        strRoles.add("supervisor");
+//Set<Role> roles = new HashSet<>();
+//
+//        if (strRoles == null) {
+//Role userRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
+//        .orElseThrow(() -> new RuntimeException("Error: DOCTOR is not found."));
+//            roles.add(userRole);
+//        } else {
+//                strRoles.forEach(role -> {
+//        switch (role) {
+//        case "admin":
+//Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+//        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+//                        roles.add(adminRole);
+//
+//                        break;
+//                                case "supervisor":
+//Role modRole = roleRepository.findByName(ERole.ROLE_SUPERVISOR)
+//        .orElseThrow(() -> new RuntimeException("Error: SUPERVISOR is not found."));
+//                        roles.add(modRole);
+//
+//                        break;
+//default:
+//Role userRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
+//        .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+//                        roles.add(userRole);
+//                }
+//                        });
+//                        }
+//
+//                        user.setRoles(roles);
+//        userRepository.save(user);

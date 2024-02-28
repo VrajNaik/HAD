@@ -12,6 +12,8 @@ public class Doctor {
     private int age;
     private String gender;
     private String specialty;
+    private String District;
+    private Long phoneNum;
     private String email;
     private String username;
     private String password;
@@ -86,5 +88,21 @@ public class Doctor {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Long getPhoneNum() {
+        return phoneNum;
+    }
+
+    public void setPhoneNum(Long phoneNum) {
+        this.phoneNum = phoneNum;
+    }
+
+    public String getDistrict() {
+        return District;
+    }
+
+    public void setDistrict(String district) {
+        District = district;
     }
 }
