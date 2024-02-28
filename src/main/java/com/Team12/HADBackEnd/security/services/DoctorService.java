@@ -117,6 +117,7 @@ public class DoctorService {
         }
 
         // Generate a unique username
+
         // String generatedUsername = generateUniqueUsername();
 
         doctor.setUsername(generatedUsername);
