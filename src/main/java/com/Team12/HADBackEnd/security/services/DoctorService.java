@@ -99,7 +99,8 @@ public class DoctorService {
     private PasswordEncoder encoder;
 
     @Autowired
-    private JavaMailSender javaMailSender; // Autowire the JavaMailSender
+    private JavaMailSender javaMailSender;
+    // Autowire the JavaMailSender
 
     public Doctor addDoctor(Doctor doctor) {
         // Check if a doctor with the same license ID already exists
