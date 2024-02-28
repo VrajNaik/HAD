@@ -95,6 +95,7 @@ public class DoctorService {
 //    private RoleRepository roleRepository;
 //    @Autowired
 //    private UserRepository userRepository;
+
     @Autowired
     private PasswordEncoder encoder;
 
