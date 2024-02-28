@@ -109,6 +109,7 @@ public class DoctorService {
 
         String generatedUsername = generateUniqueUsername();
         String generatedRandomPassword = generateRandomPassword();
+
         //paste here
 
         if (doctorRepository.existsByLicenseId(doctor.getLicenseId())) {
