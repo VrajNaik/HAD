@@ -208,6 +208,6 @@ public class DoctorService {
 //                }
 //            });
 //        }
-//
 //        user.setRoles(roles);
+//user.setRoles(roles);
 //        userRepository.save(user);
