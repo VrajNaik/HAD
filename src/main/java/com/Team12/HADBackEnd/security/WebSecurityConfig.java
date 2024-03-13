@@ -63,7 +63,10 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
   public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
     return authConfig.getAuthenticationManager();
   }
-
+  //@RestController
+//@CrossOrigin(origins = "*", maxAge = 3600)
+//@RequestMapping("/FieldHealthCareWorker")
+//public class FieldHealthCareWorkerController {
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();

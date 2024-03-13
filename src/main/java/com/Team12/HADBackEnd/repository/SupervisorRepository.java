@@ -10,3 +10,7 @@ public interface SupervisorRepository extends JpaRepository<Supervisor, Long> {
     boolean existsByUsername(String username);
     long count();
 }
+//@RestController
+//@CrossOrigin(origins = "*", maxAge = 3600)
+//@RequestMapping("/FieldHealthCareWorker")
+//public class FieldHealthCareWorkerController {

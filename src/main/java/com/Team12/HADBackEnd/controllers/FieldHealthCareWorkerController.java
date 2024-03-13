@@ -32,6 +32,10 @@ public class FieldHealthCareWorkerController {
         return new ResponseEntity<>(fieldHealthCareWorker, HttpStatus.OK);
     }
 }
+//@RestController
+//@CrossOrigin(origins = "*", maxAge = 3600)
+//@RequestMapping("/FieldHealthCareWorker")
+//public class FieldHealthCareWorkerController {
 
 
 

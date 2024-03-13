@@ -31,5 +31,9 @@ public class SupervisorController {
         return new ResponseEntity<>(supervisor, HttpStatus.OK);
     }
 }
+//@RestController
+//@CrossOrigin(origins = "*", maxAge = 3600)
+//@RequestMapping("/FieldHealthCareWorker")
+//public class FieldHealthCareWorkerController {
 
 

@@ -74,3 +74,7 @@ public class Supervisor {
         this.password = password;
     }
 }
+//@RestController
+//@CrossOrigin(origins = "*", maxAge = 3600)
+//@RequestMapping("/FieldHealthCareWorker")
+//public class FieldHealthCareWorkerController {
