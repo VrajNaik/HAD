@@ -12,7 +12,6 @@ import jakarta.validation.constraints.Size;
 @Table(name = "users", 
     uniqueConstraints = { 
       @UniqueConstraint(columnNames = "username"),
-      @UniqueConstraint(columnNames = "email") 
     })
 public class User {
   @Id
@@ -25,7 +24,6 @@ public class User {
 
   @NotBlank
   @Size(max = 50)
-  @Email
   private String email;
 
   @NotBlank

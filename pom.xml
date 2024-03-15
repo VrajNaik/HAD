@@ -82,8 +82,13 @@
 			<artifactId>spring-boot-starter-mail</artifactId>
 
 		</dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>9.0.53</version>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>
