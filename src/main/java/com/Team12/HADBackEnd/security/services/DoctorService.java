@@ -27,6 +27,7 @@ import java.util.Set;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
+import org.springframework.transaction.annotation.Transactional;
 
 //
 //@Service
@@ -112,51 +113,7 @@ public class DoctorService {
     private JavaMailSender javaMailSender;
     // Autowire the JavaMailSender
 
-    public Doctor addDoctor(Doctor doctor) {
 
-        String generatedUsername = generateUniqueUsername();
-        String generatedRandomPassword = generateRandomPassword();
-
-
-        // Create new user's account
-        User user = new User(generatedUsername,
-                doctor.getEmail(),
-                encoder.encode(generatedRandomPassword));
-
-
-        Set<Role> roles = new HashSet<>();
-        Role doctorRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
-                .orElseThrow(() -> new RuntimeException("Error: DOCTOR is not found."));
-        roles.add(doctorRole);
-        user.setRoles(roles);
-        userRepository.save(user);
-
-        if (doctorRepository.existsByLicenseId(doctor.getLicenseId())) {
-//            throw new IllegalArgumentException("Doctor with the same license ID already exists.");
-            throw new DuplicateLicenseIdException("Doctor with the same license ID already exists.");
-        }
-        if (doctorRepository.existsByEmail(doctor.getEmail())) {
-//            throw new IllegalArgumentException("Doctor with the same license ID already exists.");
-            throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
-        }
-        // Generate a unique username
-
-        // String generatedUsername = generateUniqueUsername();
-
-        doctor.setUsername(generatedUsername);
-        doctor.setAge(doctor.getAge());
-        doctor.setDistrict(doctor.getDistrict());
-        doctor.setPhoneNum(doctor.getPhoneNum());
-        doctor.setLicenseId(doctor.getLicenseId());
-        doctor.setSpecialty(doctor.getSpecialty());
-        // Generate a random password
-        doctor.setPassword(generatedRandomPassword);
-        // Send email with username and password
-        userRepository.save(user);
-        sendCredentialsByEmail(doctor.getEmail(), generatedUsername, generatedRandomPassword);
-
-        return doctorRepository.save(doctor);
-    }
     public ResponseEntity<Doctor> updateDoctor(DoctorUpdateRequest request) {
         return doctorRepository.findById(request.getId()).map(doctor -> {
             doctor.setName(request.getName());
@@ -173,7 +130,45 @@ public class DoctorService {
             return ResponseEntity.ok().body(savedDoctor);
         }).orElse(ResponseEntity.notFound().build());
     }
+    @Transactional(rollbackFor = Exception.class) // Rollback for any exception
+    public Doctor addDoctor(Doctor doctor) throws DuplicateLicenseIdException, DuplicateEmailIdException {
+        String generatedUsername = generateUniqueUsername();
+        String generatedRandomPassword = generateRandomPassword();
 
+        // Create new user's account
+        User user = new User(generatedUsername,
+                doctor.getEmail(),
+                encoder.encode(generatedRandomPassword));
+
+        Set<Role> roles = new HashSet<>();
+        Role doctorRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
+                .orElseThrow(() -> new RuntimeException("Error: DOCTOR role not found."));
+        roles.add(doctorRole);
+        user.setRoles(roles);
+        userRepository.save(user);
+
+        // Check for duplicate license ID
+        if (doctorRepository.existsByLicenseId(doctor.getLicenseId())) {
+            throw new DuplicateLicenseIdException("Doctor with the same license ID already exists.");
+        }
+
+        // Check for duplicate email
+        if (doctorRepository.existsByEmail(doctor.getEmail())) {
+            throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
+        }
+
+        // Set doctor's details
+        doctor.setUsername(generatedUsername);
+        doctor.setPassword(encoder.encode(generatedRandomPassword));
+
+        // Save doctor
+        doctorRepository.save(doctor);
+
+        // Send email with username and password
+        sendCredentialsByEmail(doctor.getEmail(), generatedUsername, generatedRandomPassword);
+
+        return doctor;
+    }
     public List<Doctor> getAllDoctors() {
         return doctorRepository.findAll();
     }
@@ -245,4 +240,50 @@ public class DoctorService {
 //        user.setRoles(roles);
 //        userRepository.save(user);
 
+
+//public Doctor addDoctor(Doctor doctor) {
+//
+//    String generatedUsername = generateUniqueUsername();
+//    String generatedRandomPassword = generateRandomPassword();
+//
+//
+//    // Create new user's account
+//    User user = new User(generatedUsername,
+//            doctor.getEmail(),
+//            encoder.encode(generatedRandomPassword));
+//
+//
+//    Set<Role> roles = new HashSet<>();
+//    Role doctorRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
+//            .orElseThrow(() -> new RuntimeException("Error: DOCTOR is not found."));
+//    roles.add(doctorRole);
+//    user.setRoles(roles);
+//    userRepository.save(user);
+//
+//    if (doctorRepository.existsByLicenseId(doctor.getLicenseId())) {
+////            throw new IllegalArgumentException("Doctor with the same license ID already exists.");
+//        throw new DuplicateLicenseIdException("Doctor with the same license ID already exists.");
+//    }
+//    if (doctorRepository.existsByEmail(doctor.getEmail())) {
+////            throw new IllegalArgumentException("Doctor with the same license ID already exists.");
+//        throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
+//    }
+//    // Generate a unique username
+//
+//    // String generatedUsername = generateUniqueUsername();
+//
+//    doctor.setUsername(generatedUsername);
+//    doctor.setAge(doctor.getAge());
+//    doctor.setDistrict(doctor.getDistrict());
+//    doctor.setPhoneNum(doctor.getPhoneNum());
+//    doctor.setLicenseId(doctor.getLicenseId());
+//    doctor.setSpecialty(doctor.getSpecialty());
+//    // Generate a random password
+//    doctor.setPassword(generatedRandomPassword);
+//    // Send email with username and password
+//    userRepository.save(user);
+//    sendCredentialsByEmail(doctor.getEmail(), generatedUsername, generatedRandomPassword);
+//
+//    return doctorRepository.save(doctor);
+//}
 
