@@ -6,8 +6,7 @@ import com.Team12.HADBackEnd.models.ERole;
 import com.Team12.HADBackEnd.models.Role;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.request.DoctorUpdateRequest;
-import com.Team12.HADBackEnd.payload.response.DuplicateEmailIdException;
-import com.Team12.HADBackEnd.payload.response.DuplicateLicenseIdException;
+import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.DoctorRepository;
 import com.Team12.HADBackEnd.repository.RoleRepository;
 import com.Team12.HADBackEnd.repository.UserRepository;
@@ -165,6 +164,7 @@ public class DoctorService {
         doctorRepository.save(doctor);
 
         // Send email with username and password
+        System.out.println(generatedRandomPassword);
         sendCredentialsByEmail(doctor.getEmail(), generatedUsername, generatedRandomPassword);
 
         return doctor;
@@ -203,6 +203,23 @@ public class DoctorService {
 
         // Send email
         javaMailSender.send(mailMessage);
+    }
+    @Transactional
+    public void setActiveStatusByUsername(String username, boolean active) {
+        Doctor doctor = doctorRepository.findByUsername(username)
+                .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with username: " + username));
+
+        if (doctor.isActive() == active) {
+            throw new DoctorAlreadyDeactivatedException("Doctor is already " + (active ? "activated" : "deactivated"));
+        }
+
+        doctor.setActive(active);
+        doctorRepository.save(doctor);
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+        user.setActive(active);
+        userRepository.save(user);
     }
 }
 

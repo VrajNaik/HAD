@@ -17,6 +17,7 @@ public class Doctor {
     private String email;
     private String username;
     private String password;
+    private boolean active = true;
 
     public Long getId() {
         return id;
@@ -104,5 +105,13 @@ public class Doctor {
 
     public void setDistrict(String district) {
         District = district;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

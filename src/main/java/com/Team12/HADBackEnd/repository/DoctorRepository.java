@@ -3,9 +3,13 @@ package com.Team12.HADBackEnd.repository;
 import com.Team12.HADBackEnd.models.Doctor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     boolean existsByLicenseId(String licenseId);
     boolean existsByEmail(String email);
     long count();
     boolean existsByUsername(String username);
+    Optional<Doctor> findByUsername(String username);
+
 }

@@ -96,6 +96,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
                             .requestMatchers("/doctor/viewDoctors").permitAll()
                             .requestMatchers("/doctor/addDoctor").permitAll()
                             .requestMatchers("/doctor/updateDoctor").permitAll()
+                            .requestMatchers("/doctor/deactivate").permitAll()
                             .anyRequest().authenticated()
             );
 

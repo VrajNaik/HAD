@@ -11,10 +11,12 @@ import com.Team12.HADBackEnd.payload.request.SignupRequest;
 import com.Team12.HADBackEnd.payload.response.AuthResponse;
 import com.Team12.HADBackEnd.payload.response.JwtResponse;
 import com.Team12.HADBackEnd.payload.response.MessageResponse;
+import com.Team12.HADBackEnd.payload.response.UserDeactivatedException;
 import com.Team12.HADBackEnd.repository.*;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -58,11 +60,90 @@ public class AuthController {
   @Autowired
   FieldHealthCareWorkerRepository fieldHealthcareWorkerRepository;
 
-  @PostMapping("/signin")
-  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-
+//  @PostMapping("/signin")
+//  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+//
+//    Authentication authentication = authenticationManager.authenticate(
+//        new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+//
+//    SecurityContextHolder.getContext().setAuthentication(authentication);
+//    String jwt = jwtUtils.generateJwtToken(authentication);
+//
+//    long supervisorCount = supervisorRepository.count();
+//    long doctorCount = doctorRepository.count();
+//    long fieldWorkerCount = fieldHealthcareWorkerRepository.count();
+//
+//    Map<String, Long> counts = new HashMap<>();
+//    counts.put("supervisors", supervisorCount);
+//    counts.put("doctors", doctorCount);
+//    counts.put("fieldHealthcareWorkers", fieldWorkerCount);
+//
+//    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+//    List<String> roles = userDetails.getAuthorities().stream()
+//        .map(item -> item.getAuthority())
+//        .collect(Collectors.toList());
+//
+////    return ResponseEntity.ok(new JwtResponse(jwt,
+////                         userDetails.getId(),
+////                         userDetails.getUsername(),
+////                         userDetails.getEmail(),
+////                         roles));
+//    return ResponseEntity.ok(new AuthResponse(
+//            new JwtResponse(jwt,
+//                    userDetails.getId(),
+//                    userDetails.getUsername(),
+//                    userDetails.getEmail(),
+//                    roles),
+//            counts
+//    ));
+//  }
+//@PostMapping("/signin")
+//public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) throws UserDeactivatedException{
+//  Authentication authentication = authenticationManager.authenticate(
+//          new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+//
+//  UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+//
+//  if (!userDetails.isActivate()) {
+//    throw new UserDeactivatedException("Sorry, you are deactivated by the Admin. Contact the Admin for further assistance.");
+//  }
+//
+//  SecurityContextHolder.getContext().setAuthentication(authentication);
+//  String jwt = jwtUtils.generateJwtToken(authentication);
+//
+//  long supervisorCount = supervisorRepository.count();
+//  long doctorCount = doctorRepository.count();
+//  long fieldWorkerCount = fieldHealthcareWorkerRepository.count();
+//
+//  Map<String, Long> counts = new HashMap<>();
+//  counts.put("supervisors", supervisorCount);
+//  counts.put("doctors", doctorCount);
+//  counts.put("fieldHealthcareWorkers", fieldWorkerCount);
+//
+//  List<String> roles = userDetails.getAuthorities().stream()
+//          .map(item -> item.getAuthority())
+//          .collect(Collectors.toList());
+//
+//  return ResponseEntity.ok(new AuthResponse(
+//          new JwtResponse(jwt,
+//                  userDetails.getId(),
+//                  userDetails.getUsername(),
+//                  userDetails.getEmail(),
+//                  roles),
+//          counts
+//  ));
+//}
+@PostMapping("/signin")
+public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+  try {
     Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+            new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+
+    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+    if (!userDetails.isActivate()) {
+      throw new UserDeactivatedException("Sorry, you are deactivated by the Admin. Contact the Admin for further assistance.");
+    }
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
     String jwt = jwtUtils.generateJwtToken(authentication);
@@ -76,16 +157,10 @@ public class AuthController {
     counts.put("doctors", doctorCount);
     counts.put("fieldHealthcareWorkers", fieldWorkerCount);
 
-    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();    
     List<String> roles = userDetails.getAuthorities().stream()
-        .map(item -> item.getAuthority())
-        .collect(Collectors.toList());
+            .map(item -> item.getAuthority())
+            .collect(Collectors.toList());
 
-//    return ResponseEntity.ok(new JwtResponse(jwt,
-//                         userDetails.getId(),
-//                         userDetails.getUsername(),
-//                         userDetails.getEmail(),
-//                         roles));
     return ResponseEntity.ok(new AuthResponse(
             new JwtResponse(jwt,
                     userDetails.getId(),
@@ -94,7 +169,10 @@ public class AuthController {
                     roles),
             counts
     ));
+  } catch (UserDeactivatedException e) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
   }
+}
 
   @PostMapping("/signup")
   public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
