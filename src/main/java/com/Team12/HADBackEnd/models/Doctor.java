@@ -12,12 +12,26 @@ public class Doctor {
     private int age;
     private String gender;
     private String specialty;
-    private String District;
     private Long phoneNum;
     private String email;
     private String username;
     private String password;
     private boolean active = true;
+    @Transient
+    private Long districtId;
+
+    // Getter and setter for districtId
+    public Long getDistrictId() {
+        return districtId;
+    }
+
+    public void setDistrictId(Long districtId) {
+        this.districtId = districtId;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "district_id")
+    private District district;
 
     public Long getId() {
         return id;
@@ -67,6 +81,22 @@ public class Doctor {
         this.specialty = specialty;
     }
 
+    public Long getPhoneNum() {
+        return phoneNum;
+    }
+
+    public void setPhoneNum(Long phoneNum) {
+        this.phoneNum = phoneNum;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -83,35 +113,19 @@ public class Doctor {
         this.password = password;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Long getPhoneNum() {
-        return phoneNum;
-    }
-
-    public void setPhoneNum(Long phoneNum) {
-        this.phoneNum = phoneNum;
-    }
-
-    public String getDistrict() {
-        return District;
-    }
-
-    public void setDistrict(String district) {
-        District = district;
-    }
-
     public boolean isActive() {
         return active;
     }
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public District getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(District district) {
+        this.district = district;
     }
 }

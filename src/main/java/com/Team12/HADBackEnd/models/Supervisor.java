@@ -1,9 +1,6 @@
 package com.Team12.HADBackEnd.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 
 @Entity
@@ -17,6 +14,10 @@ public class Supervisor {
     private String email;
     private String username;
     private String password;
+
+    @OneToOne
+    @JoinColumn(name = "district_id", referencedColumnName = "id")
+    private District district;
 
     public Long getId() {
         return id;
@@ -72,6 +73,14 @@ public class Supervisor {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public District getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(District district) {
+        this.district = district;
     }
 }
 //@RestController

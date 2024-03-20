@@ -2,7 +2,9 @@ package com.Team12.HADBackEnd.repository;
 
 import com.Team12.HADBackEnd.models.Doctor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
@@ -11,5 +13,8 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     long count();
     boolean existsByUsername(String username);
     Optional<Doctor> findByUsername(String username);
+
+    @Query("SELECT d FROM Doctor d LEFT JOIN FETCH d.district")
+    List<Doctor> findAllWithDistricts();
 
 }

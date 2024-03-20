@@ -1,5 +1,6 @@
 package com.Team12.HADBackEnd.models;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,6 +30,10 @@ public class User {
   @NotBlank
   @Size(max = 120)
   private String password;
+  private String resetToken;
+  private LocalDateTime resetTokenExpiry;
+
+
 
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(  name = "user_roles",
@@ -93,6 +98,22 @@ public class User {
 
   public void setActive(boolean active) {
     this.active = active;
+  }
+
+  public String getResetToken() {
+    return resetToken;
+  }
+
+  public void setResetToken(String resetToken) {
+    this.resetToken = resetToken;
+  }
+
+  public LocalDateTime getResetTokenExpiry() {
+    return resetTokenExpiry;
+  }
+
+  public void setResetTokenExpiry(LocalDateTime resetTokenExpiry) {
+    this.resetTokenExpiry = resetTokenExpiry;
   }
 }
 

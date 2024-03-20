@@ -6,6 +6,7 @@ import com.Team12.HADBackEnd.payload.request.DoctorUpdateRequest;
 import com.Team12.HADBackEnd.payload.request.UsernameDTO;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.UserRepository;
+import com.Team12.HADBackEnd.security.services.DistrictService;
 import com.Team12.HADBackEnd.security.services.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,20 +28,25 @@ public class DoctorController {
     @PostMapping("/addDoctor")
     @PreAuthorize("hasRole('ADMIN')")
     public Doctor addDoctor(@RequestBody Doctor doctor) {
-//        return doctorService.addDoctor(doctor);
+        try{
+            return doctorService.addDoctor(doctor);
+        }
+        catch (DuplicateLicenseIdException | DuplicateEmailIdException e) {
+            throw new AuthenticationServiceException(e.getMessage(), e);
+        }
+    }
+//    @GetMapping("/viewDoctors")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<List<Doctor>> getAllDoctors() {
+//        List<Doctor> doctors = doctorService.getAllDoctors();
+//        return new ResponseEntity<>(doctors, HttpStatus.OK);
 //    }
-    try{
-        return doctorService.addDoctor(doctor);
-    } catch (DuplicateLicenseIdException | DuplicateEmailIdException e) {
-        throw new AuthenticationServiceException(e.getMessage(), e);
-    }
+@GetMapping("/viewDoctors")
+@PreAuthorize("hasRole('ADMIN')")
+public ResponseEntity<List<Doctor>> getAllDoctorsWithDistricts() {
+    List<Doctor> doctors = doctorService.getAllDoctorsWithDistricts();
+    return ResponseEntity.ok(doctors);
 }
-    @GetMapping("/viewDoctors")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Doctor>> getAllDoctors() {
-        List<Doctor> doctors = doctorService.getAllDoctors();
-        return new ResponseEntity<>(doctors, HttpStatus.OK);
-    }
     @PutMapping("/updateDoctor")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Doctor> updateDoctor(@RequestBody DoctorUpdateRequest request) {
