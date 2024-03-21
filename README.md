@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-The Mental Health Screening and Management System aims to streamline the process of identifying and treating mental health conditions in communities through the collaboration of field health workers, doctors, supervisors, and administrators. This system utilizes a tablet-based application to facilitate efficient data collection, patient management, and follow-up scheduling. With features like offline capability, multi-lingual support, and secure user authentication, the system ensures accessibility and data integrity.
+The Mental Health Screening and Management System aims to streamline the process of identifying and treating mental health conditions in communities through the collaboration of field health workers, doctors, supervisors, and administrators. This system utilizes a tablet-based application to facilitate efficient data collection, patient management, and follow-up scheduling. With features like offline capability, multilingual support, and secure user authentication, the system ensures accessibility and data integrity.
 
 ## Table of Contents
 1. [Project Description](#project-description)
@@ -23,7 +23,7 @@ The Mental Health Screening and Management System involves the following compone
 - Health workers use a tablet-based app for data collection, scheduling, and offline capability.
 - Doctors have access to patient data, summary statistics, and district-level insights.
 - The system provides an API for a state-level dashboard displaying program data.
-- Multi-lingual support is available for field workers.
+- Multilingual support is available for field workers.
 
 ## Actors and Their Roles
 
@@ -103,3 +103,35 @@ The Mental Health Screening and Management System involves the following compone
 #### Doctor Flow Diagram
 ![Doctor Flow Diagram](Milestones/Milestone-1/DoctorFlowDiagram.png)
 
+## Milestones
+- [Milestone - 1](Milestones/Milestone-1)
+- [Milestone - 2](Milestones/Milestone-2)
+
+## Contributors
+
+- **Vraj Jatin Naik**
+   - Email: [Vraj.Naik@iiitb.ac.in](mailto:Vraj.Naik@iiitb.ac.in)
+
+- **Arjun Gangani**
+   - Email: [Arjun.Gangani@iiitb.ac.in](mailto:Arjun.Gangani@iiitb.ac.in)
+
+## Team - 12 HAD Project - 6
+### TA:
+- **Jayaa Shree Laxmi Kishoore**
+### Team Members
+- #### Team Representative:
+- **Tanvi Motwani**
+   - Email: [Tanvi.Motwani@iiitb.ac.in](mailto:Tanvi.Motwani@iiitb.ac.in)
+
+- #### Members:
+- **Harsh Ranpariya**
+   - Email: [Harsh.Ranpariya@iiitb.ac.in](mailto:Harsh.Ranapriya@iiitb.ac.in)
+
+- **Nikita Gupt**
+   - Email: [Nikita.Gupta@iiitb.ac.in](mailto:Nikita.Gupta@iiitb.ac.in)
+
+- **Vraj Jatin Naik**
+   - Email: [Vraj.Naik@iiitb.ac.in](mailto:Vraj.Naik@iiitb.ac.in)
+
+- **Arjun Gangani**
+   - Email: [Arjun.Gangani@iiitb.ac.in](mailto:Arjun.Gangani@iiitb.ac.in)
