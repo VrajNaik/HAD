@@ -102,6 +102,8 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
                             .requestMatchers("/district/unallocated").permitAll()
                             .requestMatchers("/api/forgot-password").permitAll()
                             .requestMatchers("/api/reset-password").permitAll()
+                            .requestMatchers("/district/getlocalareaswithindistrict").permitAll()
+
                             .anyRequest().authenticated()
             );
 

@@ -1,9 +1,8 @@
 package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.models.District;
-import com.Team12.HADBackEnd.payload.request.CreateLocalAreasRequest;
-import com.Team12.HADBackEnd.payload.request.DistrictDTO;
-import com.Team12.HADBackEnd.payload.request.DistrictWithDoctorsDTO;
+import com.Team12.HADBackEnd.models.LocalArea;
+import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.security.services.DistrictService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -54,5 +53,13 @@ public class DistrictController {
     public ResponseEntity<String> createLocalAreasInDistrict(@RequestBody CreateLocalAreasRequest request) {
         String message = districtService.createLocalAreasInDistrict(request);
         return ResponseEntity.ok(message);
+    }
+
+    @GetMapping("/getlocalareaswithindistrict")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<LocalAreaDTO>> getLocalAreasInDistrict(@RequestBody DistrictIdRequestDTO request) {
+        Long districtId = request.getDistrictId();
+        List<LocalAreaDTO> localAreas = districtService.getAllLocalAreasByDistrictId(districtId);
+        return ResponseEntity.ok(localAreas);
     }
 }
