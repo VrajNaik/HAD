@@ -16,6 +16,16 @@ public class District {
 //    private Supervisor supervisor;
     @OneToMany(mappedBy = "district")
     private List<Doctor> doctors = new ArrayList<>();
+    @OneToMany(mappedBy = "district", cascade = CascadeType.ALL)
+    private List<LocalArea> localAreas = new ArrayList<>();
+
+    public List<LocalArea> getLocalAreas() {
+        return localAreas;
+    }
+
+    public void setLocalAreas(List<LocalArea> localAreas) {
+        this.localAreas = localAreas;
+    }
 
     public Long getId() {
         return id;

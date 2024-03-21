@@ -1,6 +1,7 @@
 package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.models.District;
+import com.Team12.HADBackEnd.payload.request.CreateLocalAreasRequest;
 import com.Team12.HADBackEnd.payload.request.DistrictDTO;
 import com.Team12.HADBackEnd.payload.request.DistrictWithDoctorsDTO;
 import com.Team12.HADBackEnd.security.services.DistrictService;
@@ -46,5 +47,12 @@ public class DistrictController {
     public ResponseEntity<String> createDistricts(@RequestBody List<District> districts) {
         districtService.createDistricts(districts);
         return ResponseEntity.ok("Districts created successfully");
+    }
+
+    @PostMapping("/localareas")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> createLocalAreasInDistrict(@RequestBody CreateLocalAreasRequest request) {
+        String message = districtService.createLocalAreasInDistrict(request);
+        return ResponseEntity.ok(message);
     }
 }

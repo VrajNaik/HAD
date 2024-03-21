@@ -2,10 +2,13 @@ package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.District;
 import com.Team12.HADBackEnd.models.Doctor;
+import com.Team12.HADBackEnd.models.LocalArea;
+import com.Team12.HADBackEnd.payload.request.CreateLocalAreasRequest;
 import com.Team12.HADBackEnd.payload.request.DistrictDTO;
 import com.Team12.HADBackEnd.payload.request.DistrictWithDoctorsDTO;
 import com.Team12.HADBackEnd.payload.request.DoctorDTO;
 import com.Team12.HADBackEnd.repository.DistrictRepository;
+import com.Team12.HADBackEnd.repository.LocalAreaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +18,8 @@ import java.util.List;
 @Service
 public class DistrictService {
     private final DistrictRepository districtRepository;
+    @Autowired
+    private LocalAreaRepository localAreaRepository;
 
     @Autowired
     public DistrictService(DistrictRepository districtRepository) {
@@ -72,5 +77,24 @@ public List<DistrictWithDoctorsDTO> getAllDistricts() {
     }
     public void createDistricts(List<District> districts) {
         districtRepository.saveAll(districts);
+    }
+
+
+    public String createLocalAreasInDistrict(CreateLocalAreasRequest request) {
+        Long districtId = request.getDistrictId();
+        List<LocalArea> localAreas = request.getLocalAreas();
+
+        District district = districtRepository.findById(districtId)
+                .orElseThrow(() -> new RuntimeException("District not found with id: " + districtId));
+
+        for (LocalArea localArea : localAreas) {
+            localArea.setDistrict(district);
+            district.getLocalAreas().add(localArea);
+            localAreaRepository.save(localArea);
+        }
+
+        districtRepository.save(district);
+
+        return "Local areas created successfully in district with id: " + districtId;
     }
 }
