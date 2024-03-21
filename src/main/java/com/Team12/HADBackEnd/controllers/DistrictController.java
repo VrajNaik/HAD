@@ -1,6 +1,8 @@
 package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.models.District;
+import com.Team12.HADBackEnd.payload.request.DistrictDTO;
+import com.Team12.HADBackEnd.payload.request.DistrictWithDoctorsDTO;
 import com.Team12.HADBackEnd.security.services.DistrictService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,17 +23,17 @@ public class DistrictController {
 
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<District>> getAllDistricts() {
-        List<District> districts = districtService.getAllDistricts();
-        return ResponseEntity.ok(districts);
+    public ResponseEntity<List<DistrictWithDoctorsDTO>> getAllDistricts() {
+        List<DistrictWithDoctorsDTO> districtDTOs = districtService.getAllDistricts();
+        return ResponseEntity.ok(districtDTOs);
     }
 
-    @GetMapping("/unallocated")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<District>> getUnallocatedDistricts() {
-        List<District> unallocatedDistricts = districtService.getUnallocatedDistricts();
-        return ResponseEntity.ok(unallocatedDistricts);
-    }
+//    @GetMapping("/unallocated")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<List<District>> getUnallocatedDistricts() {
+//        List<District> unallocatedDistricts = districtService.getUnallocatedDistricts();
+//        return ResponseEntity.ok(unallocatedDistricts);
+//    }
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")

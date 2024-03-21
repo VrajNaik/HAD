@@ -2,6 +2,8 @@ package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
 
+import com.Team12.HADBackEnd.payload.request.DistrictDTO;
+import com.Team12.HADBackEnd.payload.request.DoctorDTO;
 import com.Team12.HADBackEnd.payload.request.DoctorUpdateRequest;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.DistrictRepository;
@@ -20,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -137,8 +140,8 @@ public class DoctorService {
         System.out.println("Received Doctor object: " + doctor);
 
         // Retrieve the associated District object
-//        District district = doctor.getDistrict();
-//        System.out.println("Associated District object: " + district);
+        District district = doctor.getDistrict();
+        System.out.println("Associated District object: " + district);
 
         // Create new user's account
         User user = new User(generatedUsername,
@@ -165,6 +168,7 @@ public class DoctorService {
         // Set doctor's details
         doctor.setUsername(generatedUsername);
         doctor.setPassword(encoder.encode(generatedRandomPassword));
+        doctor.setDistrict(district);
 //        doctor.setDistrictId(district.getId());
 
         // Save doctor
@@ -250,8 +254,37 @@ public class DoctorService {
 //    public List<Doctor> getAllDoctors() {
 //        return doctorRepository.findAll();
 //    }
-    public List<Doctor> getAllDoctorsWithDistricts() {
-        return doctorRepository.findAllWithDistricts();
+//    public List<Doctor> getAll() {
+//        return doctorRepository.findAll();
+//    }
+    public List<DoctorDTO> getAllDoctorsWithDistricts() {
+        List<Doctor> doctors = doctorRepository.findAll();
+        return doctors.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private DoctorDTO convertToDTO(Doctor doctor) {
+        DoctorDTO doctorDTO = new DoctorDTO();
+        // Copy data from Doctor entity to DoctorDTO
+        doctorDTO.setId(doctor.getId());
+        doctorDTO.setName(doctor.getName());
+        doctorDTO.setLicenseId(doctor.getLicenseId());
+        doctorDTO.setAge(doctor.getAge());
+        doctorDTO.setEmail(doctor.getEmail());
+        doctorDTO.setGender(doctor.getGender());
+        doctorDTO.setSpecialty(doctor.getSpecialty());
+        doctorDTO.setUsername(doctor.getUsername());
+        doctorDTO.setPassword(doctor.getPassword());
+        doctorDTO.setPhoneNum(doctor.getPhoneNum());
+        // Set DistrictDTO
+        DistrictDTO districtDTO = new DistrictDTO();
+        districtDTO.setId(doctor.getDistrict().getId());
+        districtDTO.setName(doctor.getDistrict().getName());
+
+        doctorDTO.setDistrict(districtDTO);
+
+        return doctorDTO;
     }
     private String generateUniqueUsername() {
         String generatedUsername = null;

@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface DistrictRepository extends JpaRepository<District, Long> {
-    List<District> findBySupervisorIsNull();
+//    List<District> findBySupervisorIsNull();
 }

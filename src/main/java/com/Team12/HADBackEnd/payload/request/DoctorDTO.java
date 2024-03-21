@@ -1,23 +1,18 @@
-package com.Team12.HADBackEnd.models;
+package com.Team12.HADBackEnd.payload.request;
 
-import jakarta.persistence.*;
-
-
-@Entity
-public class Supervisor {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class DoctorDTO {
     private Long id;
     private String name;
+    private String licenseId;
     private int age;
     private String gender;
+    private String specialty;
+    private Long phoneNum;
     private String email;
     private String username;
     private String password;
-
-//    @OneToOne
-//    @JoinColumn(name = "district_id", referencedColumnName = "id")
-//    private District district;
+    private boolean active = true;
+    private DistrictDTO district; // District information
 
     public Long getId() {
         return id;
@@ -35,6 +30,14 @@ public class Supervisor {
         this.name = name;
     }
 
+    public String getLicenseId() {
+        return licenseId;
+    }
+
+    public void setLicenseId(String licenseId) {
+        this.licenseId = licenseId;
+    }
+
     public int getAge() {
         return age;
     }
@@ -49,6 +52,22 @@ public class Supervisor {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public String getSpecialty() {
+        return specialty;
+    }
+
+    public void setSpecialty(String specialty) {
+        this.specialty = specialty;
+    }
+
+    public Long getPhoneNum() {
+        return phoneNum;
+    }
+
+    public void setPhoneNum(Long phoneNum) {
+        this.phoneNum = phoneNum;
     }
 
     public String getEmail() {
@@ -74,16 +93,21 @@ public class Supervisor {
     public void setPassword(String password) {
         this.password = password;
     }
-//
-//    public District getDistrict() {
-//        return district;
-//    }
-//
-//    public void setDistrict(District district) {
-//        this.district = district;
-//    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public DistrictDTO getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(DistrictDTO district) {
+        this.district = district;
+    }
 }
-//@RestController
-//@CrossOrigin(origins = "*", maxAge = 3600)
-//@RequestMapping("/FieldHealthCareWorker")
-//public class FieldHealthCareWorkerController {
+

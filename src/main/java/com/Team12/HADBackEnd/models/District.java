@@ -1,5 +1,6 @@
 package com.Team12.HADBackEnd.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -11,8 +12,8 @@ public class District {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    @OneToOne(mappedBy = "district")
-    private Supervisor supervisor;
+//    @OneToOne(mappedBy = "district")
+//    private Supervisor supervisor;
     @OneToMany(mappedBy = "district")
     private List<Doctor> doctors = new ArrayList<>();
 
@@ -32,13 +33,13 @@ public class District {
         this.name = name;
     }
 
-    public Supervisor getSupervisor() {
-        return supervisor;
-    }
-
-    public void setSupervisor(Supervisor supervisor) {
-        this.supervisor = supervisor;
-    }
+//    public Supervisor getSupervisor() {
+//        return supervisor;
+//    }
+//
+//    public void setSupervisor(Supervisor supervisor) {
+//        this.supervisor = supervisor;
+//    }
 
     public List<Doctor> getDoctors() {
         return doctors;

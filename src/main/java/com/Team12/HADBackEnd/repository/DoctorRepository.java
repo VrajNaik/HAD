@@ -14,7 +14,5 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     boolean existsByUsername(String username);
     Optional<Doctor> findByUsername(String username);
 
-    @Query("SELECT d FROM Doctor d LEFT JOIN FETCH d.district")
-    List<Doctor> findAllWithDistricts();
 
 }

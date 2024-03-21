@@ -2,6 +2,7 @@ package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.models.Doctor;
 import com.Team12.HADBackEnd.models.User;
+import com.Team12.HADBackEnd.payload.request.DoctorDTO;
 import com.Team12.HADBackEnd.payload.request.DoctorUpdateRequest;
 import com.Team12.HADBackEnd.payload.request.UsernameDTO;
 import com.Team12.HADBackEnd.payload.response.*;
@@ -43,9 +44,13 @@ public class DoctorController {
 //    }
 @GetMapping("/viewDoctors")
 @PreAuthorize("hasRole('ADMIN')")
-public ResponseEntity<List<Doctor>> getAllDoctorsWithDistricts() {
-    List<Doctor> doctors = doctorService.getAllDoctorsWithDistricts();
-    return ResponseEntity.ok(doctors);
+//public ResponseEntity<List<Doctor>> getAllDoctorsWithDistricts() {
+//    List<Doctor> doctors = doctorService.getAll();
+//    return new ResponseEntity<>(doctors, HttpStatus.OK);
+//}
+public ResponseEntity<List<DoctorDTO>> viewDoctors() {
+    List<DoctorDTO> doctorDTOs = doctorService.getAllDoctorsWithDistricts();
+    return new ResponseEntity<>(doctorDTOs, HttpStatus.OK);
 }
     @PutMapping("/updateDoctor")
     @PreAuthorize("hasRole('ADMIN')")
