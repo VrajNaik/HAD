@@ -5,6 +5,7 @@ import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.request.DistrictDTO;
 import com.Team12.HADBackEnd.payload.request.DoctorDTO;
 import com.Team12.HADBackEnd.payload.request.DoctorUpdateRequest;
+import com.Team12.HADBackEnd.payload.request.DoctorUpdateRequestDTO;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.DistrictRepository;
 import com.Team12.HADBackEnd.repository.DoctorRepository;
@@ -116,21 +117,56 @@ public class DoctorService {
     // Autowire the JavaMailSender
 
 
-    public ResponseEntity<Doctor> updateDoctor(DoctorUpdateRequest request) {
-        return doctorRepository.findById(request.getId()).map(doctor -> {
-            doctor.setName(request.getName());
-            doctor.setLicenseId(request.getLicenseId());
-            doctor.setAge(request.getAge());
-            doctor.setGender(request.getGender());
-            doctor.setSpecialty(request.getSpecialty());
-            doctor.setPhoneNum(request.getPhoneNum());
-            doctor.setEmail(request.getEmail());
-            doctor.setUsername(request.getUsername());
-            doctor.setPassword(request.getPassword());
-            Doctor savedDoctor = doctorRepository.save(doctor);
-            return ResponseEntity.ok().body(savedDoctor);
-        }).orElse(ResponseEntity.notFound().build());
+//    public ResponseEntity<Doctor> updateDoctor(DoctorUpdateRequest request) {
+//        return doctorRepository.findById(request.getId()).map(doctor -> {
+//            doctor.setName(request.getName());
+//            doctor.setLicenseId(request.getLicenseId());
+//            doctor.setAge(request.getAge());
+//            doctor.setGender(request.getGender());
+//            doctor.setSpecialty(request.getSpecialty());
+//            doctor.setPhoneNum(request.getPhoneNum());
+//            doctor.setEmail(request.getEmail());
+//            doctor.setUsername(request.getUsername());
+//            doctor.setPassword(request.getPassword());
+//            Doctor savedDoctor = doctorRepository.save(doctor);
+//            return ResponseEntity.ok().body(savedDoctor);
+//        }).orElse(ResponseEntity.notFound().build());
+//    }
+@Transactional(rollbackFor = Exception.class)
+public DoctorDTO updateDoctor(DoctorUpdateRequestDTO request) {
+    Doctor doctor = doctorRepository.findById(request.getId())
+            .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + request.getId()));
+
+    if (request.getName() != null) {
+        doctor.setName(request.getName());
     }
+    if (request.getLicenseId() != null) {
+        doctor.setLicenseId(request.getLicenseId());
+    }
+    if (request.getAge() != 0) {
+        doctor.setAge(request.getAge());
+    }
+    if (request.getGender() != null) {
+        doctor.setGender(request.getGender());
+    }
+    if (request.getSpecialty() != null) {
+        doctor.setSpecialty(request.getSpecialty());
+    }
+    if (request.getPhoneNum() != null) {
+        doctor.setPhoneNum(request.getPhoneNum());
+    }
+    if (request.getEmail() != null) {
+        doctor.setEmail(request.getEmail());
+    }
+    if (request.getNewDistrictId() != null) {
+        District newDistrict = districtRepository.findById(request.getNewDistrictId())
+                .orElseThrow(() -> new RuntimeException("District not found with id: " + request.getNewDistrictId()));
+        doctor.setDistrict(newDistrict);
+    }
+
+    Doctor updatedDoctor = doctorRepository.save(doctor);
+    return convertToDTO(updatedDoctor);
+}
     @Transactional(rollbackFor = Exception.class)
     public Doctor addDoctor(Doctor doctor) throws DuplicateLicenseIdException, DuplicateEmailIdException {
         String generatedUsername = generateUniqueUsername();
@@ -268,24 +304,46 @@ public class DoctorService {
         DoctorDTO doctorDTO = new DoctorDTO();
         // Copy data from Doctor entity to DoctorDTO
         doctorDTO.setId(doctor.getId());
-        doctorDTO.setName(doctor.getName());
-        doctorDTO.setLicenseId(doctor.getLicenseId());
-        doctorDTO.setAge(doctor.getAge());
-        doctorDTO.setEmail(doctor.getEmail());
-        doctorDTO.setGender(doctor.getGender());
-        doctorDTO.setSpecialty(doctor.getSpecialty());
-        doctorDTO.setUsername(doctor.getUsername());
-        doctorDTO.setPassword(doctor.getPassword());
-        doctorDTO.setPhoneNum(doctor.getPhoneNum());
-        // Set DistrictDTO
-        DistrictDTO districtDTO = new DistrictDTO();
-        districtDTO.setId(doctor.getDistrict().getId());
-        districtDTO.setName(doctor.getDistrict().getName());
 
-        doctorDTO.setDistrict(districtDTO);
+        if (doctor.getName() != null) {
+            doctorDTO.setName(doctor.getName());
+        }
+        if (doctor.getLicenseId() != null) {
+            doctorDTO.setLicenseId(doctor.getLicenseId());
+        }
+        if (doctor.getAge() != 0) {
+            doctorDTO.setAge(doctor.getAge());
+        }
+        if (doctor.getEmail() != null) {
+            doctorDTO.setEmail(doctor.getEmail());
+        }
+        if (doctor.getGender() != null) {
+            doctorDTO.setGender(doctor.getGender());
+        }
+        if (doctor.getSpecialty() != null) {
+            doctorDTO.setSpecialty(doctor.getSpecialty());
+        }
+        if (doctor.getUsername() != null) {
+            doctorDTO.setUsername(doctor.getUsername());
+        }
+        if (doctor.getPassword() != null) {
+            doctorDTO.setPassword(doctor.getPassword());
+        }
+        if (doctor.getPhoneNum() != null) {
+            doctorDTO.setPhoneNum(doctor.getPhoneNum());
+        }
+
+        // Set DistrictDTO if doctor has a district
+        if (doctor.getDistrict() != null) {
+            DistrictDTO districtDTO = new DistrictDTO();
+            districtDTO.setId(doctor.getDistrict().getId());
+            districtDTO.setName(doctor.getDistrict().getName());
+            doctorDTO.setDistrict(districtDTO);
+        }
 
         return doctorDTO;
     }
+
     private String generateUniqueUsername() {
         String generatedUsername = null;
         boolean isUnique = false;

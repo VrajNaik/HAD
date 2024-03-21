@@ -4,6 +4,7 @@ import com.Team12.HADBackEnd.models.Doctor;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.request.DoctorDTO;
 import com.Team12.HADBackEnd.payload.request.DoctorUpdateRequest;
+import com.Team12.HADBackEnd.payload.request.DoctorUpdateRequestDTO;
 import com.Team12.HADBackEnd.payload.request.UsernameDTO;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.UserRepository;
@@ -52,11 +53,17 @@ public ResponseEntity<List<DoctorDTO>> viewDoctors() {
     List<DoctorDTO> doctorDTOs = doctorService.getAllDoctorsWithDistricts();
     return new ResponseEntity<>(doctorDTOs, HttpStatus.OK);
 }
-    @PutMapping("/updateDoctor")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Doctor> updateDoctor(@RequestBody DoctorUpdateRequest request) {
-        return doctorService.updateDoctor(request);
-    }
+//    @PutMapping("/updateDoctor")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<Doctor> updateDoctor(@RequestBody DoctorUpdateRequest request) {
+//        return doctorService.updateDoctor(request);
+//    }
+@PutMapping("/updateDoctor")
+@PreAuthorize("hasRole('ADMIN')")
+public ResponseEntity<DoctorDTO> updateDoctor(@RequestBody DoctorUpdateRequestDTO request) {
+    DoctorDTO updatedDoctorDTO = doctorService.updateDoctor(request);
+    return ResponseEntity.ok(updatedDoctorDTO);
+}
 
     @Autowired
     private UserRepository userRepository; // Inject UserRepository
