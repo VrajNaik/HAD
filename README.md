@@ -67,3 +67,37 @@ The Mental Health Screening and Management System involves the following compone
 - **Follow-ups**: Schedule follow-ups for patients.
 - **History**: View patient history including past prescriptions and follow-ups.
 - **Dashboard**: View graphical representation of patient data.
+
+
+### Database Design
+
+![Database Schema](Milestones/Milestone-2/DBDesign.png)
+
+
+### API Documentation
+
+![API Documentation](Milestones/Milestone-2/api.png)
+
+### Use Case Diagram
+#### Web App Use Case Diagram
+![Web App Use Case Diagram](Milestones/Milestone-1/UseCaseWebApp.png)
+
+#### Mobile App Use Case Diagram
+![Mobile App Use Case Diagram](Milestones/Milestone-1/UseCaseMobileApp.png)
+
+
+### Flow Diagrams for Roles
+
+#### Admin Flow Diagram
+![Admin Flow Diagram](Milestones/Milestone-1/AdminFlowDiagram.png)
+
+
+#### Supervisor Flow Diagram
+![Supervisor Flow Diagram](Milestones/Milestone-1/SupervisorFlowDiagram.png)
+
+#### Field Health Worker Flow Diagram
+![Field Health Worker Flow Diagram](Milestones/Milestone-1/FHWFlowDiagram.png)
+
+#### Doctor Flow Diagram
+![Doctor Flow Diagram](Milestones/Milestone-1/DoctorFlowDiagram.png)
+
