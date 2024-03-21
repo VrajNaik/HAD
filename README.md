@@ -85,6 +85,8 @@ The Mental Health Screening and Management System involves the following compone
 #### Mobile App Use Case Diagram
 ![Mobile App Use Case Diagram](Milestones/Milestone-1/UseCaseMobileApp.png)
 
+### Sequence Diagram
+![Sequence Diagram](Milestones/Milestone-2/SequenceDiagram.png)
 
 ### Flow Diagrams for Roles
 
