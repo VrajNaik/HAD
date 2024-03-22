@@ -106,6 +106,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
                             .requestMatchers("/district/**").permitAll()
                             .requestMatchers("/doctor/**").permitAll()
                             .requestMatchers("/supervisor/**").permitAll()
+                            .requestMatchers("/api/**").permitAll()
 
                             .anyRequest().authenticated()
             );
