@@ -1,20 +1,27 @@
 package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
-import com.Team12.HADBackEnd.repository.DoctorRepository;
-import com.Team12.HADBackEnd.repository.RoleRepository;
-import com.Team12.HADBackEnd.repository.SupervisorRepository;
-import com.Team12.HADBackEnd.repository.UserRepository;
+import com.Team12.HADBackEnd.payload.request.DistrictDTO;
+import com.Team12.HADBackEnd.payload.request.DistrictWithoutSupervisorDTO;
+import com.Team12.HADBackEnd.payload.request.SupervisorDTO;
+import com.Team12.HADBackEnd.payload.request.SupervisorUpdateRequestDTO;
+import com.Team12.HADBackEnd.payload.response.DoctorAlreadyDeactivatedException;
+import com.Team12.HADBackEnd.payload.response.DoctorNotFoundException;
+import com.Team12.HADBackEnd.payload.response.DuplicateEmailIdException;
+import com.Team12.HADBackEnd.payload.response.UserNotFoundException;
+import com.Team12.HADBackEnd.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -22,34 +29,143 @@ public class SupervisorService {
 
     @Autowired
     private SupervisorRepository supervisorRepository;
-//
-//    @Autowired
-//    private RoleRepository roleRepository;
-//    @Autowired
-//    private UserRepository userRepository;
+    @Autowired
+    private DistrictRepository districtRepository;
+    @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private PasswordEncoder encoder;
-
     @Autowired
     private JavaMailSender javaMailSender; // Autowire the JavaMailSender
 
-    public Supervisor addSupervisor(Supervisor supervisor) {
-        String generatedUsername = generateUniqueUsername();
-        String generatedRandomPassword = generateRandomPassword();
+@Transactional(rollbackFor = Exception.class)
+public Supervisor addSupervisor(Supervisor supervisor) throws DuplicateEmailIdException {
+    String generatedUsername = generateUniqueUsername();
+    String generatedRandomPassword = generateRandomPassword();
 
-        // paste here
-        supervisor.setUsername(generatedUsername);
+    // Retrieve the associated District object
+    District district = supervisor.getDistrict();
 
-        // Generate a random password
-        supervisor.setPassword(generatedRandomPassword);
-        sendCredentialsByEmail(supervisor.getEmail(), generatedUsername, generatedRandomPassword);
+    // Create new user's account
+    User user = new User(generatedUsername,
+            supervisor.getEmail(),
+            encoder.encode(generatedRandomPassword));
 
-        return supervisorRepository.save(supervisor);
+    Set<Role> roles = new HashSet<>();
+    Role supervisorRole = roleRepository.findByName(ERole.ROLE_SUPERVISOR)
+            .orElseThrow(() -> new RuntimeException("Error: SUPERVISOR role not found."));
+    roles.add(supervisorRole);
+    user.setRoles(roles);
+    userRepository.save(user);
+
+    // Check for duplicate email
+    if (supervisorRepository.existsByEmail(supervisor.getEmail())) {
+        throw new DuplicateEmailIdException("Supervisor with the same Email ID already exists.");
     }
 
-    public List<Supervisor> getAllSupervisor() {
-        return supervisorRepository.findAll();
+    // Set supervisor's details
+    supervisor.setUsername(generatedUsername);
+    supervisor.setPassword(encoder.encode(generatedRandomPassword));
+    supervisor.setDistrict(district);
+
+    // Save supervisor
+    Supervisor savedSupervisor = supervisorRepository.save(supervisor);
+
+    // Send email with username and password
+    sendCredentialsByEmail(savedSupervisor.getEmail(), generatedUsername, generatedRandomPassword);
+
+    return savedSupervisor;
+}
+
+//    public List<Supervisor> getAllSupervisor() {
+//        return supervisorRepository.findAll();
+//    }
+
+//    @Transactional(readOnly = true)
+    public List<SupervisorDTO> getAllSupervisorsWithDistricts() {
+        List<Supervisor> supervisors = supervisorRepository.findAll();
+        return supervisors.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
+    @Transactional(rollbackFor = Exception.class)
+    public SupervisorDTO updateSupervisor(SupervisorUpdateRequestDTO request) {
+        Supervisor supervisor = supervisorRepository.findById(request.getId())
+                .orElseThrow(() -> new RuntimeException("Supervisor not found with id: " + request.getId()));
+
+        if (request.getName() != null) {
+            supervisor.setName(request.getName());
+        }
+        if (request.getAge() != 0) {
+            supervisor.setAge(request.getAge());
+        }
+        if (request.getGender() != null) {
+            supervisor.setGender(request.getGender());
+        }
+        if (request.getEmail() != null) {
+            supervisor.setEmail(request.getEmail());
+        }
+        if (request.getNewDistrictId() != null) {
+            District newDistrict = districtRepository.findById(request.getNewDistrictId())
+                    .orElseThrow(() -> new RuntimeException("District not found with id: " + request.getNewDistrictId()));
+            supervisor.setDistrict(newDistrict);
+        }
+
+        Supervisor updatedSupervisor = supervisorRepository.save(supervisor);
+        return convertToDTO(updatedSupervisor);
+    }
+
+    private SupervisorDTO convertToDTO(Supervisor supervisor) {
+        SupervisorDTO supervisorDTO = new SupervisorDTO();
+        supervisorDTO.setId(supervisor.getId());
+
+        if (supervisor.getName() != null) {
+            supervisorDTO.setName(supervisor.getName());
+        }
+        if (supervisor.getAge() != 0) {
+            supervisorDTO.setAge(supervisor.getAge());
+        }
+        if (supervisor.getGender() != null) {
+            supervisorDTO.setGender(supervisor.getGender());
+        }
+        if (supervisor.getEmail() != null) {
+            supervisorDTO.setEmail(supervisor.getEmail());
+        }
+        if (supervisor.getUsername() != null) {
+            supervisorDTO.setUsername(supervisor.getUsername());
+        }
+        if (supervisor.getPassword() != null) {
+            supervisorDTO.setPassword(supervisor.getPassword());
+        }
+        if (supervisor.getDistrict() != null) {
+            DistrictDTO districtDTO = new DistrictDTO();
+            districtDTO.setId(supervisor.getDistrict().getId());
+            districtDTO.setName(supervisor.getDistrict().getName());
+            supervisorDTO.setDistrict(districtDTO);
+        }
+
+        return supervisorDTO;
+    }
+    @Transactional
+    public void setActiveStatusByUsername(String username, boolean active) {
+        Supervisor supervisor = supervisorRepository.findByUsername(username)
+                .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + username));
+
+        if (supervisor.isActive() == active) {
+            throw new DoctorAlreadyDeactivatedException("Supervisor is already " + (active ? "activated" : "deactivated"));
+        }
+
+        supervisor.setActive(active);
+        supervisorRepository.save(supervisor);
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+        user.setActive(active);
+        userRepository.save(user);
+    }
+
     private String generateUniqueUsername() {
         String generatedUsername = null;
         boolean isUnique = false;
@@ -82,6 +198,7 @@ public class SupervisorService {
         // Send email
         javaMailSender.send(mailMessage);
     }
+
 }
 
 //// Create new user's account
@@ -168,3 +285,16 @@ public class SupervisorService {
 //  }
 //
 //}
+//    public Supervisor addSupervisor(Supervisor supervisor) {
+//        String generatedUsername = generateUniqueUsername();
+//        String generatedRandomPassword = generateRandomPassword();
+//
+//        // paste here
+//        supervisor.setUsername(generatedUsername);
+//
+//        // Generate a random password
+//        supervisor.setPassword(generatedRandomPassword);
+//        sendCredentialsByEmail(supervisor.getEmail(), generatedUsername, generatedRandomPassword);
+//
+//        return supervisorRepository.save(supervisor);
+//    }

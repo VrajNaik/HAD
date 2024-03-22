@@ -1,12 +1,7 @@
-package com.Team12.HADBackEnd.models;
-
-import jakarta.persistence.*;
+package com.Team12.HADBackEnd.payload.request;
 
 
-@Entity
-public class Supervisor {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class SupervisorDTO {
     private Long id;
     private String name;
     private int age;
@@ -14,11 +9,7 @@ public class Supervisor {
     private String email;
     private String username;
     private String password;
-    private boolean active = true;
-
-    @OneToOne
-    @JoinColumn(name = "district_id", referencedColumnName = "id")
-    private District district;
+    private DistrictDTO district;
 
     public Long getId() {
         return id;
@@ -76,23 +67,12 @@ public class Supervisor {
         this.password = password;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public District getDistrict() {
+    public DistrictDTO getDistrict() {
         return district;
     }
 
-    public void setDistrict(District district) {
+    public void setDistrict(DistrictDTO district) {
         this.district = district;
     }
 }
-//@RestController
-//@CrossOrigin(origins = "*", maxAge = 3600)
-//@RequestMapping("/FieldHealthCareWorker")
-//public class FieldHealthCareWorkerController {
+

@@ -26,6 +26,8 @@ public class DoctorController {
 
     @Autowired
     private DoctorService doctorService;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/addDoctor")
     @PreAuthorize("hasRole('ADMIN')")
@@ -37,36 +39,21 @@ public class DoctorController {
             throw new AuthenticationServiceException(e.getMessage(), e);
         }
     }
-//    @GetMapping("/viewDoctors")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<List<Doctor>> getAllDoctors() {
-//        List<Doctor> doctors = doctorService.getAllDoctors();
-//        return new ResponseEntity<>(doctors, HttpStatus.OK);
-//    }
-@GetMapping("/viewDoctors")
-@PreAuthorize("hasRole('ADMIN')")
-//public ResponseEntity<List<Doctor>> getAllDoctorsWithDistricts() {
-//    List<Doctor> doctors = doctorService.getAll();
-//    return new ResponseEntity<>(doctors, HttpStatus.OK);
-//}
-public ResponseEntity<List<DoctorDTO>> viewDoctors() {
-    List<DoctorDTO> doctorDTOs = doctorService.getAllDoctorsWithDistricts();
-    return new ResponseEntity<>(doctorDTOs, HttpStatus.OK);
-}
-//    @PutMapping("/updateDoctor")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<Doctor> updateDoctor(@RequestBody DoctorUpdateRequest request) {
-//        return doctorService.updateDoctor(request);
-//    }
-@PutMapping("/updateDoctor")
-@PreAuthorize("hasRole('ADMIN')")
-public ResponseEntity<DoctorDTO> updateDoctor(@RequestBody DoctorUpdateRequestDTO request) {
-    DoctorDTO updatedDoctorDTO = doctorService.updateDoctor(request);
-    return ResponseEntity.ok(updatedDoctorDTO);
-}
 
-    @Autowired
-    private UserRepository userRepository; // Inject UserRepository
+    @GetMapping("/viewDoctors")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<DoctorDTO>> viewDoctors() {
+        List<DoctorDTO> doctorDTOs = doctorService.getAllDoctorsWithDistricts();
+        return new ResponseEntity<>(doctorDTOs, HttpStatus.OK);
+    }
+
+
+    @PutMapping("/updateDoctor")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<DoctorDTO> updateDoctor(@RequestBody DoctorUpdateRequestDTO request) {
+        DoctorDTO updatedDoctorDTO = doctorService.updateDoctor(request);
+        return ResponseEntity.ok(updatedDoctorDTO);
+    }
 
 
     @PutMapping("/deactivate")
@@ -101,6 +88,21 @@ public ResponseEntity<DoctorDTO> updateDoctor(@RequestBody DoctorUpdateRequestDT
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+}
+
+//    @GetMapping("/viewDoctors")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<List<Doctor>> getAllDoctors() {
+//        List<Doctor> doctors = doctorService.getAllDoctors();
+//        return new ResponseEntity<>(doctors, HttpStatus.OK);
+//    }
+
+//    @PutMapping("/updateDoctor")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<Doctor> updateDoctor(@RequestBody DoctorUpdateRequest request) {
+//        return doctorService.updateDoctor(request);
+//    }
+
 //    @PutMapping("/activate")
 //    public ResponseEntity<?> activateDoctor(@RequestBody UsernameDto usernameDto) {
 //        try {
@@ -112,7 +114,8 @@ public ResponseEntity<DoctorDTO> updateDoctor(@RequestBody DoctorUpdateRequestDT
 //            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
 //        }
 //    }
-
-}
-
+//public ResponseEntity<List<Doctor>> getAllDoctorsWithDistricts() {
+//    List<Doctor> doctors = doctorService.getAll();
+//    return new ResponseEntity<>(doctors, HttpStatus.OK);
+//}
 

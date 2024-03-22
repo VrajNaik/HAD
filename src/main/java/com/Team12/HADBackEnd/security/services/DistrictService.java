@@ -111,4 +111,19 @@ public List<DistrictWithDoctorsDTO> getAllDistricts() {
         // Set other properties as needed
         return localAreaDTO;
     }
+
+    public List<DistrictWithoutSupervisorDTO> getAllDistrictsWithoutSupervisors() {
+        List<District> districts = districtRepository.findAll();
+        return districts.stream()
+                .filter(district -> district.getSupervisor() == null)
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private DistrictWithoutSupervisorDTO convertToDTO(District district) {
+        DistrictWithoutSupervisorDTO dto = new DistrictWithoutSupervisorDTO();
+        dto.setId(district.getId());
+        dto.setName(district.getName());
+        return dto;
+    }
 }

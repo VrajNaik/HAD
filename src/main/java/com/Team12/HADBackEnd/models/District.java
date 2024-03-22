@@ -12,8 +12,8 @@ public class District {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-//    @OneToOne(mappedBy = "district")
-//    private Supervisor supervisor;
+    @OneToOne(mappedBy = "district")
+    private Supervisor supervisor;
     @OneToMany(mappedBy = "district")
     private List<Doctor> doctors = new ArrayList<>();
     @OneToMany(mappedBy = "district", cascade = CascadeType.ALL)
@@ -43,13 +43,13 @@ public class District {
         this.name = name;
     }
 
-//    public Supervisor getSupervisor() {
-//        return supervisor;
-//    }
-//
-//    public void setSupervisor(Supervisor supervisor) {
-//        this.supervisor = supervisor;
-//    }
+    public Supervisor getSupervisor() {
+        return supervisor;
+    }
+
+    public void setSupervisor(Supervisor supervisor) {
+        this.supervisor = supervisor;
+    }
 
     public List<Doctor> getDoctors() {
         return doctors;

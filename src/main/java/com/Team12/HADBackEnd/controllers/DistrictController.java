@@ -35,6 +35,13 @@ public class DistrictController {
 //        return ResponseEntity.ok(unallocatedDistricts);
 //    }
 
+    @GetMapping("/unallocated")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<DistrictWithoutSupervisorDTO>> getAllDistrictsWithoutSupervisors() {
+        List<DistrictWithoutSupervisorDTO> districts = districtService.getAllDistrictsWithoutSupervisors();
+        return ResponseEntity.ok(districts);
+    }
+
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> createDistrict(@RequestBody District district) {
