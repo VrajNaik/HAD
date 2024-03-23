@@ -68,6 +68,16 @@ public class DistrictService {
         workerDTO.setEmail(worker.getEmail());
         workerDTO.setUsername(worker.getUsername());
         workerDTO.setPassword(worker.getPassword());
+        DistrictDTO districtDTO = new DistrictDTO();
+        districtDTO.setId(worker.getDistrict().getId());
+        districtDTO.setName(worker.getDistrict().getName());
+        workerDTO.setDistrict(districtDTO);
+        if (worker.getLocalArea() != null) {
+            LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+            localAreaDTO.setId(worker.getLocalArea().getId());
+            localAreaDTO.setName(worker.getLocalArea().getName());
+            workerDTO.setLocalArea(localAreaDTO);
+        }
         return workerDTO;
     }
 
@@ -75,6 +85,13 @@ public class DistrictService {
         SupervisorDTO supervisorDTO = new SupervisorDTO();
         supervisorDTO.setId(supervisor.getId());
         supervisorDTO.setName(supervisor.getName());
+        supervisorDTO.setAge(supervisor.getAge());
+        supervisorDTO.setGender(supervisor.getGender());
+        supervisorDTO.setEmail(supervisor.getEmail());
+        DistrictDTO districtDTO = new DistrictDTO();
+        districtDTO.setId(supervisor.getDistrict().getId());
+        districtDTO.setName(supervisor.getDistrict().getName());
+        supervisorDTO.setDistrict(districtDTO);
         return supervisorDTO;
     }
     public LocalAreaDTO convertToDTO(LocalArea localArea) {
@@ -84,7 +101,7 @@ public class DistrictService {
         return localAreaDTO;
     }
 
-    // Convert Doctor entity to DoctorDTO
+
     private DoctorDTO convertToDTO(Doctor doctor) {
         DoctorDTO doctorDTO = new DoctorDTO();
         doctorDTO.setId(doctor.getId());

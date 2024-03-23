@@ -143,7 +143,12 @@ public class FieldHealthCareWorkerService {
             districtDTO.setName(worker.getDistrict().getName());
             workerDTO.setDistrict(districtDTO);
         }
-
+        if (worker.getLocalArea() != null) {
+            LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+            localAreaDTO.setId(worker.getLocalArea().getId());
+            localAreaDTO.setName(worker.getLocalArea().getName());
+            workerDTO.setLocalArea(localAreaDTO);
+        }
         return workerDTO;
     }
 
@@ -167,7 +172,8 @@ public class FieldHealthCareWorkerService {
 
 
     public FieldHealthcareWorkerDTO getFieldHealthcareWorkerByUsername(String username) {
-        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findUsername(username);
+        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+                .orElseThrow(() -> new DoctorNotFoundException("Field Health Care Worker not found with username: " + username));
         if (worker == null) {
             // Handle the case where no worker is found with the provided username
             System.out.println("Hello\n");
@@ -206,27 +212,27 @@ public class FieldHealthCareWorkerService {
             workerDTO.setDistrict(districtDTO);
         }
         if (worker.getLocalArea() != null) {
-            LocalAreaDTO districtDTO = new LocalAreaDTO();
-            districtDTO.setId(worker.getLocalArea().getId());
-            districtDTO.setName(worker.getLocalArea().getName());
-            workerDTO.setLocalArea(districtDTO);
+            LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+            localAreaDTO.setId(worker.getLocalArea().getId());
+            localAreaDTO.setName(worker.getLocalArea().getName());
+            workerDTO.setLocalArea(localAreaDTO);
         }
         return workerDTO;
     }
-    public DistrictDTO convertToDTO(District district) {
-        System.out.println("Hello2\n");
-        DistrictDTO districtDTO = new DistrictDTO();
-        districtDTO.setId(district.getId());
-        districtDTO.setName(district.getName());
-        return districtDTO;
-    }
-    public LocalAreaDTO convertToDTO(LocalArea localArea) {
-        System.out.println("Hello3\n");
-        LocalAreaDTO localAreaDTO = new LocalAreaDTO();
-        localAreaDTO.setId(localArea.getId());
-        localAreaDTO.setName(localArea.getName());
-        return localAreaDTO;
-    }
+//    public DistrictDTO convertToDTO(District district) {
+//        System.out.println("Hello2\n");
+//        DistrictDTO districtDTO = new DistrictDTO();
+//        districtDTO.setId(district.getId());
+//        districtDTO.setName(district.getName());
+//        return districtDTO;
+//    }
+//    public LocalAreaDTO convertToDTO(LocalArea localArea) {
+//        System.out.println("Hello3\n");
+//        LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+//        localAreaDTO.setId(localArea.getId());
+//        localAreaDTO.setName(localArea.getName());
+//        return localAreaDTO;
+//    }
 
 
 

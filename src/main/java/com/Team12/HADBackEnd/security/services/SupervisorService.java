@@ -35,6 +35,10 @@ public class SupervisorService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private FieldHealthCareWorkerRepository workerRepository;
+    @Autowired
+    private LocalAreaRepository localAreaRepository;
+    @Autowired
     private PasswordEncoder encoder;
     @Autowired
     private JavaMailSender javaMailSender; // Autowire the JavaMailSender
@@ -191,7 +195,22 @@ public class SupervisorService {
         // Send email
         javaMailSender.send(mailMessage);
     }
+    public String assignWorkerToLocalArea(String username, Long localAreaId) {
+        FieldHealthCareWorker worker = workerRepository.findUsername(username);
+        if (worker == null) {
+            return "Worker not found";
+        }
 
+        LocalArea localArea = localAreaRepository.findById(localAreaId).orElse(null);
+        if (localArea == null) {
+            return "Local area not found";
+        }
+
+        worker.setLocalArea(localArea);
+        workerRepository.save(worker);
+
+        return "Worker assigned successfully";
+    }
 }
 
 //// Create new user's account

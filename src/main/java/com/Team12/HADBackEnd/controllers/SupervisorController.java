@@ -82,6 +82,17 @@ public class SupervisorController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @PostMapping("/assignWorkerToLocalArea")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> assignWorkerToLocalArea(@RequestBody AssignmentRequest request) {
+        String result = supervisorService.assignWorkerToLocalArea(request.getUsername(), request.getLocalAreaId());
+        if (result.equals("Worker assigned successfully")) {
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+        }
+    }
 }
 //@RestController
 //@CrossOrigin(origins = "*", maxAge = 3600)
