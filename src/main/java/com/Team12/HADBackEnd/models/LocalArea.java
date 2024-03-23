@@ -13,6 +13,9 @@ public class LocalArea {
     @JoinColumn(name = "district_id")
     private District district;
 
+    @OneToOne(mappedBy = "localArea")
+    private FieldHealthCareWorker fieldHealthCareWorker;
+
     public Long getId() {
         return id;
     }

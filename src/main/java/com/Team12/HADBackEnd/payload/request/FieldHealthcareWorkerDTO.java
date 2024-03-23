@@ -1,11 +1,8 @@
-package com.Team12.HADBackEnd.models;
+package com.Team12.HADBackEnd.payload.request;
 
-import jakarta.persistence.*;
 
-@Entity
-public class FieldHealthCareWorker {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+public class FieldHealthcareWorkerDTO {
     private Long id;
     private String name;
     private int age;
@@ -13,14 +10,8 @@ public class FieldHealthCareWorker {
     private String email;
     private String username;
     private String password;
-    private boolean active = true;
-    @ManyToOne
-    @JoinColumn(name = "district_id")
-    private District district;
-
-    @OneToOne
-    @JoinColumn(name = "localarea_id")
-    private LocalArea localArea;
+    private DistrictDTO district;
+    private LocalAreaDTO localArea;
 
     public Long getId() {
         return id;
@@ -78,27 +69,21 @@ public class FieldHealthCareWorker {
         this.password = password;
     }
 
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
-    public District getDistrict() {
+    public DistrictDTO getDistrict() {
         return district;
     }
 
-    public void setDistrict(District district) {
+    public void setDistrict(DistrictDTO district) {
         this.district = district;
     }
 
-    public LocalArea getLocalArea() {
+    public LocalAreaDTO getLocalArea() {
         return localArea;
     }
 
-    public void setLocalArea(LocalArea localArea) {
-        this.localArea = localArea;
+    public void setLocalArea(LocalAreaDTO localAreaDTO) {
+        this.localArea = localAreaDTO;
     }
 }
+
+

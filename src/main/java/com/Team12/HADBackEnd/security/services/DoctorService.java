@@ -30,73 +30,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 
 import org.springframework.transaction.annotation.Transactional;
 
-//
-//@Service
-//public class DoctorService {
-//
-//    @Autowired
-//    private DoctorRepository doctorRepository;
-//
-//    public Doctor addDoctor(Doctor doctor) {
-//        // Generate username based on the first letter of the name and last name
-//        String[] nameParts = doctor.getName().split(" ");
-//        String username = nameParts[0].substring(0, 1).toLowerCase() + nameParts[nameParts.length - 1].toLowerCase();
-//        doctor.setUsername(username);
-//
-//        // Generate a random password
-//        doctor.setPassword(generateRandomPassword());
-//
-//        return doctorRepository.save(doctor);
-//    }
-//
-//    private String generateRandomPassword() {
-//        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-//        StringBuilder password = new StringBuilder();
-//        Random rnd = new Random();
-//        while (password.length() < 10) { // length of the random string.
-//            int index = (int) (rnd.nextFloat() * characters.length());
-//            password.append(characters.charAt(index));
-//        }
-//        return password.toString();
-//    }
-//}
-//
-//@Service
-//public class DoctorService {
-//
-//    @Autowired
-//    private DoctorRepository doctorRepository;
-//
-//    public Doctor addDoctor(Doctor doctor) {
-//        // Generate username based on "DR" followed by a sequence of numbers
-//        String generatedUsername = generateUsername();
-//        doctor.setUsername(generatedUsername);
-//
-//        // Generate a random password
-//        doctor.setPassword(generateRandomPassword());
-//
-//        return doctorRepository.save(doctor);
-//    }
-//
-//    private String generateUsername() {
-//        // You may want to fetch the last used doctor ID from the database and increment it
-//        // For simplicity, I'm just generating a random number here
-//        int randomNumber = new Random().nextInt(90000) + 10000; // Generates a random 5-digit number
-//        return "DR" + randomNumber;
-//    }
-//
-//    private String generateRandomPassword() {
-//        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-//        StringBuilder password = new StringBuilder();
-//        Random rnd = new Random();
-//        while (password.length() < 10) { // length of the random string.
-//            int index = (int) (rnd.nextFloat() * characters.length());
-//            password.append(characters.charAt(index));
-//        }
-//        return password.toString();
-//    }
-//}
-
 @Service
 public class DoctorService {
 
@@ -116,70 +49,51 @@ public class DoctorService {
     private JavaMailSender javaMailSender;
     // Autowire the JavaMailSender
 
+    @Transactional(rollbackFor = Exception.class)
+    public DoctorDTO updateDoctor(DoctorUpdateRequestDTO request) {
+        Doctor doctor = doctorRepository.findById(request.getId())
+                .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + request.getId()));
 
-//    public ResponseEntity<Doctor> updateDoctor(DoctorUpdateRequest request) {
-//        return doctorRepository.findById(request.getId()).map(doctor -> {
-//            doctor.setName(request.getName());
-//            doctor.setLicenseId(request.getLicenseId());
-//            doctor.setAge(request.getAge());
-//            doctor.setGender(request.getGender());
-//            doctor.setSpecialty(request.getSpecialty());
-//            doctor.setPhoneNum(request.getPhoneNum());
-//            doctor.setEmail(request.getEmail());
-//            doctor.setUsername(request.getUsername());
-//            doctor.setPassword(request.getPassword());
-//            Doctor savedDoctor = doctorRepository.save(doctor);
-//            return ResponseEntity.ok().body(savedDoctor);
-//        }).orElse(ResponseEntity.notFound().build());
-//    }
-@Transactional(rollbackFor = Exception.class)
-public DoctorDTO updateDoctor(DoctorUpdateRequestDTO request) {
-    Doctor doctor = doctorRepository.findById(request.getId())
-            .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + request.getId()));
+        if (request.getName() != null) {
+            doctor.setName(request.getName());
+        }
+        if (request.getLicenseId() != null) {
+            doctor.setLicenseId(request.getLicenseId());
+        }
+        if (request.getAge() != 0) {
+            doctor.setAge(request.getAge());
+        }
+        if (request.getGender() != null) {
+            doctor.setGender(request.getGender());
+        }
+        if (request.getSpecialty() != null) {
+            doctor.setSpecialty(request.getSpecialty());
+        }
+        if (request.getPhoneNum() != null) {
+            doctor.setPhoneNum(request.getPhoneNum());
+        }
+        if (request.getEmail() != null) {
+            doctor.setEmail(request.getEmail());
+        }
+        if (request.getNewDistrictId() != null) {
+            District newDistrict = districtRepository.findById(request.getNewDistrictId())
+                    .orElseThrow(() -> new RuntimeException("District not found with id: " + request.getNewDistrictId()));
+            doctor.setDistrict(newDistrict);
+        }
 
-    if (request.getName() != null) {
-        doctor.setName(request.getName());
+        Doctor updatedDoctor = doctorRepository.save(doctor);
+        return convertToDTO(updatedDoctor);
     }
-    if (request.getLicenseId() != null) {
-        doctor.setLicenseId(request.getLicenseId());
-    }
-    if (request.getAge() != 0) {
-        doctor.setAge(request.getAge());
-    }
-    if (request.getGender() != null) {
-        doctor.setGender(request.getGender());
-    }
-    if (request.getSpecialty() != null) {
-        doctor.setSpecialty(request.getSpecialty());
-    }
-    if (request.getPhoneNum() != null) {
-        doctor.setPhoneNum(request.getPhoneNum());
-    }
-    if (request.getEmail() != null) {
-        doctor.setEmail(request.getEmail());
-    }
-    if (request.getNewDistrictId() != null) {
-        District newDistrict = districtRepository.findById(request.getNewDistrictId())
-                .orElseThrow(() -> new RuntimeException("District not found with id: " + request.getNewDistrictId()));
-        doctor.setDistrict(newDistrict);
-    }
-
-    Doctor updatedDoctor = doctorRepository.save(doctor);
-    return convertToDTO(updatedDoctor);
-}
     @Transactional(rollbackFor = Exception.class)
     public Doctor addDoctor(Doctor doctor) throws DuplicateLicenseIdException, DuplicateEmailIdException {
         String generatedUsername = generateUniqueUsername();
         String generatedRandomPassword = generateRandomPassword();
 
-        // Print the received Doctor object
         System.out.println("Received Doctor object: " + doctor);
 
-        // Retrieve the associated District object
         District district = doctor.getDistrict();
         System.out.println("Associated District object: " + district);
 
-        // Create new user's account
         User user = new User(generatedUsername,
                 doctor.getEmail(),
                 encoder.encode(generatedRandomPassword));
@@ -201,98 +115,20 @@ public DoctorDTO updateDoctor(DoctorUpdateRequestDTO request) {
             throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
         }
 
-        // Set doctor's details
         doctor.setUsername(generatedUsername);
         doctor.setPassword(encoder.encode(generatedRandomPassword));
         doctor.setDistrict(district);
 //        doctor.setDistrictId(district.getId());
 
-        // Save doctor
         Doctor savedDoctor = doctorRepository.save(doctor);
         System.out.println("Doctor's District: " + savedDoctor.getDistrict());
-
-        // Add the newly saved Doctor to the doctors list of the associated District
-//        if (district != null) {
-//            district.getDoctors().add(savedDoctor);
-//            // Save the updated District
-//            districtRepository.save(district);
-//        }
-//        if (district != null) {
-//            District managedDistrict = districtRepository.findById(district.getId())
-//                    .orElseThrow(() -> new RuntimeException("District not found."));
-//
-//            // Print the doctors list of the managed district to check if the newly added doctor is included
-//            for (Doctor doctor1 : managedDistrict.getDoctors()) {
-//                System.out.println(doctor1.getName());
-//            }
-//        }
-
-        // Send email with username and password
+        // 2
         System.out.println(generatedRandomPassword);
         sendCredentialsByEmail(savedDoctor.getEmail(), generatedUsername, generatedRandomPassword);
 
         return savedDoctor;
     }
 
-
-    //    @Transactional(rollbackFor = Exception.class) // Rollback for any exception
-//    public Doctor addDoctor(Doctor doctor) throws DuplicateLicenseIdException, DuplicateEmailIdException {
-//        String generatedUsername = generateUniqueUsername();
-//        String generatedRandomPassword = generateRandomPassword();
-//
-//        // Create new user's account
-//        User user = new User(generatedUsername,
-//                doctor.getEmail(),
-//                encoder.encode(generatedRandomPassword));
-//
-//        Set<Role> roles = new HashSet<>();
-//        Role doctorRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
-//                .orElseThrow(() -> new RuntimeException("Error: DOCTOR role not found."));
-//        roles.add(doctorRole);
-//        user.setRoles(roles);
-//        userRepository.save(user);
-//
-//        // Check for duplicate license ID
-//        if (doctorRepository.existsByLicenseId(doctor.getLicenseId())) {
-//            throw new DuplicateLicenseIdException("Doctor with the same license ID already exists.");
-//        }
-//
-//        // Check for duplicate email
-//        if (doctorRepository.existsByEmail(doctor.getEmail())) {
-//            throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
-//        }
-//
-//        // Set doctor's details
-////        doctor.setUsername(generatedUsername);
-////        doctor.setPassword(encoder.encode(generatedRandomPassword));
-////
-////        // Save doctor
-////        doctorRepository.save(doctor);
-//        District district = districtRepository.findById(doctor.getDistrictId())
-//                .orElseThrow(() -> new RuntimeException("District not found."));
-//        System.out.println(district.getName());
-//        // Create Doctor object
-//        System.out.println(district.getName());
-//        doctor.setDistrict(district); // Set the district
-//        doctor.setUsername(generatedUsername);
-//        doctor.setPassword(encoder.encode(generatedRandomPassword));
-//
-//
-//        // Save doctor
-//        doctorRepository.save(doctor);
-//
-//        // Send email with username and password
-//        System.out.println(generatedRandomPassword);
-//        sendCredentialsByEmail(doctor.getEmail(), generatedUsername, generatedRandomPassword);
-//
-//        return doctor;
-//    }
-//    public List<Doctor> getAllDoctors() {
-//        return doctorRepository.findAll();
-//    }
-//    public List<Doctor> getAll() {
-//        return doctorRepository.findAll();
-//    }
     public List<DoctorDTO> getAllDoctorsWithDistricts() {
         List<Doctor> doctors = doctorRepository.findAll();
         return doctors.stream()
@@ -476,3 +312,166 @@ public DoctorDTO updateDoctor(DoctorUpdateRequestDTO request) {
 //    return doctorRepository.save(doctor);
 //}
 
+//
+//@Service
+//public class DoctorService {
+//
+//    @Autowired
+//    private DoctorRepository doctorRepository;
+//
+//    public Doctor addDoctor(Doctor doctor) {
+//        // Generate username based on the first letter of the name and last name
+//        String[] nameParts = doctor.getName().split(" ");
+//        String username = nameParts[0].substring(0, 1).toLowerCase() + nameParts[nameParts.length - 1].toLowerCase();
+//        doctor.setUsername(username);
+//
+//        // Generate a random password
+//        doctor.setPassword(generateRandomPassword());
+//
+//        return doctorRepository.save(doctor);
+//    }
+//
+//    private String generateRandomPassword() {
+//        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+//        StringBuilder password = new StringBuilder();
+//        Random rnd = new Random();
+//        while (password.length() < 10) { // length of the random string.
+//            int index = (int) (rnd.nextFloat() * characters.length());
+//            password.append(characters.charAt(index));
+//        }
+//        return password.toString();
+//    }
+//}
+//
+//@Service
+//public class DoctorService {
+//
+//    @Autowired
+//    private DoctorRepository doctorRepository;
+//
+//    public Doctor addDoctor(Doctor doctor) {
+//        // Generate username based on "DR" followed by a sequence of numbers
+//        String generatedUsername = generateUsername();
+//        doctor.setUsername(generatedUsername);
+//
+//        // Generate a random password
+//        doctor.setPassword(generateRandomPassword());
+//
+//        return doctorRepository.save(doctor);
+//    }
+//
+//    private String generateUsername() {
+//        // You may want to fetch the last used doctor ID from the database and increment it
+//        // For simplicity, I'm just generating a random number here
+//        int randomNumber = new Random().nextInt(90000) + 10000; // Generates a random 5-digit number
+//        return "DR" + randomNumber;
+//    }
+//
+//    private String generateRandomPassword() {
+//        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+//        StringBuilder password = new StringBuilder();
+//        Random rnd = new Random();
+//        while (password.length() < 10) { // length of the random string.
+//            int index = (int) (rnd.nextFloat() * characters.length());
+//            password.append(characters.charAt(index));
+//        }
+//        return password.toString();
+//    }
+//}
+
+
+//    public ResponseEntity<Doctor> updateDoctor(DoctorUpdateRequest request) {
+//        return doctorRepository.findById(request.getId()).map(doctor -> {
+//            doctor.setName(request.getName());
+//            doctor.setLicenseId(request.getLicenseId());
+//            doctor.setAge(request.getAge());
+//            doctor.setGender(request.getGender());
+//            doctor.setSpecialty(request.getSpecialty());
+//            doctor.setPhoneNum(request.getPhoneNum());
+//            doctor.setEmail(request.getEmail());
+//            doctor.setUsername(request.getUsername());
+//            doctor.setPassword(request.getPassword());
+//            Doctor savedDoctor = doctorRepository.save(doctor);
+//            return ResponseEntity.ok().body(savedDoctor);
+//        }).orElse(ResponseEntity.notFound().build());
+//    }
+
+
+//    @Transactional(rollbackFor = Exception.class) // Rollback for any exception
+//    public Doctor addDoctor(Doctor doctor) throws DuplicateLicenseIdException, DuplicateEmailIdException {
+//        String generatedUsername = generateUniqueUsername();
+//        String generatedRandomPassword = generateRandomPassword();
+//
+//        // Create new user's account
+//        User user = new User(generatedUsername,
+//                doctor.getEmail(),
+//                encoder.encode(generatedRandomPassword));
+//
+//        Set<Role> roles = new HashSet<>();
+//        Role doctorRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
+//                .orElseThrow(() -> new RuntimeException("Error: DOCTOR role not found."));
+//        roles.add(doctorRole);
+//        user.setRoles(roles);
+//        userRepository.save(user);
+//
+//        // Check for duplicate license ID
+//        if (doctorRepository.existsByLicenseId(doctor.getLicenseId())) {
+//            throw new DuplicateLicenseIdException("Doctor with the same license ID already exists.");
+//        }
+//
+//        // Check for duplicate email
+//        if (doctorRepository.existsByEmail(doctor.getEmail())) {
+//            throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
+//        }
+//
+//        // Set doctor's details
+////        doctor.setUsername(generatedUsername);
+////        doctor.setPassword(encoder.encode(generatedRandomPassword));
+////
+////        // Save doctor
+////        doctorRepository.save(doctor);
+//        District district = districtRepository.findById(doctor.getDistrictId())
+//                .orElseThrow(() -> new RuntimeException("District not found."));
+//        System.out.println(district.getName());
+//        // Create Doctor object
+//        System.out.println(district.getName());
+//        doctor.setDistrict(district); // Set the district
+//        doctor.setUsername(generatedUsername);
+//        doctor.setPassword(encoder.encode(generatedRandomPassword));
+//
+//
+//        // Save doctor
+//        doctorRepository.save(doctor);
+//
+//        // Send email with username and password
+//        System.out.println(generatedRandomPassword);
+//        sendCredentialsByEmail(doctor.getEmail(), generatedUsername, generatedRandomPassword);
+//
+//        return doctor;
+//    }
+//    public List<Doctor> getAllDoctors() {
+//        return doctorRepository.findAll();
+//    }
+//    public List<Doctor> getAll() {
+//        return doctorRepository.findAll();
+
+
+//2
+
+// Add the newly saved Doctor to the doctors list of the associated District
+//        if (district != null) {
+//            district.getDoctors().add(savedDoctor);
+//            // Save the updated District
+//            districtRepository.save(district);
+//        }
+//        if (district != null) {
+//            District managedDistrict = districtRepository.findById(district.getId())
+//                    .orElseThrow(() -> new RuntimeException("District not found."));
+//
+//            // Print the doctors list of the managed district to check if the newly added doctor is included
+//            for (Doctor doctor1 : managedDistrict.getDoctors()) {
+//                System.out.println(doctor1.getName());
+//            }
+//        }
+
+// Send email with username and password

@@ -24,7 +24,7 @@ public class UserDetailsImpl implements UserDetails {
   @JsonIgnore
   private String password;
 
-  private boolean active; // Added field to store user's active status
+  private boolean active;
   private Collection<? extends GrantedAuthority> authorities;
 
   public UserDetailsImpl(Long id, String username, String email, String password,
@@ -34,7 +34,7 @@ public class UserDetailsImpl implements UserDetails {
     this.email = email;
     this.password = password;
     this.authorities = authorities;
-    this.active = active; // Initialize active status
+    this.active = active;
   }
 
   public static UserDetailsImpl build(User user) {
@@ -48,7 +48,7 @@ public class UserDetailsImpl implements UserDetails {
         user.getEmail(),
         user.getPassword(),
         authorities,
-        user.isActive()); // Pass active status from User
+        user.isActive());
   }
 
   public boolean isActivate() {

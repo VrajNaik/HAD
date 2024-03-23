@@ -2,7 +2,6 @@ package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.request.DistrictDTO;
-import com.Team12.HADBackEnd.payload.request.DistrictWithoutSupervisorDTO;
 import com.Team12.HADBackEnd.payload.request.SupervisorDTO;
 import com.Team12.HADBackEnd.payload.request.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.payload.response.DoctorAlreadyDeactivatedException;
@@ -40,50 +39,44 @@ public class SupervisorService {
     @Autowired
     private JavaMailSender javaMailSender; // Autowire the JavaMailSender
 
-@Transactional(rollbackFor = Exception.class)
-public Supervisor addSupervisor(Supervisor supervisor) throws DuplicateEmailIdException {
-    String generatedUsername = generateUniqueUsername();
-    String generatedRandomPassword = generateRandomPassword();
+    @Transactional(rollbackFor = Exception.class)
+    public Supervisor addSupervisor(Supervisor supervisor) throws DuplicateEmailIdException {
+        String generatedUsername = generateUniqueUsername();
+        String generatedRandomPassword = generateRandomPassword();
 
-    // Retrieve the associated District object
-    District district = supervisor.getDistrict();
+        // Retrieve the associated District object
+        District district = supervisor.getDistrict();
 
-    // Create new user's account
-    User user = new User(generatedUsername,
-            supervisor.getEmail(),
-            encoder.encode(generatedRandomPassword));
+        // Create new user's account
+        User user = new User(generatedUsername,
+                supervisor.getEmail(),
+                encoder.encode(generatedRandomPassword));
 
-    Set<Role> roles = new HashSet<>();
-    Role supervisorRole = roleRepository.findByName(ERole.ROLE_SUPERVISOR)
-            .orElseThrow(() -> new RuntimeException("Error: SUPERVISOR role not found."));
-    roles.add(supervisorRole);
-    user.setRoles(roles);
-    userRepository.save(user);
+        Set<Role> roles = new HashSet<>();
+        Role supervisorRole = roleRepository.findByName(ERole.ROLE_SUPERVISOR)
+                .orElseThrow(() -> new RuntimeException("Error: SUPERVISOR role not found."));
+        roles.add(supervisorRole);
+        user.setRoles(roles);
+        userRepository.save(user);
 
-    // Check for duplicate email
-    if (supervisorRepository.existsByEmail(supervisor.getEmail())) {
-        throw new DuplicateEmailIdException("Supervisor with the same Email ID already exists.");
+        // Check for duplicate email
+        if (supervisorRepository.existsByEmail(supervisor.getEmail())) {
+            throw new DuplicateEmailIdException("Supervisor with the same Email ID already exists.");
+        }
+
+        // Set supervisor's details
+        supervisor.setUsername(generatedUsername);
+        supervisor.setPassword(encoder.encode(generatedRandomPassword));
+        supervisor.setDistrict(district);
+
+        // Save supervisor
+        Supervisor savedSupervisor = supervisorRepository.save(supervisor);
+
+        // Send email with username and password
+        sendCredentialsByEmail(savedSupervisor.getEmail(), generatedUsername, generatedRandomPassword);
+
+        return savedSupervisor;
     }
-
-    // Set supervisor's details
-    supervisor.setUsername(generatedUsername);
-    supervisor.setPassword(encoder.encode(generatedRandomPassword));
-    supervisor.setDistrict(district);
-
-    // Save supervisor
-    Supervisor savedSupervisor = supervisorRepository.save(supervisor);
-
-    // Send email with username and password
-    sendCredentialsByEmail(savedSupervisor.getEmail(), generatedUsername, generatedRandomPassword);
-
-    return savedSupervisor;
-}
-
-//    public List<Supervisor> getAllSupervisor() {
-//        return supervisorRepository.findAll();
-//    }
-
-//    @Transactional(readOnly = true)
     public List<SupervisorDTO> getAllSupervisorsWithDistricts() {
         List<Supervisor> supervisors = supervisorRepository.findAll();
         return supervisors.stream()
@@ -298,3 +291,10 @@ public Supervisor addSupervisor(Supervisor supervisor) throws DuplicateEmailIdEx
 //
 //        return supervisorRepository.save(supervisor);
 //    }
+
+
+//    public List<Supervisor> getAllSupervisor() {
+//        return supervisorRepository.findAll();
+//    }
+
+//    @Transactional(readOnly = true)

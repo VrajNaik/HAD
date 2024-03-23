@@ -18,7 +18,8 @@ public class District {
     private List<Doctor> doctors = new ArrayList<>();
     @OneToMany(mappedBy = "district", cascade = CascadeType.ALL)
     private List<LocalArea> localAreas = new ArrayList<>();
-
+    @OneToMany(mappedBy = "district", cascade = CascadeType.ALL)
+    private List<FieldHealthCareWorker> fieldHealthCareWorkers = new ArrayList<>();
     public List<LocalArea> getLocalAreas() {
         return localAreas;
     }
@@ -57,5 +58,13 @@ public class District {
 
     public void setDoctors(List<Doctor> doctors) {
         this.doctors = doctors;
+    }
+
+    public List<FieldHealthCareWorker> getFieldHealthCareWorkers() {
+        return fieldHealthCareWorkers;
+    }
+
+    public void setFieldHealthCareWorkers(List<FieldHealthCareWorker> fieldHealthCareWorkers) {
+        this.fieldHealthCareWorkers = fieldHealthCareWorkers;
     }
 }

@@ -18,34 +18,11 @@ public class Doctor {
     private String username;
     private String password;
     private boolean active = true;
-//    @Transient
-//    private Long districtId;
-//
-//    // Getter and setter for districtId
-//    public Long getDistrictId() {
-//        return districtId;
-//    }
-//
-//    public void setDistrictId(Long districtId) {
-//        this.districtId = districtId;
-//    }
-
-//    @ManyToOne
-//    @JoinColumn(name = "district_id")
-//    private District district;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "district_id")
     private District district;
 
-    // Getter and setter for district
 
-    public District getDistrict() {
-        return district;
-    }
-
-    public void setDistrict(District district) {
-        this.district = district;
-    }
     public Long getId() {
         return id;
     }
@@ -134,4 +111,28 @@ public class Doctor {
         this.active = active;
     }
 
+    public District getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(District district) {
+        this.district = district;
+    }
+
 }
+
+//    @Transient
+//    private Long districtId;
+//
+//    // Getter and setter for districtId
+//    public Long getDistrictId() {
+//        return districtId;
+//    }
+//
+//    public void setDistrictId(Long districtId) {
+//        this.districtId = districtId;
+//    }
+
+//    @ManyToOne
+//    @JoinColumn(name = "district_id")
+//    private District district;

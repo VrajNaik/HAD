@@ -1,8 +1,6 @@
 package com.Team12.HADBackEnd.security.services;
 
-import com.Team12.HADBackEnd.models.District;
-import com.Team12.HADBackEnd.models.Doctor;
-import com.Team12.HADBackEnd.models.LocalArea;
+import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.repository.DistrictRepository;
 import com.Team12.HADBackEnd.repository.LocalAreaRepository;
@@ -24,26 +22,67 @@ public class DistrictService {
         this.districtRepository = districtRepository;
     }
 
-//    public List<District> getAllDistricts() {
-//        return districtRepository.findAll();
-//    }
-public List<DistrictWithDoctorsDTO> getAllDistricts() {
-    List<District> districts = districtRepository.findAll();
-    List<DistrictWithDoctorsDTO> districtDTOs = new ArrayList<>();
-    for (District district : districts) {
-        DistrictWithDoctorsDTO districtDTO = new DistrictWithDoctorsDTO();
-        districtDTO.setId(district.getId());
-        districtDTO.setName(district.getName());
-        // Set the list of doctors assigned to this district
-        List<DoctorDTO> doctorDTOs = new ArrayList<>();
-        for (Doctor doctor : district.getDoctors()) {
-            doctorDTOs.add(convertToDTO(doctor));
+    public List<DistrictWithDoctorsDTO> getAllDistricts() {
+        List<District> districts = districtRepository.findAll();
+        List<DistrictWithDoctorsDTO> districtDTOs = new ArrayList<>();
+        for (District district : districts) {
+            DistrictWithDoctorsDTO districtDTO = new DistrictWithDoctorsDTO();
+            districtDTO.setId(district.getId());
+            districtDTO.setName(district.getName());
+
+            List<DoctorDTO> doctorDTOs = new ArrayList<>();
+            for (Doctor doctor : district.getDoctors()) {
+                doctorDTOs.add(convertToDTO(doctor));
+            }
+            districtDTO.setDoctors(doctorDTOs);
+
+            Supervisor supervisor = district.getSupervisor();
+            if (supervisor != null) {
+                SupervisorDTO supervisorDTO = convertToDTO(supervisor);
+                districtDTO.setSupervisor(supervisorDTO);
+            }
+
+            List<LocalAreaDTO> localAreaDTOs = new ArrayList<>();
+            for (LocalArea localArea : district.getLocalAreas()) {
+                localAreaDTOs.add(convertToDTO(localArea));
+            }
+            districtDTO.setLocalAreas(localAreaDTOs);
+
+            List<FieldHealthcareWorkerDTO> workerDTOs = new ArrayList<>();
+            for (FieldHealthCareWorker worker : district.getFieldHealthCareWorkers()) {
+                workerDTOs.add(convertToDTO(worker));
+            }
+            districtDTO.setFieldHealthCareWorkers(workerDTOs);
+
+            districtDTOs.add(districtDTO);
         }
-        districtDTO.setDoctors(doctorDTOs);
-        districtDTOs.add(districtDTO);
+        return districtDTOs;
     }
-    return districtDTOs;
-}
+
+    public FieldHealthcareWorkerDTO convertToDTO(FieldHealthCareWorker worker) {
+        FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
+        workerDTO.setId(worker.getId());
+        workerDTO.setName(worker.getName());
+        workerDTO.setAge(worker.getAge());
+        workerDTO.setGender(worker.getGender());
+        workerDTO.setEmail(worker.getEmail());
+        workerDTO.setUsername(worker.getUsername());
+        workerDTO.setPassword(worker.getPassword());
+        return workerDTO;
+    }
+
+    public SupervisorDTO convertToDTO(Supervisor supervisor) {
+        SupervisorDTO supervisorDTO = new SupervisorDTO();
+        supervisorDTO.setId(supervisor.getId());
+        supervisorDTO.setName(supervisor.getName());
+        return supervisorDTO;
+    }
+    public LocalAreaDTO convertToDTO(LocalArea localArea) {
+        LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+        localAreaDTO.setId(localArea.getId());
+        localAreaDTO.setName(localArea.getName());
+        return localAreaDTO;
+    }
 
     // Convert Doctor entity to DoctorDTO
     private DoctorDTO convertToDTO(Doctor doctor) {
@@ -65,10 +104,6 @@ public List<DistrictWithDoctorsDTO> getAllDistricts() {
         doctorDTO.setDistrict(districtDTO);
         return doctorDTO;
     }
-
-//    public List<District> getUnallocatedDistricts() {
-//        return districtRepository.findBySupervisorIsNull();
-//    }
 
     public void createDistrict(District district) {
         districtRepository.save(district);
@@ -127,3 +162,30 @@ public List<DistrictWithDoctorsDTO> getAllDistricts() {
         return dto;
     }
 }
+
+//    public List<District> getAllDistricts() {
+//        return districtRepository.findAll();
+//    }
+
+//    public List<District> getUnallocatedDistricts() {
+//        return districtRepository.findBySupervisorIsNull();
+//    }
+
+
+//    public List<DistrictWithDoctorsDTO> getAllDistricts() {
+//        List<District> districts = districtRepository.findAll();
+//        List<DistrictWithDoctorsDTO> districtDTOs = new ArrayList<>();
+//        for (District district : districts) {
+//            DistrictWithDoctorsDTO districtDTO = new DistrictWithDoctorsDTO();
+//            districtDTO.setId(district.getId());
+//            districtDTO.setName(district.getName());
+//            // Set the list of doctors assigned to this district
+//            List<DoctorDTO> doctorDTOs = new ArrayList<>();
+//            for (Doctor doctor : district.getDoctors()) {
+//                doctorDTOs.add(convertToDTO(doctor));
+//            }
+//            districtDTO.setDoctors(doctorDTOs);
+//            districtDTOs.add(districtDTO);
+//        }
+//        return districtDTOs;
+//    }

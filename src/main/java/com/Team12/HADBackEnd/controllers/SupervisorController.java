@@ -1,6 +1,5 @@
 package com.Team12.HADBackEnd.controllers;
 
-import com.Team12.HADBackEnd.models.Doctor;
 import com.Team12.HADBackEnd.models.Supervisor;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.request.*;

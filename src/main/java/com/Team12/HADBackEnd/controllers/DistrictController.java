@@ -1,7 +1,6 @@
 package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.models.District;
-import com.Team12.HADBackEnd.models.LocalArea;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.security.services.DistrictService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +26,6 @@ public class DistrictController {
         List<DistrictWithDoctorsDTO> districtDTOs = districtService.getAllDistricts();
         return ResponseEntity.ok(districtDTOs);
     }
-
-//    @GetMapping("/unallocated")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<List<District>> getUnallocatedDistricts() {
-//        List<District> unallocatedDistricts = districtService.getUnallocatedDistricts();
-//        return ResponseEntity.ok(unallocatedDistricts);
-//    }
 
     @GetMapping("/unallocated")
     @PreAuthorize("hasRole('ADMIN')")
@@ -70,3 +62,10 @@ public class DistrictController {
         return ResponseEntity.ok(localAreas);
     }
 }
+
+//    @GetMapping("/unallocated")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<List<District>> getUnallocatedDistricts() {
+//        List<District> unallocatedDistricts = districtService.getUnallocatedDistricts();
+//        return ResponseEntity.ok(unallocatedDistricts);
+//    }

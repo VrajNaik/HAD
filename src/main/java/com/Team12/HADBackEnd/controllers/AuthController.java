@@ -60,6 +60,115 @@ public class AuthController {
   @Autowired
   FieldHealthCareWorkerRepository fieldHealthcareWorkerRepository;
 
+  @PostMapping("/signin")
+  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+    try {
+      Authentication authentication = authenticationManager.authenticate(
+              new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+
+      UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+      if (!userDetails.isActivate()) {
+        throw new UserDeactivatedException("Sorry, you are deactivated by the Admin. Contact the Admin for further assistance.");
+      }
+
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+      String jwt = jwtUtils.generateJwtToken(authentication);
+
+      long supervisorCount = supervisorRepository.count();
+      long doctorCount = doctorRepository.count();
+      long fieldWorkerCount = fieldHealthcareWorkerRepository.count();
+
+      Map<String, Long> counts = new HashMap<>();
+      counts.put("supervisors", supervisorCount);
+      counts.put("doctors", doctorCount);
+      counts.put("fieldHealthcareWorkers", fieldWorkerCount);
+
+      List<String> roles = userDetails.getAuthorities().stream()
+              .map(item -> item.getAuthority())
+              .collect(Collectors.toList());
+
+      return ResponseEntity.ok(new AuthResponse(
+              new JwtResponse(jwt,
+                      userDetails.getId(),
+                      userDetails.getUsername(),
+                      userDetails.getEmail(),
+                      roles),
+              counts
+      ));
+    } catch (UserDeactivatedException e) {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    }
+  }
+
+  @PostMapping("/signup")
+  public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+    if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+      return ResponseEntity
+          .badRequest()
+          .body(new MessageResponse("Error: Username is already taken!"));
+    }
+
+    if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+      return ResponseEntity
+          .badRequest()
+          .body(new MessageResponse("Error: Email is already in use!"));
+    }
+
+    // Create new user's account
+    User user = new User(signUpRequest.getUsername(),
+               signUpRequest.getEmail(),
+               encoder.encode(signUpRequest.getPassword()));
+
+    Set<String> strRoles = signUpRequest.getRole();
+    Set<Role> roles = new HashSet<>();
+
+    if (strRoles == null) {
+      Role userRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
+          .orElseThrow(() -> new RuntimeException("Error: DOCTOR is not found."));
+      roles.add(userRole);
+    } else {
+      strRoles.forEach(role -> {
+        switch (role) {
+          case "admin":
+            Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(adminRole);
+
+            break;
+          case "supervisor":
+            Role modRole = roleRepository.findByName(ERole.ROLE_SUPERVISOR)
+                    .orElseThrow(() -> new RuntimeException("Error: SUPERVISOR is not found."));
+            roles.add(modRole);
+
+            break;
+          case "doctor":
+            Role docRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
+                    .orElseThrow(() -> new RuntimeException("Error: DOCTOR is not found."));
+            roles.add(docRole);
+
+            break;
+          case "fieldhealthcareworker":
+            Role fhwRole = roleRepository.findByName(ERole.ROLE_FIELD_HEALTHCARE_WORKER)
+                    .orElseThrow(() -> new RuntimeException("Error: FEILD HEALTHCARE WORKER is not found."));
+            roles.add(fhwRole);
+
+            break;
+        default:
+          Role userRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
+              .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+          roles.add(userRole);
+        }
+      });
+    }
+
+    user.setRoles(roles);
+    userRepository.save(user);
+
+    return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+  }
+}
+
 //  @PostMapping("/signin")
 //  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 //
@@ -133,105 +242,3 @@ public class AuthController {
 //          counts
 //  ));
 //}
-@PostMapping("/signin")
-public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-  try {
-    Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
-    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
-    if (!userDetails.isActivate()) {
-      throw new UserDeactivatedException("Sorry, you are deactivated by the Admin. Contact the Admin for further assistance.");
-    }
-
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-    String jwt = jwtUtils.generateJwtToken(authentication);
-
-    long supervisorCount = supervisorRepository.count();
-    long doctorCount = doctorRepository.count();
-    long fieldWorkerCount = fieldHealthcareWorkerRepository.count();
-
-    Map<String, Long> counts = new HashMap<>();
-    counts.put("supervisors", supervisorCount);
-    counts.put("doctors", doctorCount);
-    counts.put("fieldHealthcareWorkers", fieldWorkerCount);
-
-    List<String> roles = userDetails.getAuthorities().stream()
-            .map(item -> item.getAuthority())
-            .collect(Collectors.toList());
-
-    return ResponseEntity.ok(new AuthResponse(
-            new JwtResponse(jwt,
-                    userDetails.getId(),
-                    userDetails.getUsername(),
-                    userDetails.getEmail(),
-                    roles),
-            counts
-    ));
-  } catch (UserDeactivatedException e) {
-    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-  }
-}
-
-  @PostMapping("/signup")
-  public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-    if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-      return ResponseEntity
-          .badRequest()
-          .body(new MessageResponse("Error: Username is already taken!"));
-    }
-
-    if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-      return ResponseEntity
-          .badRequest()
-          .body(new MessageResponse("Error: Email is already in use!"));
-    }
-
-    // Create new user's account
-    User user = new User(signUpRequest.getUsername(),
-               signUpRequest.getEmail(),
-               encoder.encode(signUpRequest.getPassword()));
-
-    Set<String> strRoles = signUpRequest.getRole();
-    Set<Role> roles = new HashSet<>();
-
-    if (strRoles == null) {
-      Role userRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
-          .orElseThrow(() -> new RuntimeException("Error: DOCTOR is not found."));
-      roles.add(userRole);
-    } else {
-      strRoles.forEach(role -> {
-        switch (role) {
-        case "admin":
-          Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-              .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-          roles.add(adminRole);
-
-          break;
-        case "supervisor":
-          Role modRole = roleRepository.findByName(ERole.ROLE_SUPERVISOR)
-              .orElseThrow(() -> new RuntimeException("Error: SUPERVISOR is not found."));
-          roles.add(modRole);
-
-          break;
-          case "doctor":
-            Role docRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
-                    .orElseThrow(() -> new RuntimeException("Error: DOCTOR is not found."));
-            roles.add(docRole);
-
-            break;
-        default:
-          Role userRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
-              .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-          roles.add(userRole);
-        }
-      });
-    }
-
-    user.setRoles(roles);
-    userRepository.save(user);
-
-    return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
-  }
-}
