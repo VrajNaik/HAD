@@ -567,29 +567,3 @@ public class FieldHealthCareWorkerService {
 //        return citizenResponse;
 //    }
 //
-//    private CitizenDTO mapToCitizenDTO(Citizen citizen) {
-//        CitizenDTO citizenDTO = new CitizenDTO();
-//        citizenDTO.setId(citizen.getId());
-//        citizenDTO.setName(citizen.getName());
-//        citizenDTO.setAge(citizen.getAge());
-//        citizenDTO.setGender(citizen.getGender());
-//        citizenDTO.setAddress(citizen.getAddress());
-//        citizenDTO.setConsent(citizen.isConsent());
-//        citizenDTO.setPincode(citizen.getPincode());
-//        citizenDTO.setStatus(citizen.isStatus());
-//        citizenDTO.setState(citizen.getState());
-//        citizenDTO.setDistrict(citizen.getDistrict());
-//        citizenDTO.setAbhaId(citizen.getAbhaId());
-//
-//        // Map FieldHealthCareWorker to FieldHealthCareWorkerDTO
-//        FieldHealthCareWorker fieldHealthCareWorker = citizen.getFieldHealthCareWorker();
-//        if (fieldHealthCareWorker != null) {
-//            FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
-//            workerDTO.setId(fieldHealthCareWorker.getId());
-//            workerDTO.setName(fieldHealthCareWorker.getName());
-//            // Map other fields as needed
-//            citizenDTO.setFieldHealthCareWorker(workerDTO);
-//        }
-//
-//        return citizenDTO;
-//    }
