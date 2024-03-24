@@ -1,10 +1,9 @@
 package com.Team12.HADBackEnd.controllers;
 
+import com.Team12.HADBackEnd.models.Citizen;
 import com.Team12.HADBackEnd.models.FieldHealthCareWorker;
 import com.Team12.HADBackEnd.models.User;
-import com.Team12.HADBackEnd.payload.request.FieldHealthcareWorkerDTO;
-import com.Team12.HADBackEnd.payload.request.SupervisorUpdateRequestDTO;
-import com.Team12.HADBackEnd.payload.request.UsernameDTO;
+import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.DoctorAlreadyDeactivatedException;
 import com.Team12.HADBackEnd.payload.response.DoctorNotFoundException;
 import com.Team12.HADBackEnd.payload.response.DuplicateEmailIdException;
@@ -90,6 +89,7 @@ public class FieldHealthCareWorkerController {
     }
 
     @PostMapping("/getByUsername")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FieldHealthcareWorkerDTO> getFieldHealthcareWorkerByUsername(@RequestBody UsernameDTO usernameRequest) {
         String username = usernameRequest.getUsername();
         try {
@@ -103,6 +103,13 @@ public class FieldHealthCareWorkerController {
             // Handle other exceptions here
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PostMapping("/register")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CitizenDTO> registerCitizen(@RequestBody CitizenRegistrationDTO citizen) {
+        CitizenDTO registeredCitizen = fieldHealthCareWorkerService.registerCitizen(citizen);
+        return new ResponseEntity<>(registeredCitizen, HttpStatus.CREATED);
     }
 }
 //@RestController

@@ -2,9 +2,7 @@ package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.models.Doctor;
 import com.Team12.HADBackEnd.models.User;
-import com.Team12.HADBackEnd.payload.request.DoctorDTO;
-import com.Team12.HADBackEnd.payload.request.DoctorUpdateRequestDTO;
-import com.Team12.HADBackEnd.payload.request.UsernameDTO;
+import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.UserRepository;
 import com.Team12.HADBackEnd.security.services.DoctorService;
@@ -85,6 +83,26 @@ public class DoctorController {
         } catch (DoctorAlreadyDeactivatedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
+    }
+
+    @PostMapping("/getPatientById")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CitizenDTO> getCitizenByAbhaId(@RequestBody AbhaIdRequest request) {
+        String abhaId = request.getAbhaId();
+        CitizenDTO citizenDTO = doctorService.getCitizenByAbhaId(abhaId);
+        if (citizenDTO != null) {
+            return ResponseEntity.ok(citizenDTO);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/getPatientsbyDocID")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<CitizenDTO>> getCitizensByDoctorId(@RequestBody DoctorIdRequest request) {
+        Long doctorId = request.getDoctorId();
+        List<CitizenDTO> citizens = doctorService.getCitizensByDoctorId(doctorId);
+        return ResponseEntity.ok(citizens);
     }
 }
 

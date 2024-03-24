@@ -2,6 +2,8 @@ package com.Team12.HADBackEnd.models;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 public class FieldHealthCareWorker {
     @Id
@@ -21,6 +23,9 @@ public class FieldHealthCareWorker {
     @OneToOne
     @JoinColumn(name = "localarea_id")
     private LocalArea localArea;
+
+    @OneToMany(mappedBy = "fieldHealthCareWorker")
+    private List<Citizen> citizens;
 
     public Long getId() {
         return id;
@@ -100,5 +105,13 @@ public class FieldHealthCareWorker {
 
     public void setLocalArea(LocalArea localArea) {
         this.localArea = localArea;
+    }
+
+    public List<Citizen> getCitizens() {
+        return citizens;
+    }
+
+    public void setCitizens(List<Citizen> citizens) {
+        this.citizens = citizens;
     }
 }

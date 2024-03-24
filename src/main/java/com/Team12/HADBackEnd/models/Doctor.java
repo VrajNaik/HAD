@@ -3,6 +3,8 @@ package com.Team12.HADBackEnd.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 public class Doctor {
     @Id
@@ -21,6 +23,9 @@ public class Doctor {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "district_id")
     private District district;
+
+    @OneToMany(mappedBy = "doctor")
+    private List<Citizen> citizens;
 
 
     public Long getId() {
@@ -119,6 +124,13 @@ public class Doctor {
         this.district = district;
     }
 
+    public List<Citizen> getCitizens() {
+        return citizens;
+    }
+
+    public void setCitizens(List<Citizen> citizens) {
+        this.citizens = citizens;
+    }
 }
 
 //    @Transient

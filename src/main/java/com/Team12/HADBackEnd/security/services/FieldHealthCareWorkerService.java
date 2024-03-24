@@ -1,10 +1,7 @@
 package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
-import com.Team12.HADBackEnd.payload.request.DistrictDTO;
-import com.Team12.HADBackEnd.payload.request.FieldHealthcareWorkerDTO;
-import com.Team12.HADBackEnd.payload.request.LocalAreaDTO;
-import com.Team12.HADBackEnd.payload.request.SupervisorUpdateRequestDTO;
+import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.DoctorAlreadyDeactivatedException;
 import com.Team12.HADBackEnd.payload.response.DoctorNotFoundException;
 import com.Team12.HADBackEnd.payload.response.DuplicateEmailIdException;
@@ -34,9 +31,14 @@ public class FieldHealthCareWorkerService {
     @Autowired
     private DistrictRepository districtRepository;
     @Autowired
+    private DoctorRepository doctorRepository;
+    @Autowired
     private RoleRepository roleRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private CitizenRepository citizenRepository;
+
     @Autowired
     private PasswordEncoder encoder;
     @Autowired
@@ -219,22 +221,107 @@ public class FieldHealthCareWorkerService {
         }
         return workerDTO;
     }
-//    public DistrictDTO convertToDTO(District district) {
-//        System.out.println("Hello2\n");
-//        DistrictDTO districtDTO = new DistrictDTO();
-//        districtDTO.setId(district.getId());
-//        districtDTO.setName(district.getName());
-//        return districtDTO;
-//    }
-//    public LocalAreaDTO convertToDTO(LocalArea localArea) {
-//        System.out.println("Hello3\n");
-//        LocalAreaDTO localAreaDTO = new LocalAreaDTO();
-//        localAreaDTO.setId(localArea.getId());
-//        localAreaDTO.setName(localArea.getName());
-//        return localAreaDTO;
-//    }
 
+    public CitizenDTO registerCitizen(CitizenRegistrationDTO citizenDTO) {
+        // Fetch the field healthcare worker by ID
+        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(citizenDTO.getFieldHealthCareWorkerId())
+                .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + citizenDTO.getFieldHealthCareWorkerId()));
 
+        // Fetch the doctor by ID
+        Doctor doctor = doctorRepository.findById(citizenDTO.getDoctorId())
+                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorId()));
+
+        // Map DTO to Citizen entity
+        Citizen citizen = new Citizen();
+        citizen.setName(citizenDTO.getName());
+        citizen.setAge(citizenDTO.getAge());
+        citizen.setGender(citizenDTO.getGender());
+        citizen.setAddress(citizenDTO.getAddress());
+        citizen.setConsent(citizenDTO.isConsent());
+        citizen.setPincode(citizenDTO.getPincode());
+        citizen.setStatus(citizenDTO.isStatus());
+        citizen.setState(citizenDTO.getState());
+        citizen.setDistrict(citizenDTO.getDistrict());
+        citizen.setAbhaId(citizenDTO.getAbhaId());
+        citizen.setFieldHealthCareWorker(fieldHealthCareWorker); // Assign the fetched worker to the citizen
+        citizen.setDoctor(doctor); // Assign the fetched doctor to the citizen
+
+        // Save the citizen entity
+        Citizen savedCitizen = citizenRepository.save(citizen);
+
+        // Map saved citizen and worker to DTO
+        CitizenDTO citizenResponse = mapToCitizenDTO(savedCitizen);
+
+        return citizenResponse;
+    }
+
+    private CitizenDTO mapToCitizenDTO(Citizen citizen) {
+        CitizenDTO citizenDTO = new CitizenDTO();
+        citizenDTO.setId(citizen.getId());
+        citizenDTO.setName(citizen.getName());
+        citizenDTO.setAge(citizen.getAge());
+        citizenDTO.setGender(citizen.getGender());
+        citizenDTO.setAddress(citizen.getAddress());
+        citizenDTO.setConsent(citizen.isConsent());
+        citizenDTO.setPincode(citizen.getPincode());
+        citizenDTO.setStatus(citizen.isStatus());
+        citizenDTO.setState(citizen.getState());
+        citizenDTO.setDistrict(citizen.getDistrict());
+        citizenDTO.setAbhaId(citizen.getAbhaId());
+
+        // Map FieldHealthCareWorker to FieldHealthCareWorkerDTO
+        FieldHealthCareWorker fieldHealthCareWorker = citizen.getFieldHealthCareWorker();
+        if (fieldHealthCareWorker != null) {
+            FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
+            workerDTO.setId(fieldHealthCareWorker.getId());
+            workerDTO.setName(fieldHealthCareWorker.getName());
+            workerDTO.setAge(fieldHealthCareWorker.getAge());
+            workerDTO.setGender(fieldHealthCareWorker.getGender());
+
+            workerDTO.setUsername(fieldHealthCareWorker.getUsername());
+
+            workerDTO.setPassword(fieldHealthCareWorker.getPassword());
+            workerDTO.setEmail(fieldHealthCareWorker.getEmail());
+            citizenDTO.setFieldHealthCareWorker(workerDTO);
+            if (fieldHealthCareWorker.getDistrict() != null) {
+                DistrictDTO districtDTO = new DistrictDTO();
+                districtDTO.setId(fieldHealthCareWorker.getDistrict().getId());
+                districtDTO.setName(fieldHealthCareWorker.getDistrict().getName());
+                workerDTO.setDistrict(districtDTO);
+            }
+            if (fieldHealthCareWorker.getLocalArea() != null) {
+                LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+                localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
+                localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
+                workerDTO.setLocalArea(localAreaDTO);
+            }
+        }
+
+        // Map Doctor to DoctorDTO
+        Doctor doctor = citizen.getDoctor();
+        if (doctor != null) {
+            DoctorDTO doctorDTO = new DoctorDTO();
+            doctorDTO.setId(doctor.getId());
+            doctorDTO.setName(doctor.getName());
+            doctorDTO.setAge(doctor.getAge());
+            doctorDTO.setGender(doctor.getGender());
+            doctorDTO.setPhoneNum(doctor.getPhoneNum());
+            doctorDTO.setUsername(doctor.getUsername());
+            doctorDTO.setSpecialty(doctor.getSpecialty());
+            doctorDTO.setPassword(doctor.getPassword());
+            doctorDTO.setEmail(doctor.getEmail());
+            doctorDTO.setLicenseId(doctor.getLicenseId());
+            if (doctor.getDistrict() != null) {
+                DistrictDTO districtDTO = new DistrictDTO();
+                districtDTO.setId(doctor.getDistrict().getId());
+                districtDTO.setName(doctor.getDistrict().getName());
+                doctorDTO.setDistrict(districtDTO);
+            }
+            citizenDTO.setDoctorDTO(doctorDTO);
+        }
+
+        return citizenDTO;
+    }
 
     private String generateUniqueUsername() {
         String generatedUsername = null;
@@ -407,3 +494,102 @@ public class FieldHealthCareWorkerService {
 //    }
 //
 //}
+
+//    public DistrictDTO convertToDTO(District district) {
+//        System.out.println("Hello2\n");
+//        DistrictDTO districtDTO = new DistrictDTO();
+//        districtDTO.setId(district.getId());
+//        districtDTO.setName(district.getName());
+//        return districtDTO;
+//    }
+//    public LocalAreaDTO convertToDTO(LocalArea localArea) {
+//        System.out.println("Hello3\n");
+//        LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+//        localAreaDTO.setId(localArea.getId());
+//        localAreaDTO.setName(localArea.getName());
+//        return localAreaDTO;
+//    }
+
+
+//    public Citizen registerCitizen(Citizen citizen) {
+//        return citizenRepository.save(citizen);
+//    }
+
+//    public Citizen registerCitizen(CitizenRegistrationDTO citizenDTO) {
+//        // Fetch the field healthcare worker by ID
+//        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(citizenDTO.getFieldHealthCareWorkerId())
+//                .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + citizenDTO.getFieldHealthCareWorkerId()));
+//
+//        // Map DTO to Citizen entity
+//        Citizen citizen = new Citizen();
+//        citizen.setName(citizenDTO.getName());
+//        citizen.setAge(citizenDTO.getAge());
+//        citizen.setGender(citizenDTO.getGender());
+//        citizen.setAddress(citizenDTO.getAddress());
+//        citizen.setConsent(citizenDTO.isConsent());
+//        citizen.setPincode(citizenDTO.getPincode());
+//        citizen.setStatus(citizenDTO.isStatus());
+//        citizen.setState(citizenDTO.getState());
+//        citizen.setDistrict(citizenDTO.getDistrict());
+//        citizen.setAbhaId(citizenDTO.getAbhaId());
+//        citizen.setFieldHealthCareWorker(fieldHealthCareWorker); // Assign the fetched worker to the citizen
+//
+//        // Save the citizen entity
+//        return citizenRepository.save(citizen);
+//    }
+
+
+//    public CitizenDTO registerCitizen(CitizenRegistrationDTO citizenDTO) {
+//        // Fetch the field healthcare worker by ID
+//        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(citizenDTO.getFieldHealthCareWorkerId())
+//                .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + citizenDTO.getFieldHealthCareWorkerId()));
+//
+//        // Map DTO to Citizen entity
+//        Citizen citizen = new Citizen();
+//        citizen.setName(citizenDTO.getName());
+//        citizen.setAge(citizenDTO.getAge());
+//        citizen.setGender(citizenDTO.getGender());
+//        citizen.setAddress(citizenDTO.getAddress());
+//        citizen.setConsent(citizenDTO.isConsent());
+//        citizen.setPincode(citizenDTO.getPincode());
+//        citizen.setStatus(citizenDTO.isStatus());
+//        citizen.setState(citizenDTO.getState());
+//        citizen.setDistrict(citizenDTO.getDistrict());
+//        citizen.setAbhaId(citizenDTO.getAbhaId());
+//        citizen.setFieldHealthCareWorker(fieldHealthCareWorker); // Assign the fetched worker to the citizen
+//
+//        // Save the citizen entity
+//        Citizen savedCitizen = citizenRepository.save(citizen);
+//
+//        // Map saved citizen and worker to DTO
+//        CitizenDTO citizenResponse = mapToCitizenDTO(savedCitizen);
+//
+//        return citizenResponse;
+//    }
+//
+//    private CitizenDTO mapToCitizenDTO(Citizen citizen) {
+//        CitizenDTO citizenDTO = new CitizenDTO();
+//        citizenDTO.setId(citizen.getId());
+//        citizenDTO.setName(citizen.getName());
+//        citizenDTO.setAge(citizen.getAge());
+//        citizenDTO.setGender(citizen.getGender());
+//        citizenDTO.setAddress(citizen.getAddress());
+//        citizenDTO.setConsent(citizen.isConsent());
+//        citizenDTO.setPincode(citizen.getPincode());
+//        citizenDTO.setStatus(citizen.isStatus());
+//        citizenDTO.setState(citizen.getState());
+//        citizenDTO.setDistrict(citizen.getDistrict());
+//        citizenDTO.setAbhaId(citizen.getAbhaId());
+//
+//        // Map FieldHealthCareWorker to FieldHealthCareWorkerDTO
+//        FieldHealthCareWorker fieldHealthCareWorker = citizen.getFieldHealthCareWorker();
+//        if (fieldHealthCareWorker != null) {
+//            FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
+//            workerDTO.setId(fieldHealthCareWorker.getId());
+//            workerDTO.setName(fieldHealthCareWorker.getName());
+//            // Map other fields as needed
+//            citizenDTO.setFieldHealthCareWorker(workerDTO);
+//        }
+//
+//        return citizenDTO;
+//    }

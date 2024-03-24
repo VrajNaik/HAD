@@ -2,15 +2,9 @@ package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
 
-import com.Team12.HADBackEnd.payload.request.DistrictDTO;
-import com.Team12.HADBackEnd.payload.request.DoctorDTO;
-import com.Team12.HADBackEnd.payload.request.DoctorUpdateRequest;
-import com.Team12.HADBackEnd.payload.request.DoctorUpdateRequestDTO;
+import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.*;
-import com.Team12.HADBackEnd.repository.DistrictRepository;
-import com.Team12.HADBackEnd.repository.DoctorRepository;
-import com.Team12.HADBackEnd.repository.RoleRepository;
-import com.Team12.HADBackEnd.repository.UserRepository;
+import com.Team12.HADBackEnd.repository.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -41,7 +35,8 @@ public class DoctorService {
     private RoleRepository roleRepository;
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private CitizenRepository citizenRepository;
     @Autowired
     private PasswordEncoder encoder;
 
@@ -191,6 +186,135 @@ public class DoctorService {
         }
         return generatedUsername;
     }
+
+
+    public CitizenDTO getCitizenByAbhaId(String abhaId) {
+        Citizen citizen = citizenRepository.findByAbhaId(abhaId);
+        if (citizen != null) {
+            return mapToCitizenDTO(citizen);
+        }
+        return null;
+    }
+
+
+    public List<CitizenDTO> getCitizensByDoctorId(Long doctorId) {
+        // Fetch the doctor by ID
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + doctorId));
+
+        // Fetch citizens assigned to the doctor
+        List<Citizen> citizens = citizenRepository.findByDoctor(doctor);
+
+        // Map citizens to DTOs
+        return citizens.stream()
+                .map(this::mapToCitizenDTO)
+                .collect(Collectors.toList());
+    }
+
+    private CitizenDTO mapToCitizenDTO(Citizen citizen) {
+        CitizenDTO citizenDTO = new CitizenDTO();
+        citizenDTO.setId(citizen.getId());
+        citizenDTO.setName(citizen.getName());
+        citizenDTO.setAge(citizen.getAge());
+        citizenDTO.setGender(citizen.getGender());
+        citizenDTO.setAddress(citizen.getAddress());
+        citizenDTO.setConsent(citizen.isConsent());
+        citizenDTO.setPincode(citizen.getPincode());
+        citizenDTO.setStatus(citizen.isStatus());
+        citizenDTO.setState(citizen.getState());
+        citizenDTO.setDistrict(citizen.getDistrict());
+        citizenDTO.setAbhaId(citizen.getAbhaId());
+
+        // Map FieldHealthCareWorker to FieldHealthCareWorkerDTO
+        FieldHealthCareWorker fieldHealthCareWorker = citizen.getFieldHealthCareWorker();
+        if (fieldHealthCareWorker != null) {
+            FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
+            workerDTO.setId(fieldHealthCareWorker.getId());
+            workerDTO.setName(fieldHealthCareWorker.getName());
+            workerDTO.setAge(fieldHealthCareWorker.getAge());
+            workerDTO.setGender(fieldHealthCareWorker.getGender());
+
+            workerDTO.setUsername(fieldHealthCareWorker.getUsername());
+
+            workerDTO.setPassword(fieldHealthCareWorker.getPassword());
+            workerDTO.setEmail(fieldHealthCareWorker.getEmail());
+            citizenDTO.setFieldHealthCareWorker(workerDTO);
+            if (fieldHealthCareWorker.getDistrict() != null) {
+                DistrictDTO districtDTO = new DistrictDTO();
+                districtDTO.setId(fieldHealthCareWorker.getDistrict().getId());
+                districtDTO.setName(fieldHealthCareWorker.getDistrict().getName());
+                workerDTO.setDistrict(districtDTO);
+            }
+            if (fieldHealthCareWorker.getLocalArea() != null) {
+                LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+                localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
+                localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
+                workerDTO.setLocalArea(localAreaDTO);
+            }
+        }
+
+        // Map Doctor to DoctorDTO
+        Doctor doctor = citizen.getDoctor();
+        if (doctor != null) {
+            DoctorDTO doctorDTO = new DoctorDTO();
+            doctorDTO.setId(doctor.getId());
+            doctorDTO.setName(doctor.getName());
+            doctorDTO.setAge(doctor.getAge());
+            doctorDTO.setGender(doctor.getGender());
+            doctorDTO.setPhoneNum(doctor.getPhoneNum());
+            doctorDTO.setUsername(doctor.getUsername());
+            doctorDTO.setSpecialty(doctor.getSpecialty());
+            doctorDTO.setPassword(doctor.getPassword());
+            doctorDTO.setEmail(doctor.getEmail());
+            doctorDTO.setLicenseId(doctor.getLicenseId());
+            if (doctor.getDistrict() != null) {
+                DistrictDTO districtDTO = new DistrictDTO();
+                districtDTO.setId(doctor.getDistrict().getId());
+                districtDTO.setName(doctor.getDistrict().getName());
+                doctorDTO.setDistrict(districtDTO);
+            }
+            citizenDTO.setDoctorDTO(doctorDTO);
+        }
+
+        return citizenDTO;
+    }
+
+//    private CitizenDTO mapToCitizenDTO(Citizen citizen) {
+//        CitizenDTO citizenDTO = new CitizenDTO();
+//        citizenDTO.setId(citizen.getId());
+//        citizenDTO.setName(citizen.getName());
+//        citizenDTO.setAge(citizen.getAge());
+//        citizenDTO.setGender(citizen.getGender());
+//        citizenDTO.setAddress(citizen.getAddress());
+//        citizenDTO.setConsent(citizen.isConsent());
+//        citizenDTO.setPincode(citizen.getPincode());
+//        citizenDTO.setStatus(citizen.isStatus());
+//        citizenDTO.setState(citizen.getState());
+//        citizenDTO.setDistrict(citizen.getDistrict());
+//        citizenDTO.setAbhaId(citizen.getAbhaId());
+//
+//        // Map FieldHealthCareWorker to FieldHealthCareWorkerDTO
+//        FieldHealthCareWorker fieldHealthCareWorker = citizen.getFieldHealthCareWorker();
+//        if (fieldHealthCareWorker != null) {
+//            FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
+//            workerDTO.setId(fieldHealthCareWorker.getId());
+//            workerDTO.setName(fieldHealthCareWorker.getName());
+//            // Map other fields as needed
+//            citizenDTO.setFieldHealthCareWorker(workerDTO);
+//        }
+//
+//        // Map Doctor to DoctorDTO
+//        Doctor doctor = citizen.getDoctor();
+//        if (doctor != null) {
+//            DoctorDTO doctorDTO = new DoctorDTO();
+//            doctorDTO.setId(doctor.getId());
+//            doctorDTO.setName(doctor.getName());
+//            // Map other fields as needed
+//            citizenDTO.setDoctorDTO(doctorDTO);
+//        }
+//
+//        return citizenDTO;
+//    }
 
     private String generateRandomPassword() {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -475,3 +599,32 @@ public class DoctorService {
 //        }
 
 // Send email with username and password
+
+
+
+//    private CitizenDTO mapToCitizenDTO(Citizen citizen) {
+//        CitizenDTO citizenDTO = new CitizenDTO();
+//        citizenDTO.setId(citizen.getId());
+//        citizenDTO.setName(citizen.getName());
+//        citizenDTO.setAge(citizen.getAge());
+//        citizenDTO.setGender(citizen.getGender());
+//        citizenDTO.setAddress(citizen.getAddress());
+//        citizenDTO.setConsent(citizen.isConsent());
+//        citizenDTO.setPincode(citizen.getPincode());
+//        citizenDTO.setStatus(citizen.isStatus());
+//        citizenDTO.setState(citizen.getState());
+//        citizenDTO.setDistrict(citizen.getDistrict());
+//        citizenDTO.setAbhaId(citizen.getAbhaId());
+//
+//        // Map FieldHealthCareWorker to FieldHealthCareWorkerDTO
+//        FieldHealthCareWorker fieldHealthCareWorker = citizen.getFieldHealthCareWorker();
+//        if (fieldHealthCareWorker != null) {
+//            FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
+//            workerDTO.setId(fieldHealthCareWorker.getId());
+//            workerDTO.setName(fieldHealthCareWorker.getName());
+//            // Map other fields as needed
+//            citizenDTO.setFieldHealthCareWorker(workerDTO);
+//        }
+//
+//        return citizenDTO;
+//    }
