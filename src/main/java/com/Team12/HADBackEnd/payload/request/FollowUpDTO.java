@@ -1,27 +1,15 @@
-package com.Team12.HADBackEnd.models;
-
-import jakarta.persistence.*;
+package com.Team12.HADBackEnd.payload.request;
 
 import java.util.Date;
 
-@Entity
-public class FollowUp {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class FollowUpDTO {
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "health_record_id")
-    private HealthRecord healthRecord;
-
-    @ManyToOne
-    @JoinColumn(name = "healthcare_worker_id")
-    private FieldHealthCareWorker fieldHealthCareWorker;
-
     private Date date;
     private String status;
     private String instructions;
     private String measureOfVitals;
+    private FieldHealthcareWorkerDTO fieldHealthCareWorker;
+    private HealthRecordDTO healthRecord;
 
     public Long getId() {
         return id;
@@ -29,22 +17,6 @@ public class FollowUp {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public HealthRecord getHealthRecord() {
-        return healthRecord;
-    }
-
-    public void setHealthRecord(HealthRecord healthRecord) {
-        this.healthRecord = healthRecord;
-    }
-
-    public FieldHealthCareWorker getFieldHealthCareWorker() {
-        return fieldHealthCareWorker;
-    }
-
-    public void setFieldHealthCareWorker(FieldHealthCareWorker fieldHealthCareWorker) {
-        this.fieldHealthCareWorker = fieldHealthCareWorker;
     }
 
     public Date getDate() {
@@ -79,5 +51,19 @@ public class FollowUp {
         this.measureOfVitals = measureOfVitals;
     }
 
-}
+    public FieldHealthcareWorkerDTO getFieldHealthCareWorker() {
+        return fieldHealthCareWorker;
+    }
 
+    public void setFieldHealthCareWorker(FieldHealthcareWorkerDTO fieldHealthCareWorker) {
+        this.fieldHealthCareWorker = fieldHealthCareWorker;
+    }
+
+    public HealthRecordDTO getHealthRecord() {
+        return healthRecord;
+    }
+
+    public void setHealthRecord(HealthRecordDTO healthRecord) {
+        this.healthRecord = healthRecord;
+    }
+}

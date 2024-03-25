@@ -43,6 +43,9 @@ public class DoctorService {
     private HealthRecordRepository healthRecordRepository;
 
     @Autowired
+    private FollowUpRepository followUpRepository;
+
+    @Autowired
     private JavaMailSender javaMailSender;
     // Autowire the JavaMailSender
 
@@ -408,6 +411,72 @@ public class DoctorService {
 
         HealthRecord updatedHealthRecord = healthRecordRepository.save(healthRecord);
         return convertToDTO(updatedHealthRecord);
+    }
+
+    public FollowUpDTO createFollowUp(FollowUpCreationDTO followUpRequestDTO) {
+        // Fetch the health record by ID
+        HealthRecord healthRecord = healthRecordRepository.findById(followUpRequestDTO.getHealthRecordId())
+                .orElseThrow(() -> new RuntimeException("Health record not found with ID: " + followUpRequestDTO.getHealthRecordId()));
+
+        // Fetch the field healthcare worker by ID
+        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(followUpRequestDTO.getFieldHealthCareWorkerId())
+                .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + followUpRequestDTO.getFieldHealthCareWorkerId()));
+
+        // Create a new follow-up entity
+        FollowUp followUp = new FollowUp();
+        followUp.setHealthRecord(healthRecord);
+        followUp.setFieldHealthCareWorker(fieldHealthCareWorker);
+        followUp.setDate(followUpRequestDTO.getDate());
+        followUp.setStatus(followUpRequestDTO.getStatus());
+        followUp.setInstructions(followUpRequestDTO.getInstructions());
+        followUp.setMeasureOfVitals(followUpRequestDTO.getMeasureOfVitals());
+
+        // Save the follow-up entity
+        FollowUp savedFollowUp = followUpRepository.save(followUp);
+
+        // Convert the saved follow-up entity to DTO
+        return convertToDTO(savedFollowUp);
+    }
+
+    private FollowUpDTO convertToDTO(FollowUp followUp) {
+        FollowUpDTO followUpDTO = new FollowUpDTO();
+        followUpDTO.setId(followUp.getId());
+        followUpDTO.setDate(followUp.getDate());
+        followUpDTO.setStatus(followUp.getStatus());
+        followUpDTO.setInstructions(followUp.getInstructions());
+        followUpDTO.setMeasureOfVitals(followUp.getMeasureOfVitals());
+        FieldHealthCareWorker fieldHealthCareWorker = followUp.getFieldHealthCareWorker();
+        if (fieldHealthCareWorker != null) {
+            FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
+            workerDTO.setId(fieldHealthCareWorker.getId());
+            workerDTO.setName(fieldHealthCareWorker.getName());
+            workerDTO.setAge(fieldHealthCareWorker.getAge());
+            workerDTO.setGender(fieldHealthCareWorker.getGender());
+
+            workerDTO.setUsername(fieldHealthCareWorker.getUsername());
+
+            workerDTO.setPassword(fieldHealthCareWorker.getPassword());
+            workerDTO.setEmail(fieldHealthCareWorker.getEmail());
+            followUpDTO.setFieldHealthCareWorker(workerDTO);
+            if (fieldHealthCareWorker.getDistrict() != null) {
+                DistrictDTO districtDTO = new DistrictDTO();
+                districtDTO.setId(fieldHealthCareWorker.getDistrict().getId());
+                districtDTO.setName(fieldHealthCareWorker.getDistrict().getName());
+                workerDTO.setDistrict(districtDTO);
+            }
+            if (fieldHealthCareWorker.getLocalArea() != null) {
+                LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+                localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
+                localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
+                workerDTO.setLocalArea(localAreaDTO);
+            }
+        }
+        HealthRecord healthRecord = followUp.getHealthRecord();
+        if(healthRecord != null) {
+            HealthRecordDTO healthRecordDTO = convertToDTO(healthRecord);
+            followUpDTO.setHealthRecord(healthRecordDTO);
+        }
+        return followUpDTO;
     }
 
 

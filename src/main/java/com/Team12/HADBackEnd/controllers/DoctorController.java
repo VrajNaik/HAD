@@ -123,6 +123,12 @@ public class DoctorController {
     public HealthRecordDTO editPrescription(@RequestBody PrescriptionDTO editPrescriptionDTO) {
         return doctorService.editPrescription(editPrescriptionDTO);
     }
+
+    @PostMapping("/addFollowUp")
+    @PreAuthorize("hasRole('ADMIN')")
+    public FollowUpDTO createFollowUp(@RequestBody FollowUpCreationDTO followUpDTO) {
+        return doctorService.createFollowUp(followUpDTO);
+    }
 }
 
 //    @GetMapping("/viewDoctors")
