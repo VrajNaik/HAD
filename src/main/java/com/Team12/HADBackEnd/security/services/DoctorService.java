@@ -8,15 +8,11 @@ import com.Team12.HADBackEnd.repository.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.mail.SimpleMailMessage;
@@ -35,10 +31,16 @@ public class DoctorService {
     private RoleRepository roleRepository;
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository;
     @Autowired
     private CitizenRepository citizenRepository;
     @Autowired
     private PasswordEncoder encoder;
+
+    @Autowired
+    private HealthRecordRepository healthRecordRepository;
 
     @Autowired
     private JavaMailSender javaMailSender;
@@ -278,6 +280,136 @@ public class DoctorService {
 
         return citizenDTO;
     }
+
+
+//    private HealthRecordDTO convertToDTO(HealthRecord healthRecord) {
+//        HealthRecordDTO dto = new HealthRecordDTO();
+//        dto.setId(healthRecord.getId());
+//        dto.setCitizenId(healthRecord.getCitizen().getId());
+//        dto.setWorkerId(healthRecord.getFieldHealthCareWorker().getId());
+//        dto.setDoctorId(healthRecord.getDoctor().getId());
+//        dto.setPrescription(healthRecord.getPrescription());
+//        dto.setConclusion(healthRecord.getConclusion());
+//        dto.setDiagnosis(healthRecord.getDiagnosis());
+//        dto.setTimestamp(healthRecord.getTimestamp());
+//        return dto;
+//    }
+
+    public HealthRecordDTO createHealthRecord(HealthRecordCreationDTO healthRecordCreationDTO) {
+        // Fetch the citizen by ID
+        Citizen citizen = citizenRepository.findById(healthRecordCreationDTO.getCitizenId())
+                .orElseThrow(() -> new RuntimeException("Citizen not found with ID: " + healthRecordCreationDTO.getCitizenId()));
+
+        // Fetch the field healthcare worker by ID
+        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(healthRecordCreationDTO.getWorkerId())
+                .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + healthRecordCreationDTO.getWorkerId()));
+
+        // Fetch the doctor by ID
+        Doctor doctor = doctorRepository.findById(healthRecordCreationDTO.getDoctorId())
+                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + healthRecordCreationDTO.getDoctorId()));
+
+        // Map DTO fields to the HealthRecord entity
+        HealthRecord healthRecord = new HealthRecord();
+        healthRecord.setCitizen(citizen);
+        healthRecord.setFieldHealthCareWorker(fieldHealthCareWorker);
+        healthRecord.setDoctor(doctor);
+        healthRecord.setPrescription(healthRecordCreationDTO.getPrescription());
+        healthRecord.setConclusion(healthRecordCreationDTO.getConclusion());
+        healthRecord.setDiagnosis(healthRecordCreationDTO.getDiagnosis());
+        healthRecord.setTimestamp(new Date());
+
+        // Save the HealthRecord entity
+        HealthRecord savedHealthRecord = healthRecordRepository.save(healthRecord);
+
+        // Convert the saved HealthRecord entity to DTO
+        return convertToDTO(savedHealthRecord);
+    }
+
+    private HealthRecordDTO convertToDTO(HealthRecord healthRecord) {
+        HealthRecordDTO dto = new HealthRecordDTO();
+        dto.setId(healthRecord.getId());
+        dto.setPrescription(healthRecord.getPrescription());
+        dto.setConclusion(healthRecord.getConclusion());
+        dto.setDiagnosis(healthRecord.getDiagnosis());
+        dto.setTimestamp(healthRecord.getTimestamp());
+        Doctor doctor = healthRecord.getDoctor();
+        if (doctor != null) {
+            DoctorDTO doctorDTO = new DoctorDTO();
+            doctorDTO.setId(doctor.getId());
+            doctorDTO.setName(doctor.getName());
+            doctorDTO.setAge(doctor.getAge());
+            doctorDTO.setGender(doctor.getGender());
+            doctorDTO.setPhoneNum(doctor.getPhoneNum());
+            doctorDTO.setUsername(doctor.getUsername());
+            doctorDTO.setSpecialty(doctor.getSpecialty());
+            doctorDTO.setPassword(doctor.getPassword());
+            doctorDTO.setEmail(doctor.getEmail());
+            doctorDTO.setLicenseId(doctor.getLicenseId());
+            if (doctor.getDistrict() != null) {
+                DistrictDTO districtDTO = new DistrictDTO();
+                districtDTO.setId(doctor.getDistrict().getId());
+                districtDTO.setName(doctor.getDistrict().getName());
+                doctorDTO.setDistrict(districtDTO);
+            }
+            dto.setDoctorDTO(doctorDTO);
+        }
+        FieldHealthCareWorker fieldHealthCareWorker = healthRecord.getFieldHealthCareWorker();
+        if (fieldHealthCareWorker != null) {
+            FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
+            workerDTO.setId(fieldHealthCareWorker.getId());
+            workerDTO.setName(fieldHealthCareWorker.getName());
+            workerDTO.setAge(fieldHealthCareWorker.getAge());
+            workerDTO.setGender(fieldHealthCareWorker.getGender());
+
+            workerDTO.setUsername(fieldHealthCareWorker.getUsername());
+
+            workerDTO.setPassword(fieldHealthCareWorker.getPassword());
+            workerDTO.setEmail(fieldHealthCareWorker.getEmail());
+            dto.setFieldHealthCareWorker(workerDTO);
+            if (fieldHealthCareWorker.getDistrict() != null) {
+                DistrictDTO districtDTO = new DistrictDTO();
+                districtDTO.setId(fieldHealthCareWorker.getDistrict().getId());
+                districtDTO.setName(fieldHealthCareWorker.getDistrict().getName());
+                workerDTO.setDistrict(districtDTO);
+            }
+            if (fieldHealthCareWorker.getLocalArea() != null) {
+                LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+                localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
+                localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
+                workerDTO.setLocalArea(localAreaDTO);
+            }
+        }
+        Citizen citizen = healthRecord.getCitizen();
+        CitizenDTO citizenDTO = mapToCitizenDTO(citizen);
+        dto.setCitizenDTO(citizenDTO);
+        return dto;
+    }
+
+    public HealthRecordDTO addPrescriptionToHealthRecord(PrescriptionDTO prescriptionDTO) {
+        HealthRecord healthRecord = healthRecordRepository.findById(prescriptionDTO.getHealthRecordId())
+                .orElseThrow(() -> new RuntimeException("Health record not found with ID: " + prescriptionDTO.getHealthRecordId()));
+
+        // Add prescription to the existing health record
+        healthRecord.setPrescription(prescriptionDTO.getPrescription());
+
+        HealthRecord updatedHealthRecord = healthRecordRepository.save(healthRecord);
+        return convertToDTO(updatedHealthRecord);
+    }
+
+    public HealthRecordDTO editPrescription(PrescriptionDTO editPrescriptionDTO) {
+        HealthRecord healthRecord = healthRecordRepository.findById(editPrescriptionDTO.getHealthRecordId())
+                .orElseThrow(() -> new RuntimeException("Health record not found with ID: " + editPrescriptionDTO.getHealthRecordId()));
+
+        // Append the new prescription to the existing prescription
+        String currentPrescription = healthRecord.getPrescription();
+        String newPrescription = editPrescriptionDTO.getPrescription();
+        String updatedPrescription = currentPrescription + "\n" + newPrescription; // Append new prescription to the current one
+        healthRecord.setPrescription(updatedPrescription);
+
+        HealthRecord updatedHealthRecord = healthRecordRepository.save(healthRecord);
+        return convertToDTO(updatedHealthRecord);
+    }
+
 
     private String generateRandomPassword() {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

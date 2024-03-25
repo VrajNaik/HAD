@@ -27,6 +27,12 @@ public class Citizen {
     private FieldHealthCareWorker fieldHealthCareWorker;
 
 
+    @OneToOne(mappedBy = "citizen")
+    private HealthRecord healthRecord;
+
+    public Citizen() {
+    }
+
     public Long getId() {
         return id;
     }
@@ -129,6 +135,14 @@ public class Citizen {
 
     public void setFieldHealthCareWorker(FieldHealthCareWorker fieldHealthCareWorker) {
         this.fieldHealthCareWorker = fieldHealthCareWorker;
+    }
+
+    public HealthRecord getHealthRecord() {
+        return healthRecord;
+    }
+
+    public void setHealthRecord(HealthRecord healthRecord) {
+        this.healthRecord = healthRecord;
     }
 }
 

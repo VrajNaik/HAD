@@ -25,6 +25,7 @@ public class DoctorController {
     @Autowired
     private UserRepository userRepository;
 
+
     @PostMapping("/addDoctor")
     @PreAuthorize("hasRole('ADMIN')")
     public Doctor addDoctor(@RequestBody Doctor doctor) {
@@ -103,6 +104,24 @@ public class DoctorController {
         Long doctorId = request.getDoctorId();
         List<CitizenDTO> citizens = doctorService.getCitizensByDoctorId(doctorId);
         return ResponseEntity.ok(citizens);
+    }
+
+
+    @PostMapping("/createHealthRecord")
+    @PreAuthorize("hasRole('ADMIN')")
+    public HealthRecordDTO createHealthRecord(@RequestBody HealthRecordCreationDTO healthRecordCreationDTO) {
+        return doctorService.createHealthRecord(healthRecordCreationDTO);
+    }
+
+    @PostMapping("/addPrescription")
+    @PreAuthorize("hasRole('ADMIN')")
+    public HealthRecordDTO addPrescriptionToHealthRecord(@RequestBody PrescriptionDTO prescriptionDTO) {
+        return doctorService.addPrescriptionToHealthRecord(prescriptionDTO);
+    }
+    @PostMapping("/editPrescription")
+    @PreAuthorize("hasRole('ADMIN')")
+    public HealthRecordDTO editPrescription(@RequestBody PrescriptionDTO editPrescriptionDTO) {
+        return doctorService.editPrescription(editPrescriptionDTO);
     }
 }
 

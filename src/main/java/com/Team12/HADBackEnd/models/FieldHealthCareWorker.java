@@ -27,6 +27,13 @@ public class FieldHealthCareWorker {
     @OneToMany(mappedBy = "fieldHealthCareWorker")
     private List<Citizen> citizens;
 
+    @OneToMany(mappedBy = "fieldHealthCareWorker")
+    private List<HealthRecord> healthRecords;
+
+    @OneToMany(mappedBy = "fieldHealthCareWorker")
+    private List<FollowUp> followUps;
+
+
     public Long getId() {
         return id;
     }
@@ -113,5 +120,21 @@ public class FieldHealthCareWorker {
 
     public void setCitizens(List<Citizen> citizens) {
         this.citizens = citizens;
+    }
+
+    public List<HealthRecord> getHealthRecords() {
+        return healthRecords;
+    }
+
+    public void setHealthRecords(List<HealthRecord> healthRecords) {
+        this.healthRecords = healthRecords;
+    }
+
+    public List<FollowUp> getFollowUps() {
+        return followUps;
+    }
+
+    public void setFollowUps(List<FollowUp> followUps) {
+        this.followUps = followUps;
     }
 }
