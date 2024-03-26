@@ -76,6 +76,7 @@ public class DistrictService {
             LocalAreaDTO localAreaDTO = new LocalAreaDTO();
             localAreaDTO.setId(worker.getLocalArea().getId());
             localAreaDTO.setName(worker.getLocalArea().getName());
+            localAreaDTO.setPincode(worker.getLocalArea().getPincode());
             workerDTO.setLocalArea(localAreaDTO);
         }
         return workerDTO;
@@ -98,6 +99,7 @@ public class DistrictService {
         LocalAreaDTO localAreaDTO = new LocalAreaDTO();
         localAreaDTO.setId(localArea.getId());
         localAreaDTO.setName(localArea.getName());
+        localAreaDTO.setPincode(localArea.getPincode());
         return localAreaDTO;
     }
 
@@ -160,7 +162,7 @@ public class DistrictService {
         LocalAreaDTO localAreaDTO = new LocalAreaDTO();
         localAreaDTO.setId(localArea.getId());
         localAreaDTO.setName(localArea.getName());
-        // Set other properties as needed
+        localAreaDTO.setPincode(localArea.getPincode());
         return localAreaDTO;
     }
 

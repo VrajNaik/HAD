@@ -8,6 +8,7 @@ public class LocalArea {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    private String pincode;
 
     @ManyToOne
     @JoinColumn(name = "district_id")
@@ -38,6 +39,22 @@ public class LocalArea {
 
     public void setDistrict(District district) {
         this.district = district;
+    }
+
+    public String getPincode() {
+        return pincode;
+    }
+
+    public void setPincode(String pincode) {
+        this.pincode = pincode;
+    }
+
+    public FieldHealthCareWorker getFieldHealthCareWorker() {
+        return fieldHealthCareWorker;
+    }
+
+    public void setFieldHealthCareWorker(FieldHealthCareWorker fieldHealthCareWorker) {
+        this.fieldHealthCareWorker = fieldHealthCareWorker;
     }
 }
 

@@ -149,6 +149,7 @@ public class FieldHealthCareWorkerService {
             LocalAreaDTO localAreaDTO = new LocalAreaDTO();
             localAreaDTO.setId(worker.getLocalArea().getId());
             localAreaDTO.setName(worker.getLocalArea().getName());
+            localAreaDTO.setPincode(worker.getLocalArea().getPincode());
             workerDTO.setLocalArea(localAreaDTO);
         }
         return workerDTO;
@@ -217,43 +218,49 @@ public class FieldHealthCareWorkerService {
             LocalAreaDTO localAreaDTO = new LocalAreaDTO();
             localAreaDTO.setId(worker.getLocalArea().getId());
             localAreaDTO.setName(worker.getLocalArea().getName());
+            localAreaDTO.setPincode(worker.getLocalArea().getPincode());
             workerDTO.setLocalArea(localAreaDTO);
         }
         return workerDTO;
     }
+public CitizenDTO registerCitizen(CitizenRegistrationDTO citizenDTO) {
+    // Fetch the field healthcare worker by ID
+    FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(citizenDTO.getFieldHealthCareWorkerId())
+            .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + citizenDTO.getFieldHealthCareWorkerId()));
 
-    public CitizenDTO registerCitizen(CitizenRegistrationDTO citizenDTO) {
-        // Fetch the field healthcare worker by ID
-        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(citizenDTO.getFieldHealthCareWorkerId())
-                .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + citizenDTO.getFieldHealthCareWorkerId()));
+    // Fetch the doctor by ID
+    Doctor doctor = doctorRepository.findById(citizenDTO.getDoctorId())
+            .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorId()));
 
-        // Fetch the doctor by ID
-        Doctor doctor = doctorRepository.findById(citizenDTO.getDoctorId())
-                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorId()));
+    // Map DTO to Citizen entity
+    Citizen citizen = new Citizen();
+    citizen.setName(citizenDTO.getName());
+    citizen.setAge(citizenDTO.getAge());
+    citizen.setGender(citizenDTO.getGender());
+    citizen.setAddress(citizenDTO.getAddress());
+    citizen.setConsent(citizenDTO.isConsent());
+    citizen.setStatus(citizenDTO.isStatus());
+    citizen.setState(citizenDTO.getState());
+    citizen.setAbhaId(citizenDTO.getAbhaId());
+    citizen.setFieldHealthCareWorker(fieldHealthCareWorker); // Assign the fetched worker to the citizen
+    citizen.setDoctor(doctor); // Assign the fetched doctor to the citizen
 
-        // Map DTO to Citizen entity
-        Citizen citizen = new Citizen();
-        citizen.setName(citizenDTO.getName());
-        citizen.setAge(citizenDTO.getAge());
-        citizen.setGender(citizenDTO.getGender());
-        citizen.setAddress(citizenDTO.getAddress());
-        citizen.setConsent(citizenDTO.isConsent());
-        citizen.setPincode(citizenDTO.getPincode());
-        citizen.setStatus(citizenDTO.isStatus());
-        citizen.setState(citizenDTO.getState());
-        citizen.setDistrict(citizenDTO.getDistrict());
-        citizen.setAbhaId(citizenDTO.getAbhaId());
-        citizen.setFieldHealthCareWorker(fieldHealthCareWorker); // Assign the fetched worker to the citizen
-        citizen.setDoctor(doctor); // Assign the fetched doctor to the citizen
+    // Fetch the pincode and district from the associated LocalArea and set to the citizen
+    LocalArea localArea = fieldHealthCareWorker.getLocalArea();
+    String pincode = localArea.getPincode();
+    citizen.setPincode(pincode);
+    String district = localArea.getDistrict().getName();
+    citizen.setDistrict(district);
 
-        // Save the citizen entity
-        Citizen savedCitizen = citizenRepository.save(citizen);
+    // Save the citizen entity
+    Citizen savedCitizen = citizenRepository.save(citizen);
 
-        // Map saved citizen and worker to DTO
-        CitizenDTO citizenResponse = mapToCitizenDTO(savedCitizen);
+    // Map saved citizen and worker to DTO
+    CitizenDTO citizenResponse = mapToCitizenDTO(savedCitizen);
 
-        return citizenResponse;
-    }
+    return citizenResponse;
+}
+
 
     private CitizenDTO mapToCitizenDTO(Citizen citizen) {
         CitizenDTO citizenDTO = new CitizenDTO();
@@ -293,6 +300,7 @@ public class FieldHealthCareWorkerService {
                 LocalAreaDTO localAreaDTO = new LocalAreaDTO();
                 localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
                 localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
+                localAreaDTO.setPincode(fieldHealthCareWorker.getLocalArea().getPincode());
                 workerDTO.setLocalArea(localAreaDTO);
             }
         }
@@ -592,4 +600,39 @@ public class FieldHealthCareWorkerService {
 //        }
 //
 //        return citizenDTO;
+//    }
+
+
+
+//    public CitizenDTO registerCitizen(CitizenRegistrationDTO citizenDTO) {
+//        // Fetch the field healthcare worker by ID
+//        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(citizenDTO.getFieldHealthCareWorkerId())
+//                .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + citizenDTO.getFieldHealthCareWorkerId()));
+//
+//        // Fetch the doctor by ID
+//        Doctor doctor = doctorRepository.findById(citizenDTO.getDoctorId())
+//                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorId()));
+//
+//        // Map DTO to Citizen entity
+//        Citizen citizen = new Citizen();
+//        citizen.setName(citizenDTO.getName());
+//        citizen.setAge(citizenDTO.getAge());
+//        citizen.setGender(citizenDTO.getGender());
+//        citizen.setAddress(citizenDTO.getAddress());
+//        citizen.setConsent(citizenDTO.isConsent());
+//        citizen.setPincode(citizenDTO.getPincode());
+//        citizen.setStatus(citizenDTO.isStatus());
+//        citizen.setState(citizenDTO.getState());
+//        citizen.setDistrict(citizenDTO.getDistrict());
+//        citizen.setAbhaId(citizenDTO.getAbhaId());
+//        citizen.setFieldHealthCareWorker(fieldHealthCareWorker); // Assign the fetched worker to the citizen
+//        citizen.setDoctor(doctor); // Assign the fetched doctor to the citizen
+//
+//        // Save the citizen entity
+//        Citizen savedCitizen = citizenRepository.save(citizen);
+//
+//        // Map saved citizen and worker to DTO
+//        CitizenDTO citizenResponse = mapToCitizenDTO(savedCitizen);
+//
+//        return citizenResponse;
 //    }
