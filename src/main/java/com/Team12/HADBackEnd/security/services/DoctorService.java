@@ -225,7 +225,7 @@ public class DoctorService {
         citizenDTO.setAddress(citizen.getAddress());
         citizenDTO.setConsent(citizen.isConsent());
         citizenDTO.setPincode(citizen.getPincode());
-        citizenDTO.setStatus(citizen.isStatus());
+        citizenDTO.setStatus(citizen.getStatus());
         citizenDTO.setState(citizen.getState());
         citizenDTO.setDistrict(citizen.getDistrict());
         citizenDTO.setAbhaId(citizen.getAbhaId());
@@ -279,6 +279,17 @@ public class DoctorService {
                 doctorDTO.setDistrict(districtDTO);
             }
             citizenDTO.setDoctorDTO(doctorDTO);
+        }
+        HealthRecord healthRecord = citizen.getHealthRecord();
+        if (healthRecord != null) {
+            HealthRecordDTO healthRecordDTO = new HealthRecordDTO();
+            healthRecordDTO.setId(healthRecord.getId());
+            healthRecordDTO.setPrescription(healthRecord.getPrescription());
+            healthRecordDTO.setConclusion(healthRecord.getConclusion());
+            healthRecordDTO.setDiagnosis(healthRecord.getDiagnosis());
+            healthRecordDTO.setTimestamp(healthRecord.getTimestamp());
+            healthRecordDTO.setStatus(healthRecord.getStatus());
+            citizenDTO.setHealthRecordDTO(healthRecordDTO);
         }
 
         return citizenDTO;

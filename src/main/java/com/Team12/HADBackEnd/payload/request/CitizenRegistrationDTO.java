@@ -7,7 +7,7 @@ public class CitizenRegistrationDTO {
     private String address;
     private boolean consent;
     private String pincode;
-    private boolean status;
+    private String status;
     private String state;
     private String district;
     private String abhaId;
@@ -62,11 +62,12 @@ public class CitizenRegistrationDTO {
         this.pincode = pincode;
     }
 
-    public boolean isStatus() {
+
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(boolean status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

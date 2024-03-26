@@ -11,12 +11,13 @@ public class CitizenDTO {
     private String address;
     private boolean consent;
     private String pincode;
-    private boolean status;
+    private String status;
     private String state;
     private String district;
     private String abhaId;
     private FieldHealthcareWorkerDTO fieldHealthCareWorker;
     private DoctorDTO doctorDTO;
+    private HealthRecordDTO healthRecordDTO;
 
     public Long getId() {
         return id;
@@ -74,11 +75,11 @@ public class CitizenDTO {
         this.pincode = pincode;
     }
 
-    public boolean isStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(boolean status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
@@ -120,6 +121,14 @@ public class CitizenDTO {
 
     public void setDoctorDTO(DoctorDTO doctorDTO) {
         this.doctorDTO = doctorDTO;
+    }
+
+    public HealthRecordDTO getHealthRecordDTO() {
+        return healthRecordDTO;
+    }
+
+    public void setHealthRecordDTO(HealthRecordDTO healthRecordDTO) {
+        this.healthRecordDTO = healthRecordDTO;
     }
 }
 

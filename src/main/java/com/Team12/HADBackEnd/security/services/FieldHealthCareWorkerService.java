@@ -291,7 +291,7 @@ public class FieldHealthCareWorkerService {
         citizen.setGender(citizenDTO.getGender());
         citizen.setAddress(citizenDTO.getAddress());
         citizen.setConsent(citizenDTO.isConsent());
-        citizen.setStatus(citizenDTO.isStatus());
+        citizen.setStatus(citizenDTO.getStatus());
         citizen.setState(citizenDTO.getState());
         citizen.setAbhaId(citizenDTO.getAbhaId());
         citizen.setFieldHealthCareWorker(fieldHealthCareWorker); // Assign the fetched worker to the citizen
@@ -323,7 +323,7 @@ public class FieldHealthCareWorkerService {
         citizenDTO.setAddress(citizen.getAddress());
         citizenDTO.setConsent(citizen.isConsent());
         citizenDTO.setPincode(citizen.getPincode());
-        citizenDTO.setStatus(citizen.isStatus());
+        citizenDTO.setStatus(citizen.getStatus());
         citizenDTO.setState(citizen.getState());
         citizenDTO.setDistrict(citizen.getDistrict());
         citizenDTO.setAbhaId(citizen.getAbhaId());
