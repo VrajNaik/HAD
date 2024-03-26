@@ -335,6 +335,7 @@ public class DoctorService {
         dto.setConclusion(healthRecord.getConclusion());
         dto.setDiagnosis(healthRecord.getDiagnosis());
         dto.setTimestamp(healthRecord.getTimestamp());
+        dto.setStatus(healthRecord.getStatus());
         Doctor doctor = healthRecord.getDoctor();
         if (doctor != null) {
             DoctorDTO doctorDTO = new DoctorDTO();
@@ -479,6 +480,46 @@ public class DoctorService {
         return followUpDTO;
     }
 
+    @Transactional
+    public void setActiveStatusByUsername(String username, boolean active) {
+        // Find the doctor by username
+        Doctor doctor = doctorRepository.findByUsername(username)
+                .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with username: " + username));
+
+        // Check if the doctor's active status is already the desired status
+        if (doctor.isActive() == active) {
+            throw new DoctorAlreadyDeactivatedException("Doctor is already " + (active ? "activated" : "deactivated"));
+        }
+
+        // Check if any associated fields are not null
+        if (doctor.getDistrict() != null || !doctor.getCitizens().isEmpty() || !doctor.getHealthRecords().isEmpty()) {
+            StringBuilder message = new StringBuilder("Cannot deactivate doctor due to associated entities:\n");
+
+            if (doctor.getDistrict() != null) {
+                message.append(" - This doctor is associated with a district.\n");
+            }
+
+            if (!doctor.getCitizens().isEmpty()) {
+                message.append(" - This doctor is associated with citizens.\n");
+            }
+
+            if (!doctor.getHealthRecords().isEmpty()) {
+                message.append(" - This doctor is associated with health records.\n");
+            }
+
+            throw new DoctorNotFoundException(message.toString());
+        }
+
+        // Update the active status of the doctor
+        doctor.setActive(active);
+        doctorRepository.save(doctor);
+
+        // Update the active status of the corresponding user
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+        user.setActive(active);
+        userRepository.save(user);
+    }
 
     private String generateRandomPassword() {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -499,23 +540,6 @@ public class DoctorService {
 
         // Send email
         javaMailSender.send(mailMessage);
-    }
-    @Transactional
-    public void setActiveStatusByUsername(String username, boolean active) {
-        Doctor doctor = doctorRepository.findByUsername(username)
-                .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with username: " + username));
-
-        if (doctor.isActive() == active) {
-            throw new DoctorAlreadyDeactivatedException("Doctor is already " + (active ? "activated" : "deactivated"));
-        }
-
-        doctor.setActive(active);
-        doctorRepository.save(doctor);
-
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
-        user.setActive(active);
-        userRepository.save(user);
     }
 }
 
@@ -828,4 +852,23 @@ public class DoctorService {
 //        }
 //
 //        return citizenDTO;
+//    }
+
+
+//    @Transactional
+//    public void setActiveStatusByUsername(String username, boolean active) {
+//        Doctor doctor = doctorRepository.findByUsername(username)
+//                .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with username: " + username));
+//
+//        if (doctor.isActive() == active) {
+//            throw new DoctorAlreadyDeactivatedException("Doctor is already " + (active ? "activated" : "deactivated"));
+//        }
+//
+//        doctor.setActive(active);
+//        doctorRepository.save(doctor);
+//
+//        User user = userRepository.findByUsername(username)
+//                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+//        user.setActive(active);
+//        userRepository.save(user);
 //    }

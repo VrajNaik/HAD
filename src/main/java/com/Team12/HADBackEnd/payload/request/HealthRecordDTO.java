@@ -8,6 +8,7 @@ public class HealthRecordDTO {
     private String conclusion;
     private String diagnosis;
     private Date timestamp;
+    private String status;
     private FieldHealthcareWorkerDTO fieldHealthCareWorker;
     private DoctorDTO doctorDTO;
     private CitizenDTO citizenDTO;
@@ -50,6 +51,14 @@ public class HealthRecordDTO {
 
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public FieldHealthcareWorkerDTO getFieldHealthCareWorker() {

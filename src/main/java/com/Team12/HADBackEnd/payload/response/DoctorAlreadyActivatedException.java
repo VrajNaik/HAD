@@ -4,4 +4,8 @@ public class DoctorAlreadyActivatedException extends RuntimeException {
     public DoctorAlreadyActivatedException(String message) {
         super(message);
     }
+    @Override
+    public String getMessage() {
+        return "{\"message\": \"" + super.getMessage() + "\"}";
+    }
 }

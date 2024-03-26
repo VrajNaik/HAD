@@ -57,8 +57,8 @@ public class DistrictController {
     @GetMapping("/getlocalareaswithindistrict")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<LocalAreaDTO>> getLocalAreasInDistrict(@RequestBody DistrictIdRequestDTO request) {
-        Long districtId = request.getDistrictId();
-        List<LocalAreaDTO> localAreas = districtService.getAllLocalAreasByDistrictId(districtId);
+        String username = request.getUsername();
+        List<LocalAreaDTO> localAreas = districtService.getAllLocalAreasByUsername(username);
         return ResponseEntity.ok(localAreas);
     }
 }

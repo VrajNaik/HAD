@@ -7,7 +7,7 @@ public class AuthResponse {
     private JwtResponse jwtResponse;
     private Map<String, Long> counts;
 
-    public AuthResponse(JwtResponse jwtResponse, Map<String, Long> counts) {
+    public AuthResponse(JwtResponse jwtResponse, Map<String, Long> counts, Object userDetail) {
         this.jwtResponse = jwtResponse;
         this.counts = counts;
     }

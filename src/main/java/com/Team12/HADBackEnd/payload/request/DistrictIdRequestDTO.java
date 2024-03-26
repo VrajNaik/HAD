@@ -1,13 +1,13 @@
 package com.Team12.HADBackEnd.payload.request;
 
 public class DistrictIdRequestDTO {
-    private Long districtId;
+    private String username;
 
-    public Long getDistrictId() {
-        return districtId;
+    public String getUsername() {
+        return username;
     }
 
-    public void setDistrictId(Long districtId) {
-        this.districtId = districtId;
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

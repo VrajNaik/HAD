@@ -14,5 +14,5 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     boolean existsByUsername(String username);
     Optional<Doctor> findByUsername(String username);
 
-
+    long countByActiveTrue();
 }

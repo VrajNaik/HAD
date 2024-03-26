@@ -60,6 +60,48 @@ public class AuthController {
   @Autowired
   FieldHealthCareWorkerRepository fieldHealthcareWorkerRepository;
 
+//  @PostMapping("/signin")
+//  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+//    try {
+//      Authentication authentication = authenticationManager.authenticate(
+//              new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+//
+//      UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+//
+//      if (!userDetails.isActivate()) {
+//        throw new UserDeactivatedException("Sorry, you are deactivated by the Admin. Contact the Admin for further assistance.");
+//      }
+//
+//      SecurityContextHolder.getContext().setAuthentication(authentication);
+//      String jwt = jwtUtils.generateJwtToken(authentication);
+//
+//      long supervisorCount = supervisorRepository.countByActiveTrue(); // Count only active supervisors
+//      long doctorCount = doctorRepository.countByActiveTrue(); // Count only active doctors
+//      long fieldWorkerCount = fieldHealthcareWorkerRepository.countByActiveTrue(); // Count only active field healthcare workers
+//
+//
+//      Map<String, Long> counts = new HashMap<>();
+//      counts.put("supervisors", supervisorCount);
+//      counts.put("doctors", doctorCount);
+//      counts.put("fieldHealthcareWorkers", fieldWorkerCount);
+//
+//      List<String> roles = userDetails.getAuthorities().stream()
+//              .map(item -> item.getAuthority())
+//              .collect(Collectors.toList());
+//
+//      return ResponseEntity.ok(new AuthResponse(
+//              new JwtResponse(jwt,
+//                      userDetails.getId(),
+//                      userDetails.getUsername(),
+//                      userDetails.getEmail(),
+//                      roles),
+//              counts
+//      ));
+//    } catch (UserDeactivatedException e) {
+//      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+//    }
+//  }
+
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
     try {
@@ -75,27 +117,65 @@ public class AuthController {
       SecurityContextHolder.getContext().setAuthentication(authentication);
       String jwt = jwtUtils.generateJwtToken(authentication);
 
-      long supervisorCount = supervisorRepository.count();
-      long doctorCount = doctorRepository.count();
-      long fieldWorkerCount = fieldHealthcareWorkerRepository.count();
+      // Check if the user is an admin
+      boolean isAdmin = userDetails.getAuthorities().stream()
+              .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
 
-      Map<String, Long> counts = new HashMap<>();
-      counts.put("supervisors", supervisorCount);
-      counts.put("doctors", doctorCount);
-      counts.put("fieldHealthcareWorkers", fieldWorkerCount);
+      if (isAdmin) {
+        // Count only active doctors, supervisors, and field healthcare workers
+        long doctorCount = doctorRepository.countByActiveTrue();
+        long supervisorCount = supervisorRepository.countByActiveTrue();
+        long fieldWorkerCount = fieldHealthcareWorkerRepository.countByActiveTrue();
 
-      List<String> roles = userDetails.getAuthorities().stream()
-              .map(item -> item.getAuthority())
-              .collect(Collectors.toList());
+        Map<String, Long> counts = new HashMap<>();
+        counts.put("doctors", doctorCount);
+        counts.put("supervisors", supervisorCount);
+        counts.put("fieldHealthcareWorkers", fieldWorkerCount);
 
-      return ResponseEntity.ok(new AuthResponse(
-              new JwtResponse(jwt,
-                      userDetails.getId(),
-                      userDetails.getUsername(),
-                      userDetails.getEmail(),
-                      roles),
-              counts
-      ));
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(item -> item.getAuthority())
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(new AuthResponse(
+                new JwtResponse(jwt,
+                        userDetails.getId(),
+                        userDetails.getUsername(),
+                        userDetails.getEmail(),
+                        roles),
+                counts,
+                null));
+      } else {
+        // Fetch user's role and count from respective table
+        String role = null;
+        long roleCount = 0;
+        Object userDetail = null;
+
+        // Fetch the user's role based on their username/email
+        // Fetch user details based on their role
+        if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_DOCTOR"))) {
+          role = "doctor";
+          roleCount = doctorRepository.countByActiveTrue();
+          userDetail = doctorRepository.findByUsername(userDetails.getUsername()); // Fetch doctor details
+        } else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_SUPERVISOR"))) {
+          role = "supervisor";
+          roleCount = supervisorRepository.countByActiveTrue();
+          userDetail = supervisorRepository.findByUsername(userDetails.getUsername()); // Fetch supervisor details
+        } else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_FIELD_HEALTHCARE_WORKER"))) {
+          role = "fieldHealthcareWorker";
+          roleCount = fieldHealthcareWorkerRepository.countByActiveTrue();
+          userDetail = fieldHealthcareWorkerRepository.findByUsername(userDetails.getUsername()); // Fetch field healthcare worker details
+        }
+
+        // Return the response with the user's role, count, and details
+        return ResponseEntity.ok(new AuthResponse(
+                new JwtResponse(jwt,
+                        userDetails.getId(),
+                        userDetails.getUsername(),
+                        userDetails.getEmail(),
+                        Collections.singletonList(role)), // Return user's role
+                Collections.singletonMap(role, roleCount), // Return role count
+                userDetail // Return user's details
+        ));
+      }
     } catch (UserDeactivatedException e) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
     }
@@ -242,3 +322,7 @@ public class AuthController {
 //          counts
 //  ));
 //}
+
+//      long supervisorCount = supervisorRepository.count();
+//      long doctorCount = doctorRepository.count();
+//      long fieldWorkerCount = fieldHealthcareWorkerRepository.count();

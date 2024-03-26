@@ -155,6 +155,9 @@ public class SupervisorService {
         }
 
         supervisor.setActive(active);
+        if (!active) {
+            supervisor.setDistrict(null);
+        }
         supervisorRepository.save(supervisor);
 
         User user = userRepository.findByUsername(username)

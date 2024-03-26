@@ -28,6 +28,10 @@ public class HealthRecord {
     private String conclusion;
     private String diagnosis;
     private Date timestamp;
+    private String symptoms;
+    private String status = "new";
+    @Lob
+    private String notes;
 
     public Long getId() {
         return id;
@@ -93,12 +97,36 @@ public class HealthRecord {
         this.timestamp = timestamp;
     }
 
+    public String getSymptoms() {
+        return symptoms;
+    }
+
+    public void setSymptoms(String symptoms) {
+        this.symptoms = symptoms;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
     public List<FollowUp> getFollowUps() {
         return followUps;
     }
 
     public void setFollowUps(List<FollowUp> followUps) {
         this.followUps = followUps;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
 

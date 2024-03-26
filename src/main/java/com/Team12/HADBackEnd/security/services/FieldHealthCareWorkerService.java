@@ -155,22 +155,73 @@ public class FieldHealthCareWorkerService {
         return workerDTO;
     }
 
+//    @Transactional
+//    public void setActiveStatusByUsername(String username, boolean active) {
+//        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+//                .orElseThrow(() -> new DoctorNotFoundException("Field Health Care Worker not found with username: " + username));
+//
+//        if (worker.isActive() == active) {
+//            throw new DoctorAlreadyDeactivatedException("Field Health Care Worker is already " + (active ? "activated" : "deactivated"));
+//        }
+//
+//        worker.setActive(active);
+//        fieldHealthCareWorkerRepository.save(worker);
+//
+//        User user = userRepository.findByUsername(username)
+//                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+//        user.setActive(active);
+//        userRepository.save(user);
+//    }
+
     @Transactional
     public void setActiveStatusByUsername(String username, boolean active) {
+        // Find the field health care worker by username
         FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
                 .orElseThrow(() -> new DoctorNotFoundException("Field Health Care Worker not found with username: " + username));
 
+        // Check if the field health care worker's active status is already the desired status
         if (worker.isActive() == active) {
             throw new DoctorAlreadyDeactivatedException("Field Health Care Worker is already " + (active ? "activated" : "deactivated"));
         }
 
+        // Check if any associated fields are not null
+        if (worker.getDistrict() != null || worker.getLocalArea() != null || !worker.getCitizens().isEmpty() || !worker.getHealthRecords().isEmpty() || !worker.getFollowUps().isEmpty()) {
+            StringBuilder message = new StringBuilder("Cannot deactivate field health care worker due to associated entities:\n");
+
+            if (worker.getDistrict() != null) {
+                message.append(" - This worker is associated with a district.\n");
+            }
+
+            if (worker.getLocalArea() != null) {
+                message.append(" - This worker is associated with a local area.\n");
+            }
+
+            if (!worker.getCitizens().isEmpty()) {
+                message.append(" - This worker is associated with citizens.\n");
+            }
+
+            if (!worker.getHealthRecords().isEmpty()) {
+                message.append(" - This worker is associated with health records.\n");
+            }
+
+            if (!worker.getFollowUps().isEmpty()) {
+                message.append(" - This worker is associated with follow-up records.\n");
+            }
+
+            throw new DoctorNotFoundException(message.toString());
+        }
+
+        // Update the active status of the field health care worker
         worker.setActive(active);
         fieldHealthCareWorkerRepository.save(worker);
 
+        // Find the corresponding user by username
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+
+        // Update the active status of the user
         user.setActive(active);
-        userRepository.save(user);
+        userRepository.save(user); // Save changes
     }
 
 
@@ -223,43 +274,44 @@ public class FieldHealthCareWorkerService {
         }
         return workerDTO;
     }
-public CitizenDTO registerCitizen(CitizenRegistrationDTO citizenDTO) {
-    // Fetch the field healthcare worker by ID
-    FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(citizenDTO.getFieldHealthCareWorkerId())
-            .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + citizenDTO.getFieldHealthCareWorkerId()));
 
-    // Fetch the doctor by ID
-    Doctor doctor = doctorRepository.findById(citizenDTO.getDoctorId())
-            .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorId()));
+    public CitizenDTO registerCitizen(CitizenRegistrationDTO citizenDTO) {
+        // Fetch the field healthcare worker by ID
+        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(citizenDTO.getFieldHealthCareWorkerId())
+                .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + citizenDTO.getFieldHealthCareWorkerId()));
 
-    // Map DTO to Citizen entity
-    Citizen citizen = new Citizen();
-    citizen.setName(citizenDTO.getName());
-    citizen.setAge(citizenDTO.getAge());
-    citizen.setGender(citizenDTO.getGender());
-    citizen.setAddress(citizenDTO.getAddress());
-    citizen.setConsent(citizenDTO.isConsent());
-    citizen.setStatus(citizenDTO.isStatus());
-    citizen.setState(citizenDTO.getState());
-    citizen.setAbhaId(citizenDTO.getAbhaId());
-    citizen.setFieldHealthCareWorker(fieldHealthCareWorker); // Assign the fetched worker to the citizen
-    citizen.setDoctor(doctor); // Assign the fetched doctor to the citizen
+        // Fetch the doctor by ID
+        Doctor doctor = doctorRepository.findById(citizenDTO.getDoctorId())
+                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorId()));
 
-    // Fetch the pincode and district from the associated LocalArea and set to the citizen
-    LocalArea localArea = fieldHealthCareWorker.getLocalArea();
-    String pincode = localArea.getPincode();
-    citizen.setPincode(pincode);
-    String district = localArea.getDistrict().getName();
-    citizen.setDistrict(district);
+        // Map DTO to Citizen entity
+        Citizen citizen = new Citizen();
+        citizen.setName(citizenDTO.getName());
+        citizen.setAge(citizenDTO.getAge());
+        citizen.setGender(citizenDTO.getGender());
+        citizen.setAddress(citizenDTO.getAddress());
+        citizen.setConsent(citizenDTO.isConsent());
+        citizen.setStatus(citizenDTO.isStatus());
+        citizen.setState(citizenDTO.getState());
+        citizen.setAbhaId(citizenDTO.getAbhaId());
+        citizen.setFieldHealthCareWorker(fieldHealthCareWorker); // Assign the fetched worker to the citizen
+        citizen.setDoctor(doctor); // Assign the fetched doctor to the citizen
 
-    // Save the citizen entity
-    Citizen savedCitizen = citizenRepository.save(citizen);
+        // Fetch the pincode and district from the associated LocalArea and set to the citizen
+        LocalArea localArea = fieldHealthCareWorker.getLocalArea();
+        String pincode = localArea.getPincode();
+        citizen.setPincode(pincode);
+        String district = localArea.getDistrict().getName();
+        citizen.setDistrict(district);
 
-    // Map saved citizen and worker to DTO
-    CitizenDTO citizenResponse = mapToCitizenDTO(savedCitizen);
+        // Save the citizen entity
+        Citizen savedCitizen = citizenRepository.save(citizen);
 
-    return citizenResponse;
-}
+        // Map saved citizen and worker to DTO
+        CitizenDTO citizenResponse = mapToCitizenDTO(savedCitizen);
+
+        return citizenResponse;
+    }
 
 
     private CitizenDTO mapToCitizenDTO(Citizen citizen) {

@@ -2,8 +2,10 @@ package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.request.*;
+import com.Team12.HADBackEnd.payload.response.DoctorNotFoundException;
 import com.Team12.HADBackEnd.repository.DistrictRepository;
 import com.Team12.HADBackEnd.repository.LocalAreaRepository;
+import com.Team12.HADBackEnd.repository.SupervisorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,8 @@ public class DistrictService {
     private final DistrictRepository districtRepository;
     @Autowired
     private LocalAreaRepository localAreaRepository;
+    @Autowired
+    private SupervisorRepository supervisorRepository;
 
     @Autowired
     public DistrictService(DistrictRepository districtRepository) {
@@ -149,15 +153,29 @@ public class DistrictService {
 
         return "Local areas created successfully in district with id: " + districtId;
     }
-    public List<LocalAreaDTO> getAllLocalAreasByDistrictId(Long districtId) {
-        District district = districtRepository.findById(districtId)
-                .orElseThrow(() -> new RuntimeException("District not found with id: " + districtId));
 
-        return district.getLocalAreas().stream()
+
+    public List<LocalAreaDTO> getAllLocalAreasByUsername(String username) {
+        // Find the supervisor by username
+        Supervisor supervisor = supervisorRepository.findByUsername(username)
+                .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + username));
+
+        // Get the district from the supervisor object
+        District district = supervisor.getDistrict();
+
+        // Check if the district is null
+        if (district == null) {
+            throw new DoctorNotFoundException("District not assigned to the supervisor with username: " + username);
+        }
+
+        // Retrieve local areas associated with the district
+        List<LocalArea> localAreas = district.getLocalAreas();
+
+        // Convert local areas to DTOs
+        return localAreas.stream()
                 .map(this::convertToLocalAreaDTO)
                 .collect(Collectors.toList());
     }
-
     private LocalAreaDTO convertToLocalAreaDTO(LocalArea localArea) {
         LocalAreaDTO localAreaDTO = new LocalAreaDTO();
         localAreaDTO.setId(localArea.getId());
@@ -207,4 +225,13 @@ public class DistrictService {
 //            districtDTOs.add(districtDTO);
 //        }
 //        return districtDTOs;
+//    }
+
+//    public List<LocalAreaDTO> getAllLocalAreasByDistrictId(Long districtId) {
+//        District district = districtRepository.findById(districtId)
+//                .orElseThrow(() -> new RuntimeException("District not found with id: " + districtId));
+//
+//        return district.getLocalAreas().stream()
+//                .map(this::convertToLocalAreaDTO)
+//                .collect(Collectors.toList());
 //    }

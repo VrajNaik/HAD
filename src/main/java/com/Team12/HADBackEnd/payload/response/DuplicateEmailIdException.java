@@ -4,6 +4,7 @@ public class DuplicateEmailIdException extends RuntimeException {
     public DuplicateEmailIdException(String message) {
         super(message);
     }
+
 }
 //import java.io.IOException;
 //import java.util.HashMap;
