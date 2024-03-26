@@ -230,7 +230,6 @@ public class DoctorService {
         citizenDTO.setDistrict(citizen.getDistrict());
         citizenDTO.setAbhaId(citizen.getAbhaId());
 
-        // Map FieldHealthCareWorker to FieldHealthCareWorkerDTO
         FieldHealthCareWorker fieldHealthCareWorker = citizen.getFieldHealthCareWorker();
         if (fieldHealthCareWorker != null) {
             FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
