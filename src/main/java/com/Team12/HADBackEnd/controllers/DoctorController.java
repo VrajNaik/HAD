@@ -122,7 +122,7 @@ public class DoctorController {
     @PostMapping("/editPrescription")
     @PreAuthorize("hasRole('ADMIN')")
     public HealthRecordDTO editPrescription(@RequestBody PrescriptionDTO editPrescriptionDTO) {
-        return doctorService.editPrescription(editPrescriptionDTO);
+        return doctorService.editLastPrescription(editPrescriptionDTO);
     }
 
     @PostMapping("/addFollowUp")

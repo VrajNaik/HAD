@@ -1,10 +1,11 @@
 package com.Team12.HADBackEnd.payload.request;
 
 import java.util.Date;
+import java.util.List;
 
 public class HealthRecordDTO {
     private Long id;
-    private String prescription;
+    private List<String> prescriptions;
     private String conclusion;
     private String diagnosis;
     private Date timestamp;
@@ -21,12 +22,12 @@ public class HealthRecordDTO {
         this.id = id;
     }
 
-    public String getPrescription() {
-        return prescription;
+    public List<String> getPrescriptions() {
+        return prescriptions;
     }
 
-    public void setPrescription(String prescription) {
-        this.prescription = prescription;
+    public void setPrescriptions(List<String> prescriptions) {
+        this.prescriptions = prescriptions;
     }
 
     public String getConclusion() {

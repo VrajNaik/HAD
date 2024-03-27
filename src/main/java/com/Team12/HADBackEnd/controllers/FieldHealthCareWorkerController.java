@@ -111,7 +111,7 @@ public class FieldHealthCareWorkerController {
         }
     }
 
-    @GetMapping("/unassignedToArea")
+    @GetMapping("/getUnassignedFHW")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<FieldHealthcareWorkerDTO>> getUnassignedFieldHealthCareWorkers() {
         List<FieldHealthcareWorkerDTO> unassignedWorkers = fieldHealthCareWorkerService.getUnassignedFieldHealthCareWorkerDTOs();

@@ -31,29 +31,23 @@ public class DoctorService {
     private RoleRepository roleRepository;
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository;
     @Autowired
     private CitizenRepository citizenRepository;
     @Autowired
     private PasswordEncoder encoder;
-
     @Autowired
     private HealthRecordRepository healthRecordRepository;
-
     @Autowired
     private FollowUpRepository followUpRepository;
-
     @Autowired
     private JavaMailSender javaMailSender;
-    // Autowire the JavaMailSender
 
     @Transactional(rollbackFor = Exception.class)
     public DoctorDTO updateDoctor(DoctorUpdateRequestDTO request) {
         Doctor doctor = doctorRepository.findById(request.getId())
                 .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + request.getId()));
-
         if (request.getName() != null) {
             doctor.setName(request.getName());
         }
@@ -105,12 +99,10 @@ public class DoctorService {
         user.setRoles(roles);
         userRepository.save(user);
 
-        // Check for duplicate license ID
         if (doctorRepository.existsByLicenseId(doctor.getLicenseId())) {
             throw new DuplicateLicenseIdException("Doctor with the same license ID already exists.");
         }
 
-        // Check for duplicate email
         if (doctorRepository.existsByEmail(doctor.getEmail())) {
             throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
         }
@@ -118,14 +110,11 @@ public class DoctorService {
         doctor.setUsername(generatedUsername);
         doctor.setPassword(encoder.encode(generatedRandomPassword));
         doctor.setDistrict(district);
-//        doctor.setDistrictId(district.getId());
-
         Doctor savedDoctor = doctorRepository.save(doctor);
         System.out.println("Doctor's District: " + savedDoctor.getDistrict());
         // 2
         System.out.println(generatedRandomPassword);
         sendCredentialsByEmail(savedDoctor.getEmail(), generatedUsername, generatedRandomPassword);
-
         return savedDoctor;
     }
 
@@ -138,7 +127,7 @@ public class DoctorService {
 
     private DoctorDTO convertToDTO(Doctor doctor) {
         DoctorDTO doctorDTO = new DoctorDTO();
-        // Copy data from Doctor entity to DoctorDTO
+
         doctorDTO.setId(doctor.getId());
 
         if (doctor.getName() != null) {
@@ -180,19 +169,6 @@ public class DoctorService {
         return doctorDTO;
     }
 
-    private String generateUniqueUsername() {
-        String generatedUsername = null;
-        boolean isUnique = false;
-        while (!isUnique) {
-            // Generate a username starting with "DR" followed by a sequence of numbers
-            int randomNumber = new Random().nextInt(90000) + 10000; // Generates a random 5-digit number
-            generatedUsername = "DR" + randomNumber;
-            isUnique = !doctorRepository.existsByUsername(generatedUsername);
-        }
-        return generatedUsername;
-    }
-
-
     public CitizenDTO getCitizenByAbhaId(String abhaId) {
         Citizen citizen = citizenRepository.findByAbhaId(abhaId);
         if (citizen != null) {
@@ -203,14 +179,11 @@ public class DoctorService {
 
 
     public List<CitizenDTO> getCitizensByDoctorId(Long doctorId) {
-        // Fetch the doctor by ID
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + doctorId));
 
-        // Fetch citizens assigned to the doctor
         List<Citizen> citizens = citizenRepository.findByDoctor(doctor);
 
-        // Map citizens to DTOs
         return citizens.stream()
                 .map(this::mapToCitizenDTO)
                 .collect(Collectors.toList());
@@ -257,7 +230,6 @@ public class DoctorService {
             }
         }
 
-        // Map Doctor to DoctorDTO
         Doctor doctor = citizen.getDoctor();
         if (doctor != null) {
             DoctorDTO doctorDTO = new DoctorDTO();
@@ -283,7 +255,7 @@ public class DoctorService {
         if (healthRecord != null) {
             HealthRecordDTO healthRecordDTO = new HealthRecordDTO();
             healthRecordDTO.setId(healthRecord.getId());
-            healthRecordDTO.setPrescription(healthRecord.getPrescription());
+            healthRecordDTO.setPrescriptions(healthRecord.getPrescriptions());
             healthRecordDTO.setConclusion(healthRecord.getConclusion());
             healthRecordDTO.setDiagnosis(healthRecord.getDiagnosis());
             healthRecordDTO.setTimestamp(healthRecord.getTimestamp());
@@ -294,54 +266,37 @@ public class DoctorService {
         return citizenDTO;
     }
 
-
-//    private HealthRecordDTO convertToDTO(HealthRecord healthRecord) {
-//        HealthRecordDTO dto = new HealthRecordDTO();
-//        dto.setId(healthRecord.getId());
-//        dto.setCitizenId(healthRecord.getCitizen().getId());
-//        dto.setWorkerId(healthRecord.getFieldHealthCareWorker().getId());
-//        dto.setDoctorId(healthRecord.getDoctor().getId());
-//        dto.setPrescription(healthRecord.getPrescription());
-//        dto.setConclusion(healthRecord.getConclusion());
-//        dto.setDiagnosis(healthRecord.getDiagnosis());
-//        dto.setTimestamp(healthRecord.getTimestamp());
-//        return dto;
-//    }
-
     public HealthRecordDTO createHealthRecord(HealthRecordCreationDTO healthRecordCreationDTO) {
-        // Fetch the citizen by ID
+
         Citizen citizen = citizenRepository.findById(healthRecordCreationDTO.getCitizenId())
                 .orElseThrow(() -> new RuntimeException("Citizen not found with ID: " + healthRecordCreationDTO.getCitizenId()));
 
-        // Fetch the field healthcare worker by ID
         FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(healthRecordCreationDTO.getWorkerId())
                 .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + healthRecordCreationDTO.getWorkerId()));
 
-        // Fetch the doctor by ID
         Doctor doctor = doctorRepository.findById(healthRecordCreationDTO.getDoctorId())
                 .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + healthRecordCreationDTO.getDoctorId()));
 
-        // Map DTO fields to the HealthRecord entity
+        List<String> prescriptions = Collections.singletonList(healthRecordCreationDTO.getPrescription());
+
         HealthRecord healthRecord = new HealthRecord();
         healthRecord.setCitizen(citizen);
         healthRecord.setFieldHealthCareWorker(fieldHealthCareWorker);
         healthRecord.setDoctor(doctor);
-        healthRecord.setPrescription(healthRecordCreationDTO.getPrescription());
+        healthRecord.setPrescriptions(prescriptions);
         healthRecord.setConclusion(healthRecordCreationDTO.getConclusion());
         healthRecord.setDiagnosis(healthRecordCreationDTO.getDiagnosis());
-        healthRecord.setTimestamp(new Date());
+        healthRecord.setTimestamp(healthRecordCreationDTO.getTimestamp());
 
-        // Save the HealthRecord entity
         HealthRecord savedHealthRecord = healthRecordRepository.save(healthRecord);
 
-        // Convert the saved HealthRecord entity to DTO
         return convertToDTO(savedHealthRecord);
     }
 
     private HealthRecordDTO convertToDTO(HealthRecord healthRecord) {
         HealthRecordDTO dto = new HealthRecordDTO();
         dto.setId(healthRecord.getId());
-        dto.setPrescription(healthRecord.getPrescription());
+        dto.setPrescriptions(healthRecord.getPrescriptions());
         dto.setConclusion(healthRecord.getConclusion());
         dto.setDiagnosis(healthRecord.getDiagnosis());
         dto.setTimestamp(healthRecord.getTimestamp());
@@ -403,22 +358,31 @@ public class DoctorService {
         HealthRecord healthRecord = healthRecordRepository.findById(prescriptionDTO.getHealthRecordId())
                 .orElseThrow(() -> new RuntimeException("Health record not found with ID: " + prescriptionDTO.getHealthRecordId()));
 
-        // Add prescription to the existing health record
-        healthRecord.setPrescription(prescriptionDTO.getPrescription());
+        List<String> prescriptions = healthRecord.getPrescriptions();
+        if (prescriptions == null) {
+            prescriptions = new ArrayList<>();
+        }
+        prescriptions.add(prescriptionDTO.getPrescription());
+        healthRecord.setPrescriptions(prescriptions);
 
         HealthRecord updatedHealthRecord = healthRecordRepository.save(healthRecord);
         return convertToDTO(updatedHealthRecord);
     }
 
-    public HealthRecordDTO editPrescription(PrescriptionDTO editPrescriptionDTO) {
+    public HealthRecordDTO editLastPrescription(PrescriptionDTO editPrescriptionDTO) {
         HealthRecord healthRecord = healthRecordRepository.findById(editPrescriptionDTO.getHealthRecordId())
                 .orElseThrow(() -> new RuntimeException("Health record not found with ID: " + editPrescriptionDTO.getHealthRecordId()));
 
-        // Append the new prescription to the existing prescription
-        String currentPrescription = healthRecord.getPrescription();
-        String newPrescription = editPrescriptionDTO.getPrescription();
-        String updatedPrescription = currentPrescription + "\n" + newPrescription; // Append new prescription to the current one
-        healthRecord.setPrescription(updatedPrescription);
+        // Retrieve or initialize prescriptions list
+        List<String> prescriptions = healthRecord.getPrescriptions();
+        if (prescriptions == null || prescriptions.isEmpty()) {
+            throw new RuntimeException("No prescriptions found for the health record");
+        }
+
+        // Update the last prescription
+        int lastIndex = prescriptions.size() - 1;
+        prescriptions.set(lastIndex, editPrescriptionDTO.getPrescription());
+        healthRecord.setPrescriptions(prescriptions);
 
         HealthRecord updatedHealthRecord = healthRecordRepository.save(healthRecord);
         return convertToDTO(updatedHealthRecord);
@@ -520,11 +484,9 @@ public class DoctorService {
             throw new DoctorNotFoundException(message.toString());
         }
 
-        // Update the active status of the doctor
         doctor.setActive(active);
         doctorRepository.save(doctor);
 
-        // Update the active status of the corresponding user
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
         user.setActive(active);
@@ -537,6 +499,17 @@ public class DoctorService {
         return convertToDTO(doctor);
     }
 
+    private String generateUniqueUsername() {
+        String generatedUsername = null;
+        boolean isUnique = false;
+        while (!isUnique) {
+            // Generate a username starting with "DR" followed by a sequence of numbers
+            int randomNumber = new Random().nextInt(90000) + 10000; // Generates a random 5-digit number
+            generatedUsername = "DR" + randomNumber;
+            isUnique = !doctorRepository.existsByUsername(generatedUsername);
+        }
+        return generatedUsername;
+    }
     private String generateRandomPassword() {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         StringBuilder password = new StringBuilder();
@@ -554,7 +527,6 @@ public class DoctorService {
         mailMessage.setSubject("Credentials for accessing the system");
         mailMessage.setText("Your username: " + username + "\nYour password: " + password);
 
-        // Send email
         javaMailSender.send(mailMessage);
     }
 }
@@ -887,4 +859,44 @@ public class DoctorService {
 //                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
 //        user.setActive(active);
 //        userRepository.save(user);
+//    }
+
+
+
+//    private HealthRecordDTO convertToDTO(HealthRecord healthRecord) {
+//        HealthRecordDTO dto = new HealthRecordDTO();
+//        dto.setId(healthRecord.getId());
+//        dto.setCitizenId(healthRecord.getCitizen().getId());
+//        dto.setWorkerId(healthRecord.getFieldHealthCareWorker().getId());
+//        dto.setDoctorId(healthRecord.getDoctor().getId());
+//        dto.setPrescription(healthRecord.getPrescription());
+//        dto.setConclusion(healthRecord.getConclusion());
+//        dto.setDiagnosis(healthRecord.getDiagnosis());
+//        dto.setTimestamp(healthRecord.getTimestamp());
+//        return dto;
+//    }
+
+//    public HealthRecordDTO addPrescriptionToHealthRecord(PrescriptionDTO prescriptionDTO) {
+//        HealthRecord healthRecord = healthRecordRepository.findById(prescriptionDTO.getHealthRecordId())
+//                .orElseThrow(() -> new RuntimeException("Health record not found with ID: " + prescriptionDTO.getHealthRecordId()));
+//
+//        // Add prescription to the existing health record
+//        healthRecord.setPrescription(prescriptionDTO.getPrescription());
+//
+//        HealthRecord updatedHealthRecord = healthRecordRepository.save(healthRecord);
+//        return convertToDTO(updatedHealthRecord);
+//    }
+//
+//    public HealthRecordDTO editPrescription(PrescriptionDTO editPrescriptionDTO) {
+//        HealthRecord healthRecord = healthRecordRepository.findById(editPrescriptionDTO.getHealthRecordId())
+//                .orElseThrow(() -> new RuntimeException("Health record not found with ID: " + editPrescriptionDTO.getHealthRecordId()));
+//
+//        // Append the new prescription to the existing prescription
+//        String currentPrescription = healthRecord.getPrescription();
+//        String newPrescription = editPrescriptionDTO.getPrescription();
+//        String updatedPrescription = currentPrescription + "\n" + newPrescription; // Append new prescription to the current one
+//        healthRecord.setPrescription(updatedPrescription);
+//
+//        HealthRecord updatedHealthRecord = healthRecordRepository.save(healthRecord);
+//        return convertToDTO(updatedHealthRecord);
 //    }

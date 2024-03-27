@@ -24,7 +24,7 @@ public class HealthRecord {
     @OneToMany(mappedBy = "healthRecord")
     private List<FollowUp> followUps;
 
-    private String prescription;
+    private List<String> prescriptions;
     private String conclusion;
     private String diagnosis;
     private Date timestamp;
@@ -65,12 +65,13 @@ public class HealthRecord {
         this.doctor = doctor;
     }
 
-    public String getPrescription() {
-        return prescription;
+
+    public List<String> getPrescriptions() {
+        return prescriptions;
     }
 
-    public void setPrescription(String prescription) {
-        this.prescription = prescription;
+    public void setPrescriptions(List<String> prescriptions) {
+        this.prescriptions = prescriptions;
     }
 
     public String getConclusion() {
