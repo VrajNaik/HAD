@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -90,19 +91,31 @@ public class FieldHealthCareWorkerController {
 
     @PostMapping("/getByUsername")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<FieldHealthcareWorkerDTO> getFieldHealthcareWorkerByUsername(@RequestBody UsernameDTO usernameRequest) {
+    public ResponseEntity<?> getFieldHealthcareWorkerByUsername(@RequestBody UsernameDTO usernameRequest) {
         String username = usernameRequest.getUsername();
         try {
             FieldHealthcareWorkerDTO workerDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
             if (workerDTO == null) {
-                // Handle the case where no worker is found with the provided username
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                // Handle the case where no supervisor is found with the provided username
+                String message = "Field Health Care Worker Not Found with a given username";
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
             }
-            return new ResponseEntity<>(workerDTO, HttpStatus.OK);
+            return ResponseEntity.ok(workerDTO);
+        } catch (DoctorNotFoundException ex) {
+            // Handle the case where supervisor is not found
+            String message = "Field Health Care Worker Not Found with a given username";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
         } catch (Exception e) {
             // Handle other exceptions here
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @GetMapping("/unassignedToArea")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getUnassignedFieldHealthCareWorkers() {
+        List<FieldHealthcareWorkerDTO> unassignedWorkers = fieldHealthCareWorkerService.getUnassignedFieldHealthCareWorkerDTOs();
+        return new ResponseEntity<>(unassignedWorkers, HttpStatus.OK);
     }
 
     @PostMapping("/register")
@@ -131,3 +144,19 @@ public class FieldHealthCareWorkerController {
 
 
 
+//    @PostMapping("/getByUsername")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<FieldHealthcareWorkerDTO> getFieldHealthcareWorkerByUsername(@RequestBody UsernameDTO usernameRequest) {
+//        String username = usernameRequest.getUsername();
+//        try {
+//            FieldHealthcareWorkerDTO workerDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
+//            if (workerDTO == null) {
+//                // Handle the case where no worker is found with the provided username
+//                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//            }
+//            return new ResponseEntity<>(workerDTO, HttpStatus.OK);
+//        } catch (Exception e) {
+//            // Handle other exceptions here
+//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }

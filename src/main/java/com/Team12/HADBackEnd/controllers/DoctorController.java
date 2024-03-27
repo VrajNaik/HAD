@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -128,6 +129,28 @@ public class DoctorController {
     @PreAuthorize("hasRole('ADMIN')")
     public FollowUpDTO createFollowUp(@RequestBody FollowUpCreationDTO followUpDTO) {
         return doctorService.createFollowUp(followUpDTO);
+    }
+
+    @PostMapping("/getByUsername")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getDoctorByUsername(@RequestBody UsernameDTO usernameRequest) {
+        String username = usernameRequest.getUsername();
+        try {
+            DoctorDTO doctorDTO = doctorService.getDoctorByUsername(username);
+            if (doctorDTO == null) {
+                // Handle the case where no supervisor is found with the provided username
+                String message = "Doctor Not Found with a given username";
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
+            }
+            return ResponseEntity.ok(doctorDTO);
+        } catch (DoctorNotFoundException ex) {
+            // Handle the case where supervisor is not found
+            String message = "Doctor Not Found with a given username";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
+        } catch (Exception e) {
+            // Handle other exceptions here
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
 

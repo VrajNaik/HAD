@@ -225,15 +225,28 @@ public class FieldHealthCareWorkerService {
     }
 
 
+//    public FieldHealthcareWorkerDTO getFieldHealthcareWorkerByUsername(String username) {
+//        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+//                .orElseThrow(() -> new DoctorNotFoundException("Field Health Care Worker not found with username: " + username));
+//        if (worker == null) {
+//            // Handle the case where no worker is found with the provided username
+//            System.out.println("Hello\n");
+//            return null;
+//        }
+//        return convertToDTO2(worker);
+//    }
+
     public FieldHealthcareWorkerDTO getFieldHealthcareWorkerByUsername(String username) {
         FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
-                .orElseThrow(() -> new DoctorNotFoundException("Field Health Care Worker not found with username: " + username));
-        if (worker == null) {
-            // Handle the case where no worker is found with the provided username
-            System.out.println("Hello\n");
-            return null;
-        }
+                .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + username));
         return convertToDTO2(worker);
+    }
+
+    public List<FieldHealthcareWorkerDTO> getUnassignedFieldHealthCareWorkerDTOs() {
+        List<FieldHealthCareWorker> unassignedWorkers = fieldHealthCareWorkerRepository.findByLocalAreaIsNull();
+        return unassignedWorkers.stream()
+                .map(this::convertToDTO2)
+                .collect(Collectors.toList());
     }
 
 

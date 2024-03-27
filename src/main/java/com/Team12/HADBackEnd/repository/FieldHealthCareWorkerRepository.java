@@ -5,6 +5,7 @@ import com.Team12.HADBackEnd.models.Supervisor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -16,6 +17,9 @@ public interface FieldHealthCareWorkerRepository extends JpaRepository<FieldHeal
     Optional<FieldHealthCareWorker> findByUsername(String username);
     @Query("SELECT w FROM FieldHealthCareWorker w WHERE w.username = :username")
     FieldHealthCareWorker findUsername(String username);
+
+    List<FieldHealthCareWorker> findByLocalAreaIsNull();
+
 
     long countByActiveTrue();
 }

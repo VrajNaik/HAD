@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 
@@ -52,7 +53,7 @@ public class SupervisorController {
 
     @PutMapping("/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deactivateDoctor(@RequestBody UsernameDTO usernameDTO) {
+    public ResponseEntity<?> deactivateSupervisor(@RequestBody UsernameDTO usernameDTO) {
         try {
             User user = userRepository.findByUsername(usernameDTO.getUsername())
                     .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
@@ -68,7 +69,7 @@ public class SupervisorController {
     }
     @PutMapping("/activate")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> activateDoctor(@RequestBody UsernameDTO usernameDTO) {
+    public ResponseEntity<?> activateSupervisor(@RequestBody UsernameDTO usernameDTO) {
         try {
             User user = userRepository.findByUsername(usernameDTO.getUsername())
                     .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
@@ -91,6 +92,27 @@ public class SupervisorController {
             return ResponseEntity.status(HttpStatus.OK).body(result);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+        }
+    }
+    @PostMapping("/getByUsername")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getSupervisorByUsername(@RequestBody UsernameDTO usernameRequest) {
+        String username = usernameRequest.getUsername();
+        try {
+            SupervisorDTO supervisorDTO = supervisorService.getSupervisorByUsername(username);
+            if (supervisorDTO == null) {
+                // Handle the case where no supervisor is found with the provided username
+                String message = "Supervisor Not Found with a given username";
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
+            }
+            return ResponseEntity.ok(supervisorDTO);
+        } catch (DoctorNotFoundException ex) {
+            // Handle the case where supervisor is not found
+            String message = "Supervisor Not Found with a given username";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
+        } catch (Exception e) {
+            // Handle other exceptions here
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

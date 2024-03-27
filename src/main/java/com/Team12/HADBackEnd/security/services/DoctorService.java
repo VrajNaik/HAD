@@ -531,6 +531,12 @@ public class DoctorService {
         userRepository.save(user);
     }
 
+    public DoctorDTO getDoctorByUsername(String username) {
+        Doctor doctor = doctorRepository.findByUsername(username)
+                .orElseThrow(() -> new DoctorNotFoundException("Dcotor not found with username: " + username));
+        return convertToDTO(doctor);
+    }
+
     private String generateRandomPassword() {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         StringBuilder password = new StringBuilder();

@@ -2,6 +2,7 @@ package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.request.DistrictDTO;
+import com.Team12.HADBackEnd.payload.request.FieldHealthcareWorkerDTO;
 import com.Team12.HADBackEnd.payload.request.SupervisorDTO;
 import com.Team12.HADBackEnd.payload.request.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.payload.response.DoctorAlreadyDeactivatedException;
@@ -145,6 +146,13 @@ public class SupervisorService {
 
         return supervisorDTO;
     }
+
+    public SupervisorDTO getSupervisorByUsername(String username) {
+        Supervisor supervisor = supervisorRepository.findByUsername(username)
+                .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + username));
+        return convertToDTO(supervisor);
+    }
+
     @Transactional
     public void setActiveStatusByUsername(String username, boolean active) {
         Supervisor supervisor = supervisorRepository.findByUsername(username)
