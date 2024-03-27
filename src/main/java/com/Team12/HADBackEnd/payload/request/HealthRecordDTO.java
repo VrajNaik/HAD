@@ -13,6 +13,8 @@ public class HealthRecordDTO {
     private FieldHealthcareWorkerDTO fieldHealthCareWorker;
     private DoctorDTO doctorDTO;
     private CitizenDTO citizenDTO;
+    private List<FollowUpDTO> followUps;
+    private List<ICDCodesDTO> icd10codes;
 
     public Long getId() {
         return id;
@@ -84,5 +86,21 @@ public class HealthRecordDTO {
 
     public void setCitizenDTO(CitizenDTO citizenDTO) {
         this.citizenDTO = citizenDTO;
+    }
+
+    public List<FollowUpDTO> getFollowUps() {
+        return followUps;
+    }
+
+    public void setFollowUps(List<FollowUpDTO> followUps) {
+        this.followUps = followUps;
+    }
+
+    public List<ICDCodesDTO> getIcd10codes() {
+        return icd10codes;
+    }
+
+    public void setIcd10codes(List<ICDCodesDTO> icd10codes) {
+        this.icd10codes = icd10codes;
     }
 }

@@ -1,14 +1,8 @@
 package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
-import com.Team12.HADBackEnd.payload.request.DistrictDTO;
-import com.Team12.HADBackEnd.payload.request.FieldHealthcareWorkerDTO;
-import com.Team12.HADBackEnd.payload.request.SupervisorDTO;
-import com.Team12.HADBackEnd.payload.request.SupervisorUpdateRequestDTO;
-import com.Team12.HADBackEnd.payload.response.DoctorAlreadyDeactivatedException;
-import com.Team12.HADBackEnd.payload.response.DoctorNotFoundException;
-import com.Team12.HADBackEnd.payload.response.DuplicateEmailIdException;
-import com.Team12.HADBackEnd.payload.response.UserNotFoundException;
+import com.Team12.HADBackEnd.payload.request.*;
+import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -17,10 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -41,6 +32,14 @@ public class SupervisorService {
     private LocalAreaRepository localAreaRepository;
     @Autowired
     private PasswordEncoder encoder;
+    @Autowired
+    private ICD10CodeRepository icd10CodeRepository;
+    @Autowired
+    private QuestionnaireRepository questionnaireRepository;
+    @Autowired
+    private QuestionRepository questionRepository;
+    @Autowired
+    private OptionRepository optionRepository;
     @Autowired
     private JavaMailSender javaMailSender; // Autowire the JavaMailSender
 
@@ -221,6 +220,84 @@ public class SupervisorService {
         workerRepository.save(worker);
 
         return "Worker assigned successfully";
+    }
+
+    public List<ICD10Code> createICD10Codes(List<ICD10Code> icd10Codes) {
+        return icd10CodeRepository.saveAll(icd10Codes);
+    }
+    public ICD10Code createICD10Code(ICD10Code icd10Code) {
+        return icd10CodeRepository.save(icd10Code);
+    }
+
+    public Questionnaire createQuestionnaire(QuestionnaireDTO questionnaireDto) {
+        Questionnaire questionnaire = new Questionnaire();
+        questionnaire.setName(questionnaireDto.getName());
+        questionnaire = questionnaireRepository.save(questionnaire);
+
+        for (QuestionDTO questionDto : questionnaireDto.getQuestions()) {
+            Question question = new Question();
+            question.setQuestionnaire(questionnaire);
+            question.setQuestionText(questionDto.getQuestionText());
+            question = questionRepository.save(question);
+
+            for (String optionText : questionDto.getOptions()) {
+                Option option = new Option();
+                option.setQuestion(question);
+                option.setOptionText(optionText);
+                optionRepository.save(option);
+            }
+        }
+
+        return questionnaire;
+    }
+
+//    public Questionnaire createQuestionnaire(QuestionnaireDTO questionnaireDto) {
+//        Questionnaire questionnaire = new Questionnaire();
+//        questionnaire.setName(questionnaireDto.getName());
+//        questionnaire = questionnaireRepository.save(questionnaire);
+//
+//        for (QuestionDTO questionDto : questionnaireDto.getQuestions()) {
+//            Question question = new Question();
+//            question.setQuestionnaire(questionnaire);
+//            question.setQuestionText(questionDto.getQuestionText());
+//            question = questionRepository.save(question);
+//
+//            for (String optionText : questionDto.getOptions()) {
+//                Option option = new Option();
+//                option.setQuestion(question);
+//                option.setOptionText(optionText);
+//                optionRepository.save(option);
+//            }
+//        }
+//
+//        return questionnaire;
+//    }
+
+    public QuestionnaireResponseDTO getQuestionnaireById(Long id) {
+        Questionnaire questionnaire = questionnaireRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Questionnaire not found with ID: " + id));
+
+        List<QuestionResponseDTO> questionDTOList = new ArrayList<>();
+        for (Question question : questionnaire.getQuestions()) {
+            QuestionResponseDTO questionDTO = new QuestionResponseDTO();
+            questionDTO.setId(question.getId());
+            questionDTO.setQuestionText(question.getQuestionText());
+
+            List<String> options = new ArrayList<>();
+            for (Option option : question.getOptions()) {
+                options.add(option.getOptionText());
+            }
+            questionDTO.setOptions(options);
+
+            questionDTOList.add(questionDTO);
+        }
+
+        QuestionnaireResponseDTO questionnaireDTO = new QuestionnaireResponseDTO();
+        questionnaireDTO.setId(questionnaire.getId());
+        questionnaireDTO.setName(questionnaire.getName());
+        questionnaireDTO.setQuestions(questionDTOList);
+
+        return questionnaireDTO;
     }
 }
 

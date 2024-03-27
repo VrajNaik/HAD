@@ -36,11 +36,13 @@ public class DoctorService {
     @Autowired
     private CitizenRepository citizenRepository;
     @Autowired
-    private PasswordEncoder encoder;
-    @Autowired
     private HealthRecordRepository healthRecordRepository;
     @Autowired
     private FollowUpRepository followUpRepository;
+    @Autowired
+    private ICD10CodeRepository icd10CodeRepository;
+    @Autowired
+    private PasswordEncoder encoder;
     @Autowired
     private JavaMailSender javaMailSender;
 
@@ -215,6 +217,7 @@ public class DoctorService {
 
             workerDTO.setPassword(fieldHealthCareWorker.getPassword());
             workerDTO.setEmail(fieldHealthCareWorker.getEmail());
+            workerDTO.setPhoneNum(fieldHealthCareWorker.getPhoneNum());
             citizenDTO.setFieldHealthCareWorker(workerDTO);
             if (fieldHealthCareWorker.getDistrict() != null) {
                 DistrictDTO districtDTO = new DistrictDTO();
@@ -226,6 +229,7 @@ public class DoctorService {
                 LocalAreaDTO localAreaDTO = new LocalAreaDTO();
                 localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
                 localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
+                localAreaDTO.setPincode(fieldHealthCareWorker.getLocalArea().getPincode());
                 workerDTO.setLocalArea(localAreaDTO);
             }
         }
@@ -261,9 +265,34 @@ public class DoctorService {
             healthRecordDTO.setTimestamp(healthRecord.getTimestamp());
             healthRecordDTO.setStatus(healthRecord.getStatus());
             citizenDTO.setHealthRecordDTO(healthRecordDTO);
+
+        }
+        if (citizen.getHealthRecord() != null && citizen.getHealthRecord().getFollowUps() != null) {
+            List<FollowUpDTO> followUpsDTO = citizen.getHealthRecord().getFollowUps().stream()
+                    .map(this::convertToFollowUpDTO)
+                    .collect(Collectors.toList());
+            HealthRecordDTO healthRecordDTO = citizenDTO.getHealthRecordDTO();
+            healthRecordDTO.setFollowUps(followUpsDTO);
+        }
+        if (citizen.getHealthRecord() != null && citizen.getHealthRecord().getIcd10Codes() != null) {
+            List<ICDCodesDTO> icdCodesDTO = citizen.getHealthRecord().getIcd10Codes().stream()
+                    .map(this::convertToICD10CodeDTO)
+                    .collect(Collectors.toList());
+            HealthRecordDTO healthRecordDTO = citizenDTO.getHealthRecordDTO();
+            healthRecordDTO.setIcd10codes(icdCodesDTO);
         }
 
         return citizenDTO;
+    }
+
+    private FollowUpDTO convertToFollowUpDTO(FollowUp followUp) {
+        FollowUpDTO followUpDTO = new FollowUpDTO();
+        followUpDTO.setId(followUp.getId());
+        followUpDTO.setDate(followUp.getDate());
+        followUpDTO.setStatus(followUp.getStatus());
+        followUpDTO.setInstructions(followUp.getInstructions());
+        followUpDTO.setMeasureOfVitals(followUp.getMeasureOfVitals());
+        return followUpDTO;
     }
 
     public HealthRecordDTO createHealthRecord(HealthRecordCreationDTO healthRecordCreationDTO) {
@@ -277,6 +306,10 @@ public class DoctorService {
         Doctor doctor = doctorRepository.findById(healthRecordCreationDTO.getDoctorId())
                 .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + healthRecordCreationDTO.getDoctorId()));
 
+//        ICD10Code icd10Code = icd10CodeRepository.findById(healthRecordCreationDTO.getIcd10CodeId())
+//                .orElseThrow(() -> new RuntimeException("ICD-10 code not found with ID: " + healthRecordCreationDTO.getIcd10CodeId()));
+
+        List<ICD10Code> icd10Codes = icd10CodeRepository.findAllById(healthRecordCreationDTO.getIcd10CodeId());
         List<String> prescriptions = Collections.singletonList(healthRecordCreationDTO.getPrescription());
 
         HealthRecord healthRecord = new HealthRecord();
@@ -287,6 +320,7 @@ public class DoctorService {
         healthRecord.setConclusion(healthRecordCreationDTO.getConclusion());
         healthRecord.setDiagnosis(healthRecordCreationDTO.getDiagnosis());
         healthRecord.setTimestamp(healthRecordCreationDTO.getTimestamp());
+        healthRecord.setIcd10Codes(icd10Codes);
 
         HealthRecord savedHealthRecord = healthRecordRepository.save(healthRecord);
 
@@ -334,6 +368,7 @@ public class DoctorService {
 
             workerDTO.setPassword(fieldHealthCareWorker.getPassword());
             workerDTO.setEmail(fieldHealthCareWorker.getEmail());
+            workerDTO.setPhoneNum(fieldHealthCareWorker.getPhoneNum());
             dto.setFieldHealthCareWorker(workerDTO);
             if (fieldHealthCareWorker.getDistrict() != null) {
                 DistrictDTO districtDTO = new DistrictDTO();
@@ -345,13 +380,25 @@ public class DoctorService {
                 LocalAreaDTO localAreaDTO = new LocalAreaDTO();
                 localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
                 localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
+                localAreaDTO.setPincode(fieldHealthCareWorker.getLocalArea().getPincode());
                 workerDTO.setLocalArea(localAreaDTO);
             }
         }
         Citizen citizen = healthRecord.getCitizen();
         CitizenDTO citizenDTO = mapToCitizenDTO(citizen);
+        dto.setIcd10codes(healthRecord.getIcd10Codes().stream()
+                .map(this::convertToICD10CodeDTO)
+                .collect(Collectors.toList()));
         dto.setCitizenDTO(citizenDTO);
         return dto;
+    }
+    private ICDCodesDTO convertToICD10CodeDTO(ICD10Code icd10Code) {
+        ICDCodesDTO icd10CodeDTO = new ICDCodesDTO();
+        icd10CodeDTO.setId(icd10Code.getId());
+        icd10CodeDTO.setCode(icd10Code.getCode());
+        icd10CodeDTO.setName(icd10Code.getName());
+        icd10CodeDTO.setDescription(icd10Code.getDescription());
+        return icd10CodeDTO;
     }
 
     public HealthRecordDTO addPrescriptionToHealthRecord(PrescriptionDTO prescriptionDTO) {
@@ -406,10 +453,12 @@ public class DoctorService {
         followUp.setInstructions(followUpRequestDTO.getInstructions());
         followUp.setMeasureOfVitals(followUpRequestDTO.getMeasureOfVitals());
 
-        // Save the follow-up entity
         FollowUp savedFollowUp = followUpRepository.save(followUp);
 
-        // Convert the saved follow-up entity to DTO
+        Citizen citizen = healthRecord.getCitizen();
+        citizen.setStatus("ongoing");
+        citizenRepository.save(citizen);
+
         return convertToDTO(savedFollowUp);
     }
 
@@ -432,6 +481,7 @@ public class DoctorService {
 
             workerDTO.setPassword(fieldHealthCareWorker.getPassword());
             workerDTO.setEmail(fieldHealthCareWorker.getEmail());
+            workerDTO.setPhoneNum(fieldHealthCareWorker.getPhoneNum());
             followUpDTO.setFieldHealthCareWorker(workerDTO);
             if (fieldHealthCareWorker.getDistrict() != null) {
                 DistrictDTO districtDTO = new DistrictDTO();
@@ -443,6 +493,7 @@ public class DoctorService {
                 LocalAreaDTO localAreaDTO = new LocalAreaDTO();
                 localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
                 localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
+                localAreaDTO.setPincode(fieldHealthCareWorker.getLocalArea().getPincode());
                 workerDTO.setLocalArea(localAreaDTO);
             }
         }

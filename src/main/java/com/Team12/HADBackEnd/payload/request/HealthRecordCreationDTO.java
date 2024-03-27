@@ -1,12 +1,14 @@
 package com.Team12.HADBackEnd.payload.request;
 
 import java.util.Date;
+import java.util.List;
 
 public class HealthRecordCreationDTO {
     private Long id;
     private Long citizenId;
     private Long workerId;
     private Long doctorId;
+    private List<Long> icd10CodeId;
     private String prescription;
     private String conclusion;
     private String diagnosis;
@@ -73,6 +75,14 @@ public class HealthRecordCreationDTO {
 
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public List<Long> getIcd10CodeId() {
+        return icd10CodeId;
+    }
+
+    public void setIcd10CodeId(List<Long> icd10CodeId) {
+        this.icd10CodeId = icd10CodeId;
     }
 }
 

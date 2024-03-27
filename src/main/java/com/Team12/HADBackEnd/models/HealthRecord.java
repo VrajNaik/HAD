@@ -1,6 +1,8 @@
 package com.Team12.HADBackEnd.models;
 
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,6 +34,11 @@ public class HealthRecord {
     private String status = "new";
     @Lob
     private String notes;
+    @ManyToMany
+    @JoinTable(name = "health_record_icd10_codes",
+            joinColumns = @JoinColumn(name = "health_record_id"),
+            inverseJoinColumns = @JoinColumn(name = "icd10_code_id"))
+    private List<ICD10Code> icd10Codes;
 
     public Long getId() {
         return id;
@@ -128,6 +135,20 @@ public class HealthRecord {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public List<ICD10Code> getIcd10Codes() {
+        return icd10Codes;
+    }
+
+    public void setIcd10Codes(List<ICD10Code> icd10Codes) {
+        this.icd10Codes = icd10Codes;
+    }
+    public void addICD10Code(ICD10Code icd10Code) {
+        if (icd10Codes == null) {
+            icd10Codes = new ArrayList<>();
+        }
+        icd10Codes.add(icd10Code);
     }
 }
 

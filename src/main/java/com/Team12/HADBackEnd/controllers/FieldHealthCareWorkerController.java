@@ -90,40 +90,60 @@ public class FieldHealthCareWorkerController {
     }
 
     @PostMapping("/getByUsername")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<?> getFieldHealthcareWorkerByUsername(@RequestBody UsernameDTO usernameRequest) {
         String username = usernameRequest.getUsername();
         try {
             FieldHealthcareWorkerDTO workerDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
             if (workerDTO == null) {
-                // Handle the case where no supervisor is found with the provided username
                 String message = "Field Health Care Worker Not Found with a given username";
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
             }
             return ResponseEntity.ok(workerDTO);
         } catch (DoctorNotFoundException ex) {
-            // Handle the case where supervisor is not found
             String message = "Field Health Care Worker Not Found with a given username";
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
         } catch (Exception e) {
-            // Handle other exceptions here
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @GetMapping("/getUnassignedFHW")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getUnassignedFieldHealthCareWorkers() {
-        List<FieldHealthcareWorkerDTO> unassignedWorkers = fieldHealthCareWorkerService.getUnassignedFieldHealthCareWorkerDTOs();
+
+    @PostMapping("/getUnassignedFHW")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getUnassignedFieldHealthCareWorkers(@RequestBody DistrictIdDTO districtRequestDTO) {
+        Long districtId = districtRequestDTO.getDistrictId();
+        List<FieldHealthcareWorkerDTO> unassignedWorkers = fieldHealthCareWorkerService.getUnassignedFieldHealthCareWorkerDTOs(districtId);
+        return new ResponseEntity<>(unassignedWorkers, HttpStatus.OK);
+    }
+
+    @PostMapping("/getFHWByDistrictId")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getFieldHealthCareWorkersInDistrict(@RequestBody DistrictIdDTO districtRequestDTO) {
+        Long districtId = districtRequestDTO.getDistrictId();
+        List<FieldHealthcareWorkerDTO> unassignedWorkers = fieldHealthCareWorkerService.getFieldHealthCareWorkerDTOs(districtId);
         return new ResponseEntity<>(unassignedWorkers, HttpStatus.OK);
     }
 
     @PostMapping("/register")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<CitizenDTO> registerCitizen(@RequestBody CitizenRegistrationDTO citizen) {
         CitizenDTO registeredCitizen = fieldHealthCareWorkerService.registerCitizen(citizen);
         return new ResponseEntity<>(registeredCitizen, HttpStatus.CREATED);
     }
+    @PostMapping("/calculateScore")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> calculateScore(@RequestBody AnswersDTO answersDTO) {
+        try {
+            int score = fieldHealthCareWorkerService.calculateScore(answersDTO.getAnswers());
+            return ResponseEntity.ok("Score: " + score);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
 }
 //@RestController
 //@CrossOrigin(origins = "*", maxAge = 3600)
@@ -159,4 +179,12 @@ public class FieldHealthCareWorkerController {
 //            // Handle other exceptions here
 //            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 //        }
+//    }
+
+
+//    @GetMapping("/getUnassignedFHW")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getUnassignedFieldHealthCareWorkers() {
+//        List<FieldHealthcareWorkerDTO> unassignedWorkers = fieldHealthCareWorkerService.getUnassignedFieldHealthCareWorkerDTOs();
+//        return new ResponseEntity<>(unassignedWorkers, HttpStatus.OK);
 //    }

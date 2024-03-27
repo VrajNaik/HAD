@@ -13,6 +13,7 @@ public class FieldHealthCareWorker {
     private int age;
     private String gender;
     private String email;
+    private Long phoneNum;
     private String username;
     private String password;
     private boolean active = true;
@@ -136,5 +137,13 @@ public class FieldHealthCareWorker {
 
     public void setFollowUps(List<FollowUp> followUps) {
         this.followUps = followUps;
+    }
+
+    public Long getPhoneNum() {
+        return phoneNum;
+    }
+
+    public void setPhoneNum(Long phoneNum) {
+        this.phoneNum = phoneNum;
     }
 }

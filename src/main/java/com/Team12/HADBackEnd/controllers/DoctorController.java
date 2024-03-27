@@ -88,7 +88,8 @@ public class DoctorController {
     }
 
     @PostMapping("/getPatientById")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
     public ResponseEntity<CitizenDTO> getCitizenByAbhaId(@RequestBody AbhaIdRequest request) {
         String abhaId = request.getAbhaId();
         CitizenDTO citizenDTO = doctorService.getCitizenByAbhaId(abhaId);
@@ -100,7 +101,8 @@ public class DoctorController {
     }
 
     @GetMapping("/getPatientsbyDocID")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
     public ResponseEntity<List<CitizenDTO>> getCitizensByDoctorId(@RequestBody DoctorIdRequest request) {
         Long doctorId = request.getDoctorId();
         List<CitizenDTO> citizens = doctorService.getCitizensByDoctorId(doctorId);
@@ -109,30 +111,35 @@ public class DoctorController {
 
 
     @PostMapping("/createHealthRecord")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
     public HealthRecordDTO createHealthRecord(@RequestBody HealthRecordCreationDTO healthRecordCreationDTO) {
         return doctorService.createHealthRecord(healthRecordCreationDTO);
     }
 
     @PostMapping("/addPrescription")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
     public HealthRecordDTO addPrescriptionToHealthRecord(@RequestBody PrescriptionDTO prescriptionDTO) {
         return doctorService.addPrescriptionToHealthRecord(prescriptionDTO);
     }
     @PostMapping("/editPrescription")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
     public HealthRecordDTO editPrescription(@RequestBody PrescriptionDTO editPrescriptionDTO) {
         return doctorService.editLastPrescription(editPrescriptionDTO);
     }
 
     @PostMapping("/addFollowUp")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
     public FollowUpDTO createFollowUp(@RequestBody FollowUpCreationDTO followUpDTO) {
         return doctorService.createFollowUp(followUpDTO);
     }
 
     @PostMapping("/getByUsername")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
     public ResponseEntity<?> getDoctorByUsername(@RequestBody UsernameDTO usernameRequest) {
         String username = usernameRequest.getUsername();
         try {

@@ -19,6 +19,8 @@ public interface FieldHealthCareWorkerRepository extends JpaRepository<FieldHeal
     FieldHealthCareWorker findUsername(String username);
 
     List<FieldHealthCareWorker> findByLocalAreaIsNull();
+    List<FieldHealthCareWorker> findByLocalAreaIsNullAndDistrictId(Long districtId);
+    List<FieldHealthCareWorker> findByDistrictId(Long districtId);
 
 
     long countByActiveTrue();

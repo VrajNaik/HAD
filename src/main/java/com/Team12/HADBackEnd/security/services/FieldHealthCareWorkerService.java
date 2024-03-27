@@ -242,14 +242,20 @@ public class FieldHealthCareWorkerService {
         return convertToDTO2(worker);
     }
 
-    public List<FieldHealthcareWorkerDTO> getUnassignedFieldHealthCareWorkerDTOs() {
-        List<FieldHealthCareWorker> unassignedWorkers = fieldHealthCareWorkerRepository.findByLocalAreaIsNull();
+    public List<FieldHealthcareWorkerDTO> getUnassignedFieldHealthCareWorkerDTOs(Long districtId) {
+        List<FieldHealthCareWorker> unassignedWorkers = fieldHealthCareWorkerRepository.findByLocalAreaIsNullAndDistrictId(districtId);
         return unassignedWorkers.stream()
                 .map(this::convertToDTO2)
                 .collect(Collectors.toList());
     }
 
 
+    public List<FieldHealthcareWorkerDTO> getFieldHealthCareWorkerDTOs(Long districtId) {
+        List<FieldHealthCareWorker> unassignedWorkers = fieldHealthCareWorkerRepository.findByDistrictId(districtId);
+        return unassignedWorkers.stream()
+                .map(this::convertToDTO2)
+                .collect(Collectors.toList());
+    }
     private FieldHealthcareWorkerDTO convertToDTO2(FieldHealthCareWorker worker) {
         FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
         workerDTO.setId(worker.getId());
@@ -265,6 +271,9 @@ public class FieldHealthCareWorkerService {
         }
         if (worker.getEmail() != null) {
             workerDTO.setEmail(worker.getEmail());
+        }
+        if (worker.getPhoneNum() != null) {
+            workerDTO.setPhoneNum(worker.getPhoneNum());
         }
         if (worker.getUsername() != null) {
             workerDTO.setUsername(worker.getUsername());
@@ -354,6 +363,7 @@ public class FieldHealthCareWorkerService {
 
             workerDTO.setPassword(fieldHealthCareWorker.getPassword());
             workerDTO.setEmail(fieldHealthCareWorker.getEmail());
+            workerDTO.setPhoneNum(fieldHealthCareWorker.getPhoneNum());
             citizenDTO.setFieldHealthCareWorker(workerDTO);
             if (fieldHealthCareWorker.getDistrict() != null) {
                 DistrictDTO districtDTO = new DistrictDTO();
@@ -428,6 +438,34 @@ public class FieldHealthCareWorkerService {
 
         // Send email
         javaMailSender.send(mailMessage);
+    }
+
+    public int calculateScore(List<String> answers) {
+        // Validate the number of answers
+        if (answers.size() != 10) {
+            throw new IllegalArgumentException("Exactly 10 answers are required.");
+        }
+
+        int score = 0;
+        for (String answer : answers) {
+            switch (answer.toUpperCase()) {
+                case "A":
+                    score += 3;
+                    break;
+                case "B":
+                    score += 2;
+                    break;
+                case "C":
+                    score += 1;
+                    break;
+                case "D":
+                    // No points for D
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid answer: " + answer);
+            }
+        }
+        return score;
     }
 }
 //import java.io.IOException;
@@ -700,4 +738,12 @@ public class FieldHealthCareWorkerService {
 //        CitizenDTO citizenResponse = mapToCitizenDTO(savedCitizen);
 //
 //        return citizenResponse;
+//    }
+
+
+//    public List<FieldHealthcareWorkerDTO> getUnassignedFieldHealthCareWorkerDTOs() {
+//        List<FieldHealthCareWorker> unassignedWorkers = fieldHealthCareWorkerRepository.findByLocalAreaIsNull();
+//        return unassignedWorkers.stream()
+//                .map(this::convertToDTO2)
+//                .collect(Collectors.toList());
 //    }

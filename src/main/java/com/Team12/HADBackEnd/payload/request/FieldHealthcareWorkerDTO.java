@@ -8,6 +8,7 @@ public class FieldHealthcareWorkerDTO {
     private int age;
     private String gender;
     private String email;
+    private Long phoneNum;
     private String username;
     private String password;
     private DistrictDTO district;
@@ -83,6 +84,14 @@ public class FieldHealthcareWorkerDTO {
 
     public void setLocalArea(LocalAreaDTO localAreaDTO) {
         this.localArea = localAreaDTO;
+    }
+
+    public Long getPhoneNum() {
+        return phoneNum;
+    }
+
+    public void setPhoneNum(Long phoneNum) {
+        this.phoneNum = phoneNum;
     }
 }
 

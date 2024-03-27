@@ -70,6 +70,7 @@ public class DistrictService {
         workerDTO.setAge(worker.getAge());
         workerDTO.setGender(worker.getGender());
         workerDTO.setEmail(worker.getEmail());
+        workerDTO.setPhoneNum(worker.getPhoneNum());
         workerDTO.setUsername(worker.getUsername());
         workerDTO.setPassword(worker.getPassword());
         DistrictDTO districtDTO = new DistrictDTO();

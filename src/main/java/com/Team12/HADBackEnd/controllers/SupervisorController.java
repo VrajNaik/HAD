@@ -1,8 +1,11 @@
 package com.Team12.HADBackEnd.controllers;
 
+import com.Team12.HADBackEnd.models.ICD10Code;
+import com.Team12.HADBackEnd.models.Questionnaire;
 import com.Team12.HADBackEnd.models.Supervisor;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.request.*;
+import com.Team12.HADBackEnd.payload.request.QuestionnaireDTO;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.UserRepository;
 import com.Team12.HADBackEnd.security.services.SupervisorService;
@@ -85,7 +88,8 @@ public class SupervisorController {
     }
 
     @PostMapping("/assignWorkerToLocalArea")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<String> assignWorkerToLocalArea(@RequestBody AssignmentRequest request) {
         String result = supervisorService.assignWorkerToLocalArea(request.getUsername(), request.getLocalAreaId());
         if (result.equals("Worker assigned successfully")) {
@@ -95,7 +99,8 @@ public class SupervisorController {
         }
     }
     @PostMapping("/getByUsername")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<?> getSupervisorByUsername(@RequestBody UsernameDTO usernameRequest) {
         String username = usernameRequest.getUsername();
         try {
@@ -114,6 +119,33 @@ public class SupervisorController {
             // Handle other exceptions here
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+    @PostMapping("/icd10codes")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<List<ICD10Code>> createICD10Codes(@RequestBody List<ICD10Code> icd10Codes) {
+        List<ICD10Code> savedICD10Codes = supervisorService.createICD10Codes(icd10Codes);
+        return new ResponseEntity<>(savedICD10Codes, HttpStatus.CREATED);
+    }
+    @PostMapping("/icd10code")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<ICD10Code> createICD10Code(@RequestBody ICD10Code icd10Code) {
+        ICD10Code savedICD10Code = supervisorService.createICD10Code(icd10Code);
+        return new ResponseEntity<>(savedICD10Code, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/createQuestionnaire")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<Questionnaire> createQuestionnaire(@RequestBody QuestionnaireDTO questionnaireDto) {
+        Questionnaire createdQuestionnaire = supervisorService.createQuestionnaire(questionnaireDto);
+        return ResponseEntity.ok(createdQuestionnaire);
+    }
+
+    @PostMapping("/getQuestionnaire")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<?> getQuestionnaireById(@RequestBody QuestionnaireIdDTO questionnaireIdRequest) {
+        Long id = questionnaireIdRequest.getId();
+        QuestionnaireResponseDTO questionnaireResponse = supervisorService.getQuestionnaireById(id);
+        return ResponseEntity.ok(questionnaireResponse);
     }
 }
 //@RestController
