@@ -31,8 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.Team12.HADBackEnd.security.jwt.JwtUtils;
 import com.Team12.HADBackEnd.security.services.UserDetailsImpl;
-//@CrossOrigin("http://172.16.145.87")
-//@CrossOrigin("http://172.16.145.87")
+
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/auth")
@@ -326,3 +325,6 @@ public class AuthController {
 //      long supervisorCount = supervisorRepository.count();
 //      long doctorCount = doctorRepository.count();
 //      long fieldWorkerCount = fieldHealthcareWorkerRepository.count();
+
+//@CrossOrigin("http://172.16.145.87")
+//@CrossOrigin("http://172.16.145.87")
