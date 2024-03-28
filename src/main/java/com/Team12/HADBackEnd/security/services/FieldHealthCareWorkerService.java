@@ -2,12 +2,10 @@ package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.request.*;
-import com.Team12.HADBackEnd.payload.response.DoctorAlreadyDeactivatedException;
-import com.Team12.HADBackEnd.payload.response.DoctorNotFoundException;
-import com.Team12.HADBackEnd.payload.response.DuplicateEmailIdException;
-import com.Team12.HADBackEnd.payload.response.UserNotFoundException;
+import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,10 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +24,8 @@ public class FieldHealthCareWorkerService {
     @Autowired
     private LocalAreaRepository localAreaRepository;
     @Autowired
+    private SupervisorRepository supervisorRepository;
+    @Autowired
     private DistrictRepository districtRepository;
     @Autowired
     private DoctorRepository doctorRepository;
@@ -38,7 +35,10 @@ public class FieldHealthCareWorkerService {
     private UserRepository userRepository;
     @Autowired
     private CitizenRepository citizenRepository;
-
+    @Autowired
+    private FollowUpRepository followUpRepository;
+    @Autowired
+    private HealthRecordRepository healthRecordRepository;
     @Autowired
     private PasswordEncoder encoder;
     @Autowired
@@ -242,8 +242,13 @@ public class FieldHealthCareWorkerService {
         return convertToDTO2(worker);
     }
 
-    public List<FieldHealthcareWorkerDTO> getUnassignedFieldHealthCareWorkerDTOs(Long districtId) {
-        List<FieldHealthCareWorker> unassignedWorkers = fieldHealthCareWorkerRepository.findByLocalAreaIsNullAndDistrictId(districtId);
+    public List<FieldHealthcareWorkerDTO> getUnassignedFieldHealthCareWorkerDTOs(String username) {
+        Supervisor supervisor = supervisorRepository.findByUsername(username)
+                .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + username));
+
+        // Get the district from the supervisor object
+        District district = supervisor.getDistrict();
+        List<FieldHealthCareWorker> unassignedWorkers = fieldHealthCareWorkerRepository.findByLocalAreaIsNullAndDistrictId(district.getId());
         return unassignedWorkers.stream()
                 .map(this::convertToDTO2)
                 .collect(Collectors.toList());
@@ -294,7 +299,96 @@ public class FieldHealthCareWorkerService {
             localAreaDTO.setPincode(worker.getLocalArea().getPincode());
             workerDTO.setLocalArea(localAreaDTO);
         }
+        if(worker.getHealthRecords() != null) {
+            List<HealthRecordDTO> healthRecordDTOs = worker.getHealthRecords().stream()
+                    .map(this::convertToHealthRecordDTO)
+                    .collect(Collectors.toList());
+            workerDTO.setHealthRecord(healthRecordDTOs);
+        }
         return workerDTO;
+    }
+
+    private HealthRecordDTO convertToHealthRecordDTO(HealthRecord healthRecord) {
+        HealthRecordDTO healthRecordDTO = new HealthRecordDTO();
+        healthRecordDTO.setId(healthRecord.getId());
+        healthRecordDTO.setPrescriptions(healthRecord.getPrescriptions());
+        healthRecordDTO.setConclusion(healthRecord.getConclusion());
+        healthRecordDTO.setDiagnosis(healthRecord.getDiagnosis());
+        healthRecordDTO.setTimestamp(healthRecord.getTimestamp());
+        healthRecordDTO.setStatus(healthRecord.getStatus());
+        if(healthRecord.getCitizen() != null) {
+            Citizen citizen = healthRecord.getCitizen();
+            CitizenDTO citizenDTO = new CitizenDTO();
+            citizenDTO.setName(citizen.getName());
+            citizenDTO.setAge(citizen.getAge());
+            citizenDTO.setId(citizen.getId());
+            citizenDTO.setAbhaId(citizen.getAbhaId());
+            citizenDTO.setAddress(citizen.getAbhaId());
+            citizenDTO.setConsent(citizen.isConsent());
+            citizenDTO.setDistrict(citizen.getDistrict());
+            citizenDTO.setGender(citizen.getGender());
+            citizenDTO.setPincode(citizen.getPincode());
+            healthRecordDTO.setCitizenDTO(citizenDTO);
+        }
+        if(healthRecord.getDoctor() != null) {
+            Doctor doctor = healthRecord.getDoctor();
+            DoctorDTO doctorDTO = new DoctorDTO();
+            doctorDTO.setName(doctor.getName());
+            doctorDTO.setAge(doctor.getAge());
+            doctorDTO.setId(doctor.getId());
+            doctorDTO.setGender(doctor.getGender());
+            doctorDTO.setLicenseId(doctor.getLicenseId());
+            doctorDTO.setEmail(doctor.getEmail());
+            doctorDTO.setUsername(doctor.getUsername());
+            doctorDTO.setSpecialty(doctor.getSpecialty());
+            doctorDTO.setPhoneNum(doctor.getPhoneNum());
+            if(doctor.getDistrict() != null) {
+                District district = doctor.getDistrict();
+                DistrictDTO districtDTO = new DistrictDTO();
+                districtDTO.setId(district.getId());
+                districtDTO.setName(district.getName());
+                doctorDTO.setDistrict(districtDTO);
+            }
+            healthRecordDTO.setDoctorDTO(doctorDTO);
+        }
+
+        // Convert FollowUps
+        if (healthRecord.getFollowUps() != null && !healthRecord.getFollowUps().isEmpty()) {
+            List<FollowUpDTO> followUpDTOs = healthRecord.getFollowUps().stream()
+                    .map(this::convertToFollowUpDTO)
+                    .collect(Collectors.toList());
+            healthRecordDTO.setFollowUps(followUpDTOs);
+        }
+
+        // Convert ICDCodes
+        if (healthRecord.getIcd10Codes() != null && !healthRecord.getIcd10Codes().isEmpty()) {
+            List<ICDCodesDTO> icd10CodesDTOs = healthRecord.getIcd10Codes().stream()
+                    .map(this::convertToICDCodesDTO)
+                    .collect(Collectors.toList());
+            healthRecordDTO.setIcd10codes(icd10CodesDTOs);
+        }
+
+        return healthRecordDTO;
+    }
+
+    private FollowUpDTO convertToFollowUpDTO(FollowUp followUp) {
+        FollowUpDTO followUpDTO = new FollowUpDTO();
+        followUpDTO.setId(followUp.getId());
+        followUpDTO.setDate(followUp.getDate());
+        followUpDTO.setStatus(followUp.getStatus());
+        followUpDTO.setInstructions(followUp.getInstructions());
+        followUpDTO.setMeasureOfVitals(followUp.getMeasureOfVitals());
+        // Omitting setting of FieldHealthcareWorkerDTO and HealthRecordDTO
+        return followUpDTO;
+    }
+
+    private ICDCodesDTO convertToICDCodesDTO(ICD10Code icd10Code) {
+        ICDCodesDTO icdCodesDTO = new ICDCodesDTO();
+        icdCodesDTO.setId(icd10Code.getId());
+        icdCodesDTO.setCode(icd10Code.getCode());
+        icdCodesDTO.setName(icd10Code.getName());
+        icdCodesDTO.setDescription(icd10Code.getDescription());
+        return icdCodesDTO;
     }
 
     public CitizenDTO registerCitizen(CitizenRegistrationDTO citizenDTO) {
@@ -466,6 +560,92 @@ public class FieldHealthCareWorkerService {
             }
         }
         return score;
+    }
+
+    public ResponseEntity<?> getDoctorsByFHWUsername(String username) {
+        FieldHealthCareWorker fhw = fieldHealthCareWorkerRepository.findByUsername(username)
+                .orElseThrow(() -> new DoctorNotFoundException("Field Health Care Worker not found with username: " + username));
+
+        Long districtId = fhw.getDistrict().getId();
+
+        List<Doctor> doctorsInDistrict = doctorRepository.findAllByDistrictId(districtId);
+
+        // Convert doctors to DTOs
+        List<DoctorDTO> doctorDTOs = doctorsInDistrict.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(doctorDTOs);
+    }
+    private DoctorDTO convertToDTO(Doctor doctor) {
+        DoctorDTO doctorDTO = new DoctorDTO();
+
+        doctorDTO.setId(doctor.getId());
+
+        if (doctor.getName() != null) {
+            doctorDTO.setName(doctor.getName());
+        }
+        if (doctor.getLicenseId() != null) {
+            doctorDTO.setLicenseId(doctor.getLicenseId());
+        }
+        if (doctor.getAge() != 0) {
+            doctorDTO.setAge(doctor.getAge());
+        }
+        if (doctor.getEmail() != null) {
+            doctorDTO.setEmail(doctor.getEmail());
+        }
+        if (doctor.getGender() != null) {
+            doctorDTO.setGender(doctor.getGender());
+        }
+        if (doctor.getSpecialty() != null) {
+            doctorDTO.setSpecialty(doctor.getSpecialty());
+        }
+        if (doctor.getUsername() != null) {
+            doctorDTO.setUsername(doctor.getUsername());
+        }
+        if (doctor.getPassword() != null) {
+            doctorDTO.setPassword(doctor.getPassword());
+        }
+        if (doctor.getPhoneNum() != null) {
+            doctorDTO.setPhoneNum(doctor.getPhoneNum());
+        }
+
+        // Set DistrictDTO if doctor has a district
+        if (doctor.getDistrict() != null) {
+            DistrictDTO districtDTO = new DistrictDTO();
+            districtDTO.setId(doctor.getDistrict().getId());
+            districtDTO.setName(doctor.getDistrict().getName());
+            doctorDTO.setDistrict(districtDTO);
+        }
+        return doctorDTO;
+    }
+    public void updateFollowUpStatus(Long followUpId, String status) {
+        FollowUp followUp = followUpRepository.findById(followUpId)
+                .orElseThrow(() -> new FollowUpNotFoundException("Follow-up not found with ID: " + followUpId));
+
+        followUp.setStatus(status);
+        followUpRepository.save(followUp);
+    }
+
+    public ResponseEntity<?> getHealthRecordByCitizenId(Long citizenId) {
+        HealthRecord healthRecord = healthRecordRepository.findByCitizen_Id(citizenId)
+                .orElseThrow(() -> new HealthRecordNotFoundException("Citizen not found with ID: " + citizenId));
+
+//        if (healthRecord == null) {
+//            throw new HealthRecordNotFoundException("Health record not found for citizen id: " + citizenId);
+//        }
+        return ResponseEntity.ok(convertToHealthRecordDTO(healthRecord));
+    }
+
+    public ResponseEntity<?> getFollowUpsByHealthRecordId(Long healthRecordId) {
+        List<FollowUp> followUps = followUpRepository.findByHealthRecordId(healthRecordId)
+                .orElseThrow(() -> new HealthRecordNotFoundException("FollowUps not found with ID: " + healthRecordId));
+        if (followUps == null || followUps.isEmpty()) {
+            throw new HealthRecordNotFoundException("FollowUps not found with ID: " + healthRecordId);
+        }
+        return ResponseEntity.ok(followUps.stream()
+                .map(this::convertToFollowUpDTO)
+                .collect(Collectors.toList()));
     }
 }
 //import java.io.IOException;

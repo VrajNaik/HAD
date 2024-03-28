@@ -13,6 +13,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     long count();
     boolean existsByUsername(String username);
     Optional<Doctor> findByUsername(String username);
-
+    List<Doctor> findAllByDistrictId(Long districtId);
     long countByActiveTrue();
 }

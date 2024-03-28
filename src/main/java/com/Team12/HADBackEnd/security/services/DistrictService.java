@@ -182,6 +182,18 @@ public class DistrictService {
         localAreaDTO.setId(localArea.getId());
         localAreaDTO.setName(localArea.getName());
         localAreaDTO.setPincode(localArea.getPincode());
+        FieldHealthCareWorker fieldHealthcareWorker = localArea.getFieldHealthCareWorker();
+        if(fieldHealthcareWorker != null) {
+            FieldHealthcareWorkerDTO fieldHealthcareWorkerDTO = new FieldHealthcareWorkerDTO();
+            fieldHealthcareWorkerDTO.setId(fieldHealthcareWorker.getId());
+            fieldHealthcareWorkerDTO.setName(fieldHealthcareWorker.getName());
+            fieldHealthcareWorkerDTO.setUsername(fieldHealthcareWorker.getUsername());
+            fieldHealthcareWorkerDTO.setEmail(fieldHealthcareWorker.getEmail());
+            fieldHealthcareWorkerDTO.setPhoneNum(fieldHealthcareWorker.getPhoneNum());
+            fieldHealthcareWorkerDTO.setAge(fieldHealthcareWorker.getAge());
+            fieldHealthcareWorkerDTO.setGender(fieldHealthcareWorker.getGender());
+            localAreaDTO.setFieldHealthcareWorkerDTO(fieldHealthcareWorkerDTO);
+        }
         return localAreaDTO;
     }
 

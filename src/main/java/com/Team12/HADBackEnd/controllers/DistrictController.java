@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("/district")
 public class DistrictController {
     private final DistrictService districtService;
@@ -54,8 +55,8 @@ public class DistrictController {
         return ResponseEntity.ok(message);
     }
 
-    @GetMapping("/getlocalareaswithindistrict")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/getlocalareaswithindistrict")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<List<LocalAreaDTO>> getLocalAreasInDistrict(@RequestBody DistrictIdRequestDTO request) {
         String username = request.getUsername();
         List<LocalAreaDTO> localAreas = districtService.getAllLocalAreasByUsername(username);

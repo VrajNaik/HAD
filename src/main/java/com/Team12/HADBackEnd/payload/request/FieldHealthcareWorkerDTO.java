@@ -1,6 +1,7 @@
 package com.Team12.HADBackEnd.payload.request;
 
 
+import java.util.List;
 
 public class FieldHealthcareWorkerDTO {
     private Long id;
@@ -13,6 +14,7 @@ public class FieldHealthcareWorkerDTO {
     private String password;
     private DistrictDTO district;
     private LocalAreaDTO localArea;
+    private List<HealthRecordDTO> healthRecord;
 
     public Long getId() {
         return id;
@@ -92,6 +94,14 @@ public class FieldHealthcareWorkerDTO {
 
     public void setPhoneNum(Long phoneNum) {
         this.phoneNum = phoneNum;
+    }
+
+    public List<HealthRecordDTO> getHealthRecord() {
+        return healthRecord;
+    }
+
+    public void setHealthRecord(List<HealthRecordDTO> healthRecord) {
+        this.healthRecord = healthRecord;
     }
 }
 

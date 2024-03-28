@@ -4,10 +4,7 @@ import com.Team12.HADBackEnd.models.Citizen;
 import com.Team12.HADBackEnd.models.FieldHealthCareWorker;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.request.*;
-import com.Team12.HADBackEnd.payload.response.DoctorAlreadyDeactivatedException;
-import com.Team12.HADBackEnd.payload.response.DoctorNotFoundException;
-import com.Team12.HADBackEnd.payload.response.DuplicateEmailIdException;
-import com.Team12.HADBackEnd.payload.response.UserNotFoundException;
+import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.UserRepository;
 import com.Team12.HADBackEnd.security.services.FieldHealthCareWorkerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,9 +109,9 @@ public class FieldHealthCareWorkerController {
 
     @PostMapping("/getUnassignedFHW")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
-    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getUnassignedFieldHealthCareWorkers(@RequestBody DistrictIdDTO districtRequestDTO) {
-        Long districtId = districtRequestDTO.getDistrictId();
-        List<FieldHealthcareWorkerDTO> unassignedWorkers = fieldHealthCareWorkerService.getUnassignedFieldHealthCareWorkerDTOs(districtId);
+    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getUnassignedFieldHealthCareWorkers(@RequestBody DistrictIdRequestDTO request) {
+        String username = request.getUsername();
+        List<FieldHealthcareWorkerDTO> unassignedWorkers = fieldHealthCareWorkerService.getUnassignedFieldHealthCareWorkerDTOs(username);
         return new ResponseEntity<>(unassignedWorkers, HttpStatus.OK);
     }
 
@@ -142,6 +139,50 @@ public class FieldHealthCareWorkerController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/getDoctorsByDistID")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> getDoctorsByFHWUsername(@RequestBody UsernameDTO usernameDTO) {
+        String username = usernameDTO.getUsername();
+        return fieldHealthCareWorkerService.getDoctorsByFHWUsername(username);
+    }
+
+    @PostMapping("/updateFollowUpStatus")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> updateFollowUpStatus(@RequestBody UpdateFollowUpStatusRequest request) {
+        try {
+            fieldHealthCareWorkerService.updateFollowUpStatus(request.getFollowUpId(), request.getStatus());
+            return ResponseEntity.ok(new MessageResponse("Follow-up status updated successfully."));
+        } catch (DoctorNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(e.getMessage()));
+        }
+    }
+    @PostMapping("/getHealthRecordById")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> getHealthRecordByCitizenId(@RequestBody CitizenIdRequestDTO requestDTO) {
+//        try {
+//            HealthRecordDTO healthRecordDTO = fieldHealthCareWorkerService.getHealthRecordByCitizenId(requestDTO.getCitizenId());
+//            return ResponseEntity.ok(healthRecordDTO);
+//        } catch (HealthRecordNotFoundException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request.");
+//        }
+        Long citizenId = requestDTO.getCitizenId();
+        return fieldHealthCareWorkerService.getHealthRecordByCitizenId(citizenId);
+    }
+    @PostMapping("/getFollowUpsByHealthRecordId")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> getFollowUpsByHealthRecordId(@RequestBody CitizenIdRequestDTO requestDTO) {
+//        try {
+//            List<FollowUpDTO> followUpDTOs = followUpService.getFollowUpsByHealthRecordId(requestDTO);
+//            return ResponseEntity.ok(followUpDTOs);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request.");
+//        }
+        Long healthRecordId = requestDTO.getCitizenId();
+        return fieldHealthCareWorkerService.getFollowUpsByHealthRecordId(healthRecordId);
     }
 
 }

@@ -4,6 +4,7 @@ public class LocalAreaDTO {
     private Long id;
     private String name;
     private String pincode;
+    private FieldHealthcareWorkerDTO fieldHealthcareWorkerDTO;
 
     public Long getId() {
         return id;
@@ -27,6 +28,14 @@ public class LocalAreaDTO {
 
     public void setPincode(String pincode) {
         this.pincode = pincode;
+    }
+
+    public FieldHealthcareWorkerDTO getFieldHealthcareWorkerDTO() {
+        return fieldHealthcareWorkerDTO;
+    }
+
+    public void setFieldHealthcareWorkerDTO(FieldHealthcareWorkerDTO fieldHealthcareWorkerDTO) {
+        this.fieldHealthcareWorkerDTO = fieldHealthcareWorkerDTO;
     }
 }
 
