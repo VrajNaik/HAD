@@ -91,6 +91,7 @@ public class FieldHealthCareWorkerController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<?> getFieldHealthcareWorkerByUsername(@RequestBody UsernameDTO usernameRequest) {
         String username = usernameRequest.getUsername();
+        System.out.println(username);
         try {
             FieldHealthcareWorkerDTO workerDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
             if (workerDTO == null) {

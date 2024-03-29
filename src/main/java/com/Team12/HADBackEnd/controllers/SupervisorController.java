@@ -147,6 +147,16 @@ public class SupervisorController {
         QuestionnaireResponseDTO questionnaireResponse = supervisorService.getQuestionnaireById(id);
         return ResponseEntity.ok(questionnaireResponse);
     }
+
+    @GetMapping("/getPendingFollowUps")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<List<FollowUpsDTO>> getFollowUpsForSupervisor(@RequestParam String username) {
+        List<FollowUpsDTO> followUps = supervisorService.getFollowUpsForSupervisor(username);
+        if (followUps.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(followUps);
+    }
 }
 //@RestController
 //@CrossOrigin(origins = "*", maxAge = 3600)

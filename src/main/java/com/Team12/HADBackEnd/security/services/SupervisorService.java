@@ -11,6 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +41,8 @@ public class SupervisorService {
     private QuestionnaireRepository questionnaireRepository;
     @Autowired
     private QuestionRepository questionRepository;
+    @Autowired
+    private FollowUpRepository followUpRepository;
     @Autowired
     private OptionRepository optionRepository;
     @Autowired
@@ -299,7 +304,42 @@ public class SupervisorService {
 
         return questionnaireDTO;
     }
+
+    public List<FollowUpsDTO> getFollowUpsForSupervisor(String supervisorUsername) {
+        Supervisor supervisor = supervisorRepository.findByUsername(supervisorUsername)
+                .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + supervisorUsername));
+
+        Long districtId = supervisor.getDistrict().getId();
+        List<FollowUpsDTO> followUpDTOs = new ArrayList<>();
+
+        List<FieldHealthCareWorker> fieldHealthCareWorkers = workerRepository.findByDistrictId(districtId);
+        if (!fieldHealthCareWorkers.isEmpty()) {
+            for (FieldHealthCareWorker worker : fieldHealthCareWorkers) {
+                List<FollowUp> followUps = followUpRepository.findByFieldHealthCareWorkerAndStatus(worker, "Assigned")
+                        .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + supervisorUsername));
+                for (FollowUp followUp : followUps) {
+                    FollowUpsDTO followUpDTO = new FollowUpsDTO();
+                    followUpDTO.setId(followUp.getId());
+                    followUpDTO.setDate(followUp.getDate());
+                    followUpDTO.setStatus(followUp.getStatus());
+                    followUpDTO.setInstructions(followUp.getInstructions());
+                    followUpDTO.setMeasureOfVitals(followUp.getMeasureOfVitals());
+                    followUpDTO.setHealthWorkerId(worker.getId());
+                    followUpDTO.setHealthWorkerName(worker.getName());
+                    followUpDTOs.add(followUpDTO);
+                }
+            }
+        }
+        return followUpDTOs;
+    }
 }
+
+
+
+
+
+
+
 
 //// Create new user's account
 //User user = new User(generatedUsername,

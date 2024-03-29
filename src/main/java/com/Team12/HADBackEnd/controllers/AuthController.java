@@ -141,12 +141,14 @@ public class AuthController {
                         userDetails.getEmail(),
                         roles),
                 counts,
+                false,
                 null));
       } else {
         // Fetch user's role and count from respective table
         String role = null;
         long roleCount = 0;
         Object userDetail = null;
+        Boolean loginFirst = true;
 
         // Fetch the user's role based on their username/email
         // Fetch user details based on their role
@@ -172,6 +174,7 @@ public class AuthController {
                         userDetails.getEmail(),
                         Collections.singletonList(role)), // Return user's role
                 Collections.singletonMap(role, roleCount), // Return role count
+                false,
                 userDetail // Return user's details
         ));
       }

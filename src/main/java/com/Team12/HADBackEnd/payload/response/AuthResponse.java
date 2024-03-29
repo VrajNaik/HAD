@@ -6,10 +6,12 @@ import java.util.Map;
 public class AuthResponse {
     private JwtResponse jwtResponse;
     private Map<String, Long> counts;
+    private Boolean loginFirst;
 
-    public AuthResponse(JwtResponse jwtResponse, Map<String, Long> counts, Object userDetail) {
+    public AuthResponse(JwtResponse jwtResponse,Map<String, Long> counts,  Boolean loginFirst, Object userDetail) {
         this.jwtResponse = jwtResponse;
         this.counts = counts;
+        this.loginFirst = loginFirst;
     }
 
     // Getters and setters
