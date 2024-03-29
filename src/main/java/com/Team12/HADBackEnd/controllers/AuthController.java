@@ -3,15 +3,10 @@ package com.Team12.HADBackEnd.controllers;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.Team12.HADBackEnd.models.ERole;
-import com.Team12.HADBackEnd.models.Role;
-import com.Team12.HADBackEnd.models.User;
+import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.request.LoginRequest;
 import com.Team12.HADBackEnd.payload.request.SignupRequest;
-import com.Team12.HADBackEnd.payload.response.AuthResponse;
-import com.Team12.HADBackEnd.payload.response.JwtResponse;
-import com.Team12.HADBackEnd.payload.response.MessageResponse;
-import com.Team12.HADBackEnd.payload.response.UserDeactivatedException;
+import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.*;
 import jakarta.validation.Valid;
 
@@ -139,16 +134,15 @@ public class AuthController {
                         userDetails.getId(),
                         userDetails.getUsername(),
                         userDetails.getEmail(),
-                        roles),
-                counts,
-                false,
-                null));
+                        roles,
+                        userDetails.isLogInFirst()
+                        ),
+                counts));
       } else {
         // Fetch user's role and count from respective table
         String role = null;
         long roleCount = 0;
         Object userDetail = null;
-        Boolean loginFirst = true;
 
         // Fetch the user's role based on their username/email
         // Fetch user details based on their role
@@ -164,6 +158,7 @@ public class AuthController {
           role = "fieldHealthcareWorker";
           roleCount = fieldHealthcareWorkerRepository.countByActiveTrue();
           userDetail = fieldHealthcareWorkerRepository.findByUsername(userDetails.getUsername()); // Fetch field healthcare worker details
+
         }
 
         // Return the response with the user's role, count, and details
@@ -172,10 +167,11 @@ public class AuthController {
                         userDetails.getId(),
                         userDetails.getUsername(),
                         userDetails.getEmail(),
-                        Collections.singletonList(role)), // Return user's role
-                Collections.singletonMap(role, roleCount), // Return role count
-                false,
-                userDetail // Return user's details
+                        Collections.singletonList(role),
+                        userDetails.isLogInFirst()
+                        ), // Return user's role
+                Collections.singletonMap(role, roleCount)// Return role count
+                // Return user's details
         ));
       }
     } catch (UserDeactivatedException e) {

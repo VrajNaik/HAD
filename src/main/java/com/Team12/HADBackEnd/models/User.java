@@ -42,6 +42,7 @@ public class User {
   private Set<Role> roles = new HashSet<>();
 
   private boolean active = true; // Default to active
+  private boolean logInFirst = true;
 
   public User() {
   }
@@ -114,6 +115,14 @@ public class User {
 
   public void setResetTokenExpiry(LocalDateTime resetTokenExpiry) {
     this.resetTokenExpiry = resetTokenExpiry;
+  }
+
+  public boolean isLogInFirst() {
+    return logInFirst;
+  }
+
+  public void setLogInFirst(boolean logInFirst) {
+    this.logInFirst = logInFirst;
   }
 }
 

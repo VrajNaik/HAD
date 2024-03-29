@@ -25,16 +25,18 @@ public class UserDetailsImpl implements UserDetails {
   private String password;
 
   private boolean active;
+  private boolean logInFirst;
   private Collection<? extends GrantedAuthority> authorities;
 
   public UserDetailsImpl(Long id, String username, String email, String password,
-      Collection<? extends GrantedAuthority> authorities, boolean active) {
+      Collection<? extends GrantedAuthority> authorities, boolean active, boolean logInFirst) {
     this.id = id;
     this.username = username;
     this.email = email;
     this.password = password;
     this.authorities = authorities;
     this.active = active;
+    this.logInFirst = logInFirst;
   }
 
   public static UserDetailsImpl build(User user) {
@@ -48,11 +50,15 @@ public class UserDetailsImpl implements UserDetails {
         user.getEmail(),
         user.getPassword(),
         authorities,
-        user.isActive());
+        user.isActive(),
+            user.isLogInFirst());
   }
 
   public boolean isActivate() {
     return active;
+  }
+  public boolean isLogInFirst() {
+    return logInFirst;
   }
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

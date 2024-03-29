@@ -9,13 +9,17 @@ public class JwtResponse {
   private String username;
   private String email;
   private List<String> roles;
+  private boolean logInFirst;
 
-  public JwtResponse(String accessToken, Long id, String username, String email, List<String> roles) {
+
+  public JwtResponse(String accessToken, Long id, String username, String email, List<String> roles, boolean logInFirst) {
     this.token = accessToken;
     this.id = id;
     this.username = username;
     this.email = email;
     this.roles = roles;
+    this.logInFirst = logInFirst;
+
   }
 
   public String getAccessToken() {
@@ -60,5 +64,13 @@ public class JwtResponse {
 
   public List<String> getRoles() {
     return roles;
+  }
+
+  public boolean isLogInFirst() {
+    return logInFirst;
+  }
+
+  public void setLogInFirst(boolean logInFirst) {
+    this.logInFirst = logInFirst;
   }
 }

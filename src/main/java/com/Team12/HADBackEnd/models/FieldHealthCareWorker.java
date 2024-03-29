@@ -146,4 +146,5 @@ public class FieldHealthCareWorker {
     public void setPhoneNum(Long phoneNum) {
         this.phoneNum = phoneNum;
     }
+
 }

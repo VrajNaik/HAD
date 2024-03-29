@@ -50,6 +50,19 @@ public class ForgotPasswordController {
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
     }
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
+        String username = resetPasswordRequest.getToken();
+        String newPassword = resetPasswordRequest.getNewPassword();
+        boolean success = forgotPasswordService.changePassword(username, newPassword);
+        if (success) {
+            return ResponseEntity.ok("Password reset successfully.");
+        } else {
+            // Password reset failed, return error response
+            CustomErrorResponse errorResponse = new CustomErrorResponse("/api/change-password", "Invalid Token", "Invalid or expired token.", 400);
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+    }
 }
 
 //

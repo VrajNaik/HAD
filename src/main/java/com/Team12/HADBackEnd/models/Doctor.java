@@ -142,6 +142,7 @@ public class Doctor {
     public void setHealthRecords(List<HealthRecord> healthRecords) {
         this.healthRecords = healthRecords;
     }
+
 }
 
 //    @Transient
