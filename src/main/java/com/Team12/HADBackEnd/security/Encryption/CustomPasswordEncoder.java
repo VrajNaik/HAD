@@ -1,4 +1,4 @@
-package com.Team12.HADBackEnd.security.PasswordENcoder;
+package com.Team12.HADBackEnd.security.Encryption;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 

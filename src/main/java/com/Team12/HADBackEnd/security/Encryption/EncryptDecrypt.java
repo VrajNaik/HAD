@@ -1,4 +1,4 @@
-package com.Team12.HADBackEnd.security.PasswordENcoder;
+package com.Team12.HADBackEnd.security.Encryption;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
