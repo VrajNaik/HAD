@@ -2,8 +2,8 @@ package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
 
+import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.payload.request.*;
-import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,8 +48,8 @@ public class DoctorService {
 
     @Transactional(rollbackFor = Exception.class)
     public DoctorDTO updateDoctor(DoctorUpdateRequestDTO request) {
-        Doctor doctor = doctorRepository.findById(request.getId())
-                .orElseThrow(() -> new RuntimeException("Doctor not found with id: " + request.getId()));
+        Doctor doctor = doctorRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RoleNotFoundException("Doctor not found with username: " + request.getUsername()));
         if (request.getName() != null) {
             doctor.setName(request.getName());
         }
@@ -505,39 +505,26 @@ public class DoctorService {
         return followUpDTO;
     }
 
+
     @Transactional
     public void setActiveStatusByUsername(String username, boolean active) {
-        // Find the doctor by username
         Doctor doctor = doctorRepository.findByUsername(username)
-                .orElseThrow(() -> new DoctorNotFoundException("Doctor not found with username: " + username));
-
-        // Check if the doctor's active status is already the desired status
+                .orElseThrow(() -> new RoleNotFoundException("Doctor not found with username: " + username));
         if (doctor.isActive() == active) {
             throw new DoctorAlreadyDeactivatedException("Doctor is already " + (active ? "activated" : "deactivated"));
         }
-
-        // Check if any associated fields are not null
-        if (doctor.getDistrict() != null || !doctor.getCitizens().isEmpty() || !doctor.getHealthRecords().isEmpty()) {
+        if (!doctor.getCitizens().isEmpty() || !doctor.getHealthRecords().isEmpty()) {
             StringBuilder message = new StringBuilder("Cannot deactivate doctor due to associated entities:\n");
-
-            if (doctor.getDistrict() != null) {
-                message.append(" - This doctor is associated with a district.\n");
-            }
-
             if (!doctor.getCitizens().isEmpty()) {
                 message.append(" - This doctor is associated with citizens.\n");
             }
-
             if (!doctor.getHealthRecords().isEmpty()) {
                 message.append(" - This doctor is associated with health records.\n");
             }
-
-            throw new DoctorNotFoundException(message.toString());
+            throw new RoleNotFoundException(message.toString());
         }
-
         doctor.setActive(active);
         doctorRepository.save(doctor);
-
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
         user.setActive(active);
@@ -546,7 +533,7 @@ public class DoctorService {
 
     public DoctorDTO getDoctorByUsername(String username) {
         Doctor doctor = doctorRepository.findByUsername(username)
-                .orElseThrow(() -> new DoctorNotFoundException("Dcotor not found with username: " + username));
+                .orElseThrow(() -> new RoleNotFoundException("Dcotor not found with username: " + username));
         return convertToDTO(doctor);
     }
 

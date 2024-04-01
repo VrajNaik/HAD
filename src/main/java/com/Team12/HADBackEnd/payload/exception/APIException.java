@@ -1,21 +1,12 @@
-package com.Team12.HADBackEnd.payload.response;
+package com.Team12.HADBackEnd.payload.exception;
 
-public class CustomErrorResponse {
-    private String path;
-    private String error;
-    private String message;
-    private int status;
+import org.springframework.http.HttpStatus;
 
-    // Constructor, getters, and setters
-    public CustomErrorResponse() {
-    }
-
-    public CustomErrorResponse(String path, String error, String message, int status) {
-        this.path = path;
-        this.error = error;
-        this.message = message;
-        this.status = status;
-    }
+public class APIException {
+        private String path;
+        private String error;
+        private String message;
+        private int status;
 
     public String getPath() {
         return path;
@@ -49,3 +40,4 @@ public class CustomErrorResponse {
         this.status = status;
     }
 }
+

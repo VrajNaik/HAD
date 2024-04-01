@@ -1,8 +1,8 @@
 package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
+import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.payload.request.*;
-import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -93,8 +93,8 @@ public class FieldHealthCareWorkerService {
 
     @Transactional(rollbackFor = Exception.class)
     public FieldHealthcareWorkerDTO updateFieldHealthCareWorker(SupervisorUpdateRequestDTO request) {
-        FieldHealthCareWorker worker  = fieldHealthCareWorkerRepository.findById(request.getId())
-                .orElseThrow(() -> new RuntimeException("Field HealthCare Worker not found with id: " + request.getId()));
+        FieldHealthCareWorker worker  = fieldHealthCareWorkerRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RoleNotFoundException("Field HealthCare Worker not found with Username: " + request.getUsername()));
 
         if (request.getName() != null) {
             worker.setName(request.getName());
@@ -175,22 +175,15 @@ public class FieldHealthCareWorkerService {
 
     @Transactional
     public void setActiveStatusByUsername(String username, boolean active) {
-        // Find the field health care worker by username
-        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
-                .orElseThrow(() -> new DoctorNotFoundException("Field Health Care Worker not found with username: " + username));
 
-        // Check if the field health care worker's active status is already the desired status
+        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+                .orElseThrow(() -> new RoleNotFoundException("Field Health Care Worker not found with username: " + username));
         if (worker.isActive() == active) {
             throw new DoctorAlreadyDeactivatedException("Field Health Care Worker is already " + (active ? "activated" : "deactivated"));
         }
-
-        // Check if any associated fields are not null
-        if (worker.getDistrict() != null || worker.getLocalArea() != null || !worker.getCitizens().isEmpty() || !worker.getHealthRecords().isEmpty() || !worker.getFollowUps().isEmpty()) {
+        if (worker.getLocalArea() != null || !worker.getCitizens().isEmpty() || !worker.getHealthRecords().isEmpty() || !worker.getFollowUps().isEmpty()) {
             StringBuilder message = new StringBuilder("Cannot deactivate field health care worker due to associated entities:\n");
 
-            if (worker.getDistrict() != null) {
-                message.append(" - This worker is associated with a district.\n");
-            }
 
             if (worker.getLocalArea() != null) {
                 message.append(" - This worker is associated with a local area.\n");
@@ -208,7 +201,7 @@ public class FieldHealthCareWorkerService {
                 message.append(" - This worker is associated with follow-up records.\n");
             }
 
-            throw new DoctorNotFoundException(message.toString());
+            throw new RoleNotFoundException(message.toString());
         }
 
         // Update the active status of the field health care worker
@@ -238,13 +231,13 @@ public class FieldHealthCareWorkerService {
 
     public FieldHealthcareWorkerDTO getFieldHealthcareWorkerByUsername(String username) {
         FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
-                .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + username));
+                .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with username: " + username));
         return convertToDTO2(worker);
     }
 
     public List<FieldHealthcareWorkerDTO> getUnassignedFieldHealthCareWorkerDTOs(String username) {
         Supervisor supervisor = supervisorRepository.findByUsername(username)
-                .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + username));
+                .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with username: " + username));
 
         // Get the district from the supervisor object
         District district = supervisor.getDistrict();
@@ -564,7 +557,7 @@ public class FieldHealthCareWorkerService {
 
     public ResponseEntity<?> getDoctorsByFHWUsername(String username) {
         FieldHealthCareWorker fhw = fieldHealthCareWorkerRepository.findByUsername(username)
-                .orElseThrow(() -> new DoctorNotFoundException("Field Health Care Worker not found with username: " + username));
+                .orElseThrow(() -> new RoleNotFoundException("Field Health Care Worker not found with username: " + username));
 
         Long districtId = fhw.getDistrict().getId();
 

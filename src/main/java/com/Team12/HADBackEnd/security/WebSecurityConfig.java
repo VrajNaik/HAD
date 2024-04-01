@@ -63,6 +63,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
             .authorizeHttpRequests(auth ->
                     auth.requestMatchers("/auth/**").permitAll()
                             .requestMatchers("/test/**").permitAll()
+                            .requestMatchers("/admin/**").permitAll()
                             .requestMatchers("/doctor/viewDoctors").permitAll()
                             .requestMatchers("/doctor/addDoctor").permitAll()
                             .requestMatchers("/doctor/updateDoctor").permitAll()

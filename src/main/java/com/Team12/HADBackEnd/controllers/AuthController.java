@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.Team12.HADBackEnd.models.*;
+import com.Team12.HADBackEnd.payload.exception.UserDeactivatedException;
 import com.Team12.HADBackEnd.payload.request.LoginRequest;
 import com.Team12.HADBackEnd.payload.request.SignupRequest;
 import com.Team12.HADBackEnd.payload.response.*;

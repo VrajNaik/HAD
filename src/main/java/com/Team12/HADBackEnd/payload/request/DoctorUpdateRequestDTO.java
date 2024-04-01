@@ -1,7 +1,7 @@
 package com.Team12.HADBackEnd.payload.request;
 
 public class DoctorUpdateRequestDTO {
-    private Long id;
+    private String username;
     private String name;
     private String licenseId;
     private int age;
@@ -11,12 +11,13 @@ public class DoctorUpdateRequestDTO {
     private String email;
     private Long newDistrictId;
 
-    public Long getId() {
-        return id;
+
+    public String getUsername() {
+        return username;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getName() {

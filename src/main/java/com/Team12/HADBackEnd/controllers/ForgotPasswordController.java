@@ -3,7 +3,7 @@ package com.Team12.HADBackEnd.controllers;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.request.ForgotPasswordRequest;
 import com.Team12.HADBackEnd.payload.request.ResetPasswordRequest;
-import com.Team12.HADBackEnd.payload.response.CustomErrorResponse;
+import com.Team12.HADBackEnd.payload.exception.CustomErrorResponse;
 import com.Team12.HADBackEnd.repository.UserRepository;
 import com.Team12.HADBackEnd.security.services.ForgotPasswordService;
 import org.springframework.beans.factory.annotation.Autowired;

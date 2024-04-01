@@ -1,6 +1,10 @@
 package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
+import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
+import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
+import com.Team12.HADBackEnd.payload.exception.RoleNotFoundException;
+import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.*;
@@ -11,9 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -94,8 +95,8 @@ public class SupervisorService {
     }
     @Transactional(rollbackFor = Exception.class)
     public SupervisorDTO updateSupervisor(SupervisorUpdateRequestDTO request) {
-        Supervisor supervisor = supervisorRepository.findById(request.getId())
-                .orElseThrow(() -> new RuntimeException("Supervisor not found with id: " + request.getId()));
+        Supervisor supervisor = supervisorRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with Username: " + request.getUsername()));
 
         if (request.getName() != null) {
             supervisor.setName(request.getName());
@@ -153,14 +154,14 @@ public class SupervisorService {
 
     public SupervisorDTO getSupervisorByUsername(String username) {
         Supervisor supervisor = supervisorRepository.findByUsername(username)
-                .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + username));
+                .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with username: " + username));
         return convertToDTO(supervisor);
     }
 
     @Transactional
     public void setActiveStatusByUsername(String username, boolean active) {
         Supervisor supervisor = supervisorRepository.findByUsername(username)
-                .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + username));
+                .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with username: " + username));
 
         if (supervisor.isActive() == active) {
             throw new DoctorAlreadyDeactivatedException("Supervisor is already " + (active ? "activated" : "deactivated"));
@@ -307,7 +308,7 @@ public class SupervisorService {
 
     public List<FollowUpsDTO> getFollowUpsForSupervisor(String supervisorUsername) {
         Supervisor supervisor = supervisorRepository.findByUsername(supervisorUsername)
-                .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + supervisorUsername));
+                .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with username: " + supervisorUsername));
 
         Long districtId = supervisor.getDistrict().getId();
         List<FollowUpsDTO> followUpDTOs = new ArrayList<>();
@@ -316,7 +317,7 @@ public class SupervisorService {
         if (!fieldHealthCareWorkers.isEmpty()) {
             for (FieldHealthCareWorker worker : fieldHealthCareWorkers) {
                 List<FollowUp> followUps = followUpRepository.findByFieldHealthCareWorkerAndStatus(worker, "Assigned")
-                        .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + supervisorUsername));
+                        .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with username: " + supervisorUsername));
                 for (FollowUp followUp : followUps) {
                     FollowUpsDTO followUpDTO = new FollowUpsDTO();
                     followUpDTO.setId(followUp.getId());

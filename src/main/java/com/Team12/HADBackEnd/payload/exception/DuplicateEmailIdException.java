@@ -1,4 +1,4 @@
-package com.Team12.HADBackEnd.payload.response;
+package com.Team12.HADBackEnd.payload.exception;
 
 public class DuplicateEmailIdException extends RuntimeException {
     public DuplicateEmailIdException(String message) {

@@ -2,8 +2,10 @@ package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.models.ICD10Code;
 import com.Team12.HADBackEnd.models.Questionnaire;
-import com.Team12.HADBackEnd.models.Supervisor;
 import com.Team12.HADBackEnd.models.User;
+import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
+import com.Team12.HADBackEnd.payload.exception.RoleNotFoundException;
+import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.request.QuestionnaireDTO;
 import com.Team12.HADBackEnd.payload.response.*;
@@ -13,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -30,29 +31,29 @@ public class SupervisorController {
     @Autowired
     private UserRepository userRepository;
 
-    @PostMapping("/addSupervisor")
-    @PreAuthorize("hasRole('ADMIN')")
-    public Supervisor addSupervisor(@RequestBody Supervisor supervisor) {
-        try{
-            return supervisorService.addSupervisor(supervisor);
-        }
-        catch (DuplicateLicenseIdException | DuplicateEmailIdException e) {
-            throw new AuthenticationServiceException(e.getMessage(), e);
-        }
-    }
-    @GetMapping("/viewSupervisors")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<SupervisorDTO>> getAllSupervisor() {
-        List<SupervisorDTO> supervisor = supervisorService.getAllSupervisorsWithDistricts();
-        return new ResponseEntity<>(supervisor, HttpStatus.OK);
-    }
-
-    @PutMapping("/updateSupervisor")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SupervisorDTO> updateDoctor(@RequestBody SupervisorUpdateRequestDTO request) {
-        SupervisorDTO updatedSupervisorDTO = supervisorService.updateSupervisor(request);
-        return ResponseEntity.ok(updatedSupervisorDTO);
-    }
+//    @PostMapping("/addSupervisor")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public Supervisor addSupervisor(@RequestBody Supervisor supervisor) {
+//        try{
+//            return supervisorService.addSupervisor(supervisor);
+//        }
+//        catch (DuplicateLicenseIdException | DuplicateEmailIdException e) {
+//            throw new AuthenticationServiceException(e.getMessage(), e);
+//        }
+//    }
+//    @GetMapping("/viewSupervisors")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<List<SupervisorDTO>> getAllSupervisor() {
+//        List<SupervisorDTO> supervisor = supervisorService.getAllSupervisorsWithDistricts();
+//        return new ResponseEntity<>(supervisor, HttpStatus.OK);
+//    }
+//
+//    @PutMapping("/updateSupervisor")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<SupervisorDTO> updateDoctor(@RequestBody SupervisorUpdateRequestDTO request) {
+//        SupervisorDTO updatedSupervisorDTO = supervisorService.updateSupervisor(request);
+//        return ResponseEntity.ok(updatedSupervisorDTO);
+//    }
 
     @PutMapping("/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
@@ -64,7 +65,7 @@ public class SupervisorController {
             return ResponseEntity.ok().build();
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (DoctorNotFoundException e) {
+        } catch (RoleNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (DoctorAlreadyDeactivatedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -80,7 +81,7 @@ public class SupervisorController {
             return ResponseEntity.ok().build();
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (DoctorNotFoundException e) {
+        } catch (RoleNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (DoctorAlreadyDeactivatedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -111,7 +112,7 @@ public class SupervisorController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
             }
             return ResponseEntity.ok(supervisorDTO);
-        } catch (DoctorNotFoundException ex) {
+        } catch (RoleNotFoundException ex) {
             // Handle the case where supervisor is not found
             String message = "Supervisor Not Found with a given username";
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));

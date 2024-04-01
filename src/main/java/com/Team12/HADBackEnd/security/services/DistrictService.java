@@ -2,7 +2,7 @@ package com.Team12.HADBackEnd.security.services;
 
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.request.*;
-import com.Team12.HADBackEnd.payload.response.DoctorNotFoundException;
+import com.Team12.HADBackEnd.payload.exception.RoleNotFoundException;
 import com.Team12.HADBackEnd.repository.DistrictRepository;
 import com.Team12.HADBackEnd.repository.LocalAreaRepository;
 import com.Team12.HADBackEnd.repository.SupervisorRepository;
@@ -159,14 +159,14 @@ public class DistrictService {
     public List<LocalAreaDTO> getAllLocalAreasByUsername(String username) {
         // Find the supervisor by username
         Supervisor supervisor = supervisorRepository.findByUsername(username)
-                .orElseThrow(() -> new DoctorNotFoundException("Supervisor not found with username: " + username));
+                .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with username: " + username));
 
         // Get the district from the supervisor object
         District district = supervisor.getDistrict();
 
         // Check if the district is null
         if (district == null) {
-            throw new DoctorNotFoundException("District not assigned to the supervisor with username: " + username);
+            throw new RoleNotFoundException("District not assigned to the supervisor with username: " + username);
         }
 
         // Retrieve local areas associated with the district
