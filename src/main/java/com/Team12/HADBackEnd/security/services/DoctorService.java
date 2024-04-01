@@ -71,9 +71,9 @@ public class DoctorService {
         if (request.getEmail() != null) {
             doctor.setEmail(request.getEmail());
         }
-        if (request.getNewDistrictId() != null) {
-            District newDistrict = districtRepository.findById(request.getNewDistrictId())
-                    .orElseThrow(() -> new RuntimeException("District not found with id: " + request.getNewDistrictId()));
+        if (request.getDistrict().getId() != null) {
+            District newDistrict = districtRepository.findById(request.getDistrict().getId())
+                    .orElseThrow(() -> new RuntimeException("District not found with id: " + request.getDistrict().getId()));
             doctor.setDistrict(newDistrict);
         }
 
@@ -112,6 +112,7 @@ public class DoctorService {
         doctor.setUsername(generatedUsername);
         doctor.setPassword(encoder.encode(generatedRandomPassword));
         doctor.setDistrict(district);
+//        doctor.setCitizens(districtRepository.findById(doctor.getDistrictId()));
         Doctor savedDoctor = doctorRepository.save(doctor);
         System.out.println("Doctor's District: " + savedDoctor.getDistrict());
         // 2

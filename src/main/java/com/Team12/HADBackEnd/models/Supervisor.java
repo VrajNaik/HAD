@@ -14,6 +14,7 @@ public class Supervisor {
     private String email;
     private String username;
     private String password;
+    private Long phoneNum;
     private boolean active = true;
 
     @OneToOne
@@ -82,6 +83,14 @@ public class Supervisor {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public Long getPhoneNum() {
+        return phoneNum;
+    }
+
+    public void setPhoneNum(Long phoneNum) {
+        this.phoneNum = phoneNum;
     }
 
     public District getDistrict() {

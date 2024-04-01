@@ -110,9 +110,12 @@ public class SupervisorService {
         if (request.getEmail() != null) {
             supervisor.setEmail(request.getEmail());
         }
-        if (request.getNewDistrictId() != null) {
-            District newDistrict = districtRepository.findById(request.getNewDistrictId())
-                    .orElseThrow(() -> new RuntimeException("District not found with id: " + request.getNewDistrictId()));
+        if (request.getPhoneNum() != null) {
+            supervisor.setPhoneNum(request.getPhoneNum());
+        }
+        if (request.getDistrict().getId() != null) {
+            District newDistrict = districtRepository.findById(request.getDistrict().getId())
+                    .orElseThrow(() -> new RuntimeException("District not found with id: " + request.getDistrict().getId()));
             supervisor.setDistrict(newDistrict);
         }
 
@@ -135,6 +138,9 @@ public class SupervisorService {
         }
         if (supervisor.getEmail() != null) {
             supervisorDTO.setEmail(supervisor.getEmail());
+        }
+        if (supervisor.getPhoneNum() != null) {
+            supervisorDTO.setPhoneNum(supervisor.getPhoneNum());
         }
         if (supervisor.getUsername() != null) {
             supervisorDTO.setUsername(supervisor.getUsername());

@@ -54,7 +54,7 @@ public class AdminController {
     }
 
 
-    @PutMapping("/updateDoctor")
+    @PostMapping("/updateDoctor")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateDoctor(@RequestBody DoctorUpdateRequestDTO request) {
         DoctorDTO updatedDoctorDTO = doctorService.updateDoctor(request);
@@ -80,7 +80,7 @@ public class AdminController {
         return new ResponseEntity<>(worker, HttpStatus.OK);
     }
 
-    @PutMapping("/updateFieldHealthCareWorker")
+    @PostMapping("/updateFieldHealthCareWorker")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateFieldHealthCareWorker(@RequestBody SupervisorUpdateRequestDTO request) {
         FieldHealthcareWorkerDTO updatedWorkerDTO = fieldHealthCareWorkerService.updateFieldHealthCareWorker(request);
@@ -104,7 +104,7 @@ public class AdminController {
         return new ResponseEntity<>(supervisor, HttpStatus.OK);
     }
 
-    @PutMapping("/updateSupervisor")
+    @PostMapping("/updateSupervisor")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateSupervisor(@RequestBody SupervisorUpdateRequestDTO request) {
         SupervisorDTO updatedSupervisorDTO = supervisorService.updateSupervisor(request);

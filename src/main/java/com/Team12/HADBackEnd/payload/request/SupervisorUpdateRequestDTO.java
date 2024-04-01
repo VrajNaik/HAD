@@ -6,7 +6,9 @@ public class SupervisorUpdateRequestDTO {
     private int age;
     private String gender;
     private String email;
-    private Long newDistrictId;
+    private Long phoneNum;
+//    private Long newDistrictId;
+    private DistrictDTO district;
 
     public String getUsername() {
         return username;
@@ -48,12 +50,20 @@ public class SupervisorUpdateRequestDTO {
         this.email = email;
     }
 
-    public Long getNewDistrictId() {
-        return newDistrictId;
+    public DistrictDTO getDistrict() {
+        return district;
     }
 
-    public void setNewDistrictId(Long newDistrictId) {
-        this.newDistrictId = newDistrictId;
+    public void setDistrict(DistrictDTO district) {
+        this.district = district;
+    }
+
+    public Long getPhoneNum() {
+        return phoneNum;
+    }
+
+    public void setPhoneNum(Long phoneNum) {
+        this.phoneNum = phoneNum;
     }
 }
 

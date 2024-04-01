@@ -9,7 +9,8 @@ public class DoctorUpdateRequestDTO {
     private String specialty;
     private Long phoneNum;
     private String email;
-    private Long newDistrictId;
+//    private Long newDistrictId;
+    private DistrictDTO district;
 
 
     public String getUsername() {
@@ -76,11 +77,11 @@ public class DoctorUpdateRequestDTO {
         this.email = email;
     }
 
-    public Long getNewDistrictId() {
-        return newDistrictId;
+    public DistrictDTO getDistrict() {
+        return district;
     }
 
-    public void setNewDistrictId(Long newDistrictId) {
-        this.newDistrictId = newDistrictId;
+    public void setDistrict(DistrictDTO district) {
+        this.district = district;
     }
 }

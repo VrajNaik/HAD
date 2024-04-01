@@ -108,9 +108,12 @@ public class FieldHealthCareWorkerService {
         if (request.getEmail() != null) {
             worker.setEmail(request.getEmail());
         }
-        if (request.getNewDistrictId() != null) {
-            District newDistrict = districtRepository.findById(request.getNewDistrictId())
-                    .orElseThrow(() -> new RuntimeException("District not found with id: " + request.getNewDistrictId()));
+        if (request.getPhoneNum() != null) {
+            worker.setPhoneNum(request.getPhoneNum());
+        }
+        if (request.getDistrict().getId() != null) {
+            District newDistrict = districtRepository.findById(request.getDistrict().getId())
+                    .orElseThrow(() -> new RuntimeException("District not found with id: " + request.getDistrict().getId()));
             worker.setDistrict(newDistrict);
         }
 
@@ -138,6 +141,9 @@ public class FieldHealthCareWorkerService {
         }
         if (worker.getPassword() != null) {
             workerDTO.setPassword(worker.getPassword());
+        }
+        if (worker.getPhoneNum() != null) {
+            workerDTO.setPhoneNum(worker.getPhoneNum());
         }
         if (worker.getDistrict() != null) {
             DistrictDTO districtDTO = new DistrictDTO();

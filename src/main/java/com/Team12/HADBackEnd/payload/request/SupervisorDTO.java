@@ -7,6 +7,7 @@ public class SupervisorDTO {
     private int age;
     private String gender;
     private String email;
+    private Long phoneNum;
     private String username;
     private String password;
     private DistrictDTO district;
@@ -65,6 +66,14 @@ public class SupervisorDTO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Long getPhoneNum() {
+        return phoneNum;
+    }
+
+    public void setPhoneNum(Long phoneNum) {
+        this.phoneNum = phoneNum;
     }
 
     public DistrictDTO getDistrict() {
