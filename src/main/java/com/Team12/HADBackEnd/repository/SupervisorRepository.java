@@ -12,6 +12,7 @@ public interface SupervisorRepository extends JpaRepository<Supervisor, Long> {
 
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
+    boolean existsByPhoneNum(Long phoneNum);
     long count();
     Optional<Supervisor> findByUsername(String username);
 

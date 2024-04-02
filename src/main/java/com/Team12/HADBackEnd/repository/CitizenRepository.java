@@ -11,4 +11,5 @@ import java.util.List;
 public interface CitizenRepository extends JpaRepository<Citizen, Long> {
     Citizen findByAbhaId(String abhaId);
     List<Citizen> findByDoctor(Doctor doctor);
+    List<Citizen> findByStatus(String status);
 }

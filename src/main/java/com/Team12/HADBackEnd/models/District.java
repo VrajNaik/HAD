@@ -20,6 +20,8 @@ public class District {
     private List<LocalArea> localAreas = new ArrayList<>();
     @OneToMany(mappedBy = "district", cascade = CascadeType.ALL)
     private List<FieldHealthCareWorker> fieldHealthCareWorkers = new ArrayList<>();
+    @OneToMany(mappedBy = "district")
+    private List<Citizen> citizens;
     public List<LocalArea> getLocalAreas() {
         return localAreas;
     }

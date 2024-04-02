@@ -74,6 +74,10 @@ public class SupervisorService {
             throw new DuplicateEmailIdException("Supervisor with the same Email ID already exists.");
         }
 
+        if (supervisorRepository.existsByPhoneNum(supervisor.getPhoneNum())) {
+            throw new DuplicateEmailIdException("Supervisor with the same Phone Number already exists.");
+        }
+
         // Set supervisor's details
         supervisor.setUsername(generatedUsername);
         supervisor.setPassword(encoder.encode(generatedRandomPassword));
@@ -98,6 +102,13 @@ public class SupervisorService {
         Supervisor supervisor = supervisorRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with Username: " + request.getUsername()));
 
+        if (supervisorRepository.existsByEmail(request.getEmail()) && supervisor.getEmail() != request.getEmail()) {
+            throw new DuplicateEmailIdException("Supervisor with the same Email ID already exists.");
+        }
+
+        if (supervisorRepository.existsByPhoneNum(request.getPhoneNum()) && supervisor.getPhoneNum() != request.getPhoneNum()) {
+            throw new DuplicateEmailIdException("Supervisor with the same Phone Number already exists.");
+        }
         if (request.getName() != null) {
             supervisor.setName(request.getName());
         }

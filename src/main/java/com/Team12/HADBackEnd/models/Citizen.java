@@ -15,7 +15,6 @@ public class Citizen {
     private String pincode;
     private String status;
     private String state;
-    private String district;
     private String abhaId;
 
     @ManyToOne
@@ -30,6 +29,9 @@ public class Citizen {
     @OneToOne(mappedBy = "citizen")
     private HealthRecord healthRecord;
 
+    @ManyToOne
+    @JoinColumn(name = "district_id")
+    private District district;
     public Citizen() {
     }
 
@@ -105,11 +107,11 @@ public class Citizen {
         this.state = state;
     }
 
-    public String getDistrict() {
+    public District getDistrict() {
         return district;
     }
 
-    public void setDistrict(String district) {
+    public void setDistrict(District district) {
         this.district = district;
     }
 

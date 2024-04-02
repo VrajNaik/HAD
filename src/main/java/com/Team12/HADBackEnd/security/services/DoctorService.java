@@ -50,6 +50,16 @@ public class DoctorService {
     public DoctorDTO updateDoctor(DoctorUpdateRequestDTO request) {
         Doctor doctor = doctorRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RoleNotFoundException("Doctor not found with username: " + request.getUsername()));
+
+        if (doctorRepository.existsByEmail(request.getEmail()) && doctor.getEmail() != request.getEmail()) {
+            throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
+        }
+        if (doctorRepository.existsByLicenseId(request.getLicenseId()) && doctor.getLicenseId() != request.getLicenseId()) {
+            throw new DuplicateLicenseIdException("Doctor with the same license ID already exists.");
+        }
+        if (doctorRepository.existsByPhoneNum(request.getPhoneNum()) && doctor.getPhoneNum() != request.getPhoneNum()) {
+            throw new DuplicateEmailIdException("Doctor with the same Phone Number already exists.");
+        }
         if (request.getName() != null) {
             doctor.setName(request.getName());
         }
@@ -107,6 +117,9 @@ public class DoctorService {
 
         if (doctorRepository.existsByEmail(doctor.getEmail())) {
             throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
+        }
+        if (doctorRepository.existsByPhoneNum(doctor.getPhoneNum())) {
+            throw new DuplicateEmailIdException("Doctor with the same Phone Number already exists.");
         }
 
         doctor.setUsername(generatedUsername);
@@ -203,7 +216,7 @@ public class DoctorService {
         citizenDTO.setPincode(citizen.getPincode());
         citizenDTO.setStatus(citizen.getStatus());
         citizenDTO.setState(citizen.getState());
-        citizenDTO.setDistrict(citizen.getDistrict());
+        citizenDTO.setDistrict(citizen.getDistrict().getName() );
         citizenDTO.setAbhaId(citizen.getAbhaId());
 
         FieldHealthCareWorker fieldHealthCareWorker = citizen.getFieldHealthCareWorker();

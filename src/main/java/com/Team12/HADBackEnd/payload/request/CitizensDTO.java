@@ -10,7 +10,7 @@ public class CitizensDTO {
     private String pincode;
     private String status;
     private String state;
-    private String district;
+    private DistrictDTO district;
     private String abhaId;
 
     public Long getId() {
@@ -85,11 +85,11 @@ public class CitizensDTO {
         this.state = state;
     }
 
-    public String getDistrict() {
+    public DistrictDTO getDistrict() {
         return district;
     }
 
-    public void setDistrict(String district) {
+    public void setDistrict(DistrictDTO district) {
         this.district = district;
     }
 

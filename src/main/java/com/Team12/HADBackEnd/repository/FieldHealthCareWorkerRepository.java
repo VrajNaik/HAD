@@ -14,6 +14,7 @@ public interface FieldHealthCareWorkerRepository extends JpaRepository<FieldHeal
     boolean existsByUsername(String username);
     long count();
     boolean existsByEmail(String email);
+    boolean existsByPhoneNum(Long phoneNum);
     Optional<FieldHealthCareWorker> findByUsername(String username);
     @Query("SELECT w FROM FieldHealthCareWorker w WHERE w.username = :username")
     FieldHealthCareWorker findUsername(String username);

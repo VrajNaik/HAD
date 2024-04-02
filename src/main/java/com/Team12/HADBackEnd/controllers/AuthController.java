@@ -129,7 +129,7 @@ public class AuthController {
         counts.put("doctors", doctorCount);
         counts.put("supervisors", supervisorCount);
         counts.put("fieldHealthcareWorkers", fieldWorkerCount);
-        counts.put("citizens:", citizen);
+        counts.put("citizens", citizen);
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())

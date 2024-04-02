@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     boolean existsByLicenseId(String licenseId);
+    boolean existsByPhoneNum(Long phoneNum);
     boolean existsByEmail(String email);
     long count();
     boolean existsByUsername(String username);

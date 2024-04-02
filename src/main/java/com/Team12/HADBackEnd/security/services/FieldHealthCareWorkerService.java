@@ -69,6 +69,9 @@ public class FieldHealthCareWorkerService {
         if (fieldHealthCareWorkerRepository.existsByEmail(worker.getEmail())) {
             throw new DuplicateEmailIdException("Field Healthcare Worker with the same Email ID already exists.");
         }
+        if (fieldHealthCareWorkerRepository.existsByPhoneNum(worker.getPhoneNum())) {
+            throw new DuplicateEmailIdException("Field Healthcare Worker with the same Phone Number already exists.");
+        }
 
         // Set supervisor's details
         worker.setUsername(generatedUsername);
@@ -96,6 +99,12 @@ public class FieldHealthCareWorkerService {
         FieldHealthCareWorker worker  = fieldHealthCareWorkerRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RoleNotFoundException("Field HealthCare Worker not found with Username: " + request.getUsername()));
 
+        if (fieldHealthCareWorkerRepository.existsByEmail(request.getEmail()) && worker.getEmail() != request.getEmail()) {
+            throw new DuplicateEmailIdException("Field Healthcare Worker with the same Email ID already exists.");
+        }
+        if (fieldHealthCareWorkerRepository.existsByPhoneNum(request.getPhoneNum()) && worker.getPhoneNum() != request.getPhoneNum()) {
+            throw new DuplicateEmailIdException("Field Healthcare Worker with the same Phone Number already exists.");
+        }
         if (request.getName() != null) {
             worker.setName(request.getName());
         }
@@ -324,7 +333,7 @@ public class FieldHealthCareWorkerService {
             citizenDTO.setAbhaId(citizen.getAbhaId());
             citizenDTO.setAddress(citizen.getAbhaId());
             citizenDTO.setConsent(citizen.isConsent());
-            citizenDTO.setDistrict(citizen.getDistrict());
+            citizenDTO.setDistrict(citizen.getDistrict().getName());
             citizenDTO.setGender(citizen.getGender());
             citizenDTO.setPincode(citizen.getPincode());
             healthRecordDTO.setCitizenDTO(citizenDTO);
@@ -416,7 +425,7 @@ public class FieldHealthCareWorkerService {
         LocalArea localArea = fieldHealthCareWorker.getLocalArea();
         String pincode = localArea.getPincode();
         citizen.setPincode(pincode);
-        String district = localArea.getDistrict().getName();
+        District district = localArea.getDistrict();
         citizen.setDistrict(district);
 
         // Save the citizen entity
@@ -440,7 +449,7 @@ public class FieldHealthCareWorkerService {
         citizenDTO.setPincode(citizen.getPincode());
         citizenDTO.setStatus(citizen.getStatus());
         citizenDTO.setState(citizen.getState());
-        citizenDTO.setDistrict(citizen.getDistrict());
+        citizenDTO.setDistrict(citizen.getDistrict().getName());
         citizenDTO.setAbhaId(citizen.getAbhaId());
 
         // Map FieldHealthCareWorker to FieldHealthCareWorkerDTO
@@ -647,7 +656,8 @@ public class FieldHealthCareWorkerService {
                 .collect(Collectors.toList()));
     }
     public List<CitizensDTO> getAllCitizens() {
-        List<Citizen> citizens = citizenRepository.findAll();
+        //List<Citizen> citizens = citizenRepository.findAll();
+        List<Citizen> citizens = citizenRepository.findByStatus("ongoing");
         List<CitizensDTO> citizenDTOs = new ArrayList<>();
         for (Citizen citizen : citizens) {
             citizenDTOs.add(toDTO(citizen));
@@ -665,7 +675,12 @@ public class FieldHealthCareWorkerService {
         dto.setPincode(citizen.getPincode());
         dto.setStatus(citizen.getStatus());
         dto.setState(citizen.getState());
-        dto.setDistrict(citizen.getDistrict());
+        if(citizen.getDistrict() != null) {
+            DistrictDTO district = new DistrictDTO();
+            district.setName(citizen.getDistrict().getName());
+            district.setId(citizen.getDistrict().getId());
+            dto.setDistrict(district);
+        }
         dto.setAbhaId(citizen.getAbhaId());
         return dto;
     }
