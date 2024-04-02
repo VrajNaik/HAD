@@ -158,6 +158,12 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid username prefix");
         }
     }
+
+    @GetMapping("/viewCitizens")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<CitizensDTO> getAllCitizens() {
+        return fieldHealthCareWorkerService.getAllCitizens();
+    }
 }
 
 //@PutMapping("/updateDoctor")

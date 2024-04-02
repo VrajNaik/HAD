@@ -646,6 +646,29 @@ public class FieldHealthCareWorkerService {
                 .map(this::convertToFollowUpDTO)
                 .collect(Collectors.toList()));
     }
+    public List<CitizensDTO> getAllCitizens() {
+        List<Citizen> citizens = citizenRepository.findAll();
+        List<CitizensDTO> citizenDTOs = new ArrayList<>();
+        for (Citizen citizen : citizens) {
+            citizenDTOs.add(toDTO(citizen));
+        }
+        return citizenDTOs;
+    }
+    public static CitizensDTO toDTO(Citizen citizen) {
+        CitizensDTO dto = new CitizensDTO();
+        dto.setId(citizen.getId());
+        dto.setName(citizen.getName());
+        dto.setAge(citizen.getAge());
+        dto.setGender(citizen.getGender());
+        dto.setAddress(citizen.getAddress());
+        dto.setConsent(citizen.isConsent());
+        dto.setPincode(citizen.getPincode());
+        dto.setStatus(citizen.getStatus());
+        dto.setState(citizen.getState());
+        dto.setDistrict(citizen.getDistrict());
+        dto.setAbhaId(citizen.getAbhaId());
+        return dto;
+    }
 }
 //import java.io.IOException;
 //import java.util.HashMap;

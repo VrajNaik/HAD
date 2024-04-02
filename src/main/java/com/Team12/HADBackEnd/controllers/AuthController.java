@@ -40,6 +40,8 @@ public class AuthController {
 
   @Autowired
   RoleRepository roleRepository;
+  @Autowired
+  private CitizenRepository citizenRepository;
 
   @Autowired
   PasswordEncoder encoder;
@@ -121,11 +123,13 @@ public class AuthController {
         long doctorCount = doctorRepository.countByActiveTrue();
         long supervisorCount = supervisorRepository.countByActiveTrue();
         long fieldWorkerCount = fieldHealthcareWorkerRepository.countByActiveTrue();
+        long citizen = citizenRepository.count();
 
         Map<String, Long> counts = new HashMap<>();
         counts.put("doctors", doctorCount);
         counts.put("supervisors", supervisorCount);
         counts.put("fieldHealthcareWorkers", fieldWorkerCount);
+        counts.put("citizens:", citizen);
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
