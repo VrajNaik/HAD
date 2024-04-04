@@ -1,5 +1,5 @@
 # Mental Health Screening and Management System
-# commit
+
 ## Project Overview
 
 The Mental Health Screening and Management System aims to streamline the process of identifying and treating mental health conditions in communities through the collaboration of field health workers, doctors, supervisors, and administrators. This system utilizes a tablet-based application to facilitate efficient data collection, patient management, and follow-up scheduling. With features like offline capability, multilingual support, and secure user authentication, the system ensures accessibility and data integrity.
