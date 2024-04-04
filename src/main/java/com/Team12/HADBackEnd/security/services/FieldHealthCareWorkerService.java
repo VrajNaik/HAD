@@ -3,11 +3,15 @@ package com.Team12.HADBackEnd.security.services;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.payload.request.*;
+import com.Team12.HADBackEnd.payload.response.FollowUpReturnDTO;
 import com.Team12.HADBackEnd.repository.*;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,8 +85,13 @@ public class FieldHealthCareWorkerService {
         // Save supervisor
         FieldHealthCareWorker savedWorker = fieldHealthCareWorkerRepository.save(worker);
 
-        // Send email with username and password
-        sendCredentialsByEmail(savedWorker.getEmail(), generatedUsername, generatedRandomPassword);
+        try {
+            // Send email with username and password
+            sendCredentialsByEmail(savedWorker.getEmail(), generatedUsername, generatedRandomPassword);
+        }
+        catch (MessagingException e) {
+            System.out.println("Error in Sending Mail !!!");
+        }
 
         return savedWorker;
     }
@@ -99,10 +108,10 @@ public class FieldHealthCareWorkerService {
         FieldHealthCareWorker worker  = fieldHealthCareWorkerRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RoleNotFoundException("Field HealthCare Worker not found with Username: " + request.getUsername()));
 
-        if (fieldHealthCareWorkerRepository.existsByEmail(request.getEmail()) && worker.getEmail() != request.getEmail()) {
+        if (fieldHealthCareWorkerRepository.existsByEmail(request.getEmail()) && !Objects.equals(worker.getEmail(), request.getEmail())) {
             throw new DuplicateEmailIdException("Field Healthcare Worker with the same Email ID already exists.");
         }
-        if (fieldHealthCareWorkerRepository.existsByPhoneNum(request.getPhoneNum()) && worker.getPhoneNum() != request.getPhoneNum()) {
+        if (fieldHealthCareWorkerRepository.existsByPhoneNum(request.getPhoneNum()) && !Objects.equals(worker.getPhoneNum(), request.getPhoneNum())) {
             throw new DuplicateEmailIdException("Field Healthcare Worker with the same Phone Number already exists.");
         }
         if (request.getName() != null) {
@@ -531,15 +540,47 @@ public class FieldHealthCareWorkerService {
         return password.toString();
     }
 
-    private void sendCredentialsByEmail(String email, String username, String password) {
-        // Prepare email message
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(email);
-        mailMessage.setSubject("Credentials for accessing the system");
-        mailMessage.setText("Your username: " + username + "\nYour password: " + password);
+//    private void sendCredentialsByEmail(String email, String username, String password) {
+//        // Prepare email message
+//        SimpleMailMessage mailMessage = new SimpleMailMessage();
+//        mailMessage.setTo(email);
+//        mailMessage.setSubject("Credentials for accessing the system");
+//        mailMessage.setText("Your username: " + username + "\nYour password: " + password);
+//
+//        // Send email
+//        javaMailSender.send(mailMessage);
+//    }
 
-        // Send email
-        javaMailSender.send(mailMessage);
+    public void sendCredentialsByEmail(String email, String username, String password) throws MessagingException {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        helper.setTo(email);
+        helper.setSubject("Welcome to Zencare - Your Credentials");
+        String emailBody = "<!DOCTYPE html>\n" +
+                "<html lang=\"en\">\n" +
+                "<head>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
+                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                "    <title>Zencare - Your Credentials</title>\n" +
+                "</head>\n" +
+                "<body style=\"font-family: Arial, sans-serif;\">\n" +
+                "    <div style=\"background-color: #f5f5f5; padding: 20px; border-radius: 10px;\">\n" +
+                "        <h1 style=\"color: #333333;\">Welcome to Zencare!</h1>\n" +
+                "        <p style=\"color: #666666;\">Below are your login credentials:</p>\n" +
+                "        <ul>\n" +
+                "            <li><strong>Username:</strong> " + username + "</li>\n" +
+                "            <li><strong>Password:</strong> " + password + "</li>\n" +
+                "        </ul>\n" +
+                "        <p style=\"color: #666666;\">Please keep your credentials secure and do not share them with anyone.</p>\n" +
+                "        <p style=\"color: #666666;\">If you have any questions or need assistance, feel free to contact our support team.</p>\n" +
+                "        <p style=\"color: #666666;\">Best regards,<br>Zencare Team</p>\n" +
+                "    </div>\n" +
+                "</body>\n" +
+                "</html>";
+        helper.setText(emailBody, true);
+        helper.setFrom("noreply@zencare.com");
+        javaMailSender.send(mimeMessage);
     }
 
     public int calculateScore(List<String> answers) {
@@ -683,6 +724,85 @@ public class FieldHealthCareWorkerService {
         }
         dto.setAbhaId(citizen.getAbhaId());
         return dto;
+    }
+
+    public List<FollowUpReturnDTO> getFollowUpsForToday(String username) {
+        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+                .orElseThrow(() -> new RoleNotFoundException("Healthcare Worker not found with this username:" + username));
+        Date today = new Date();
+        List<FollowUp> allFollowUps = followUpRepository.findByFieldHealthCareWorker(worker)
+                .orElseThrow(() -> new HealthRecordNotFoundException("FollowUps not found with worker: " + username));
+        if(allFollowUps.isEmpty()) {
+            throw new HealthRecordNotFoundException("FollowUps not found with worker: " + username);
+        }
+        return filterFollowUpsForToday(allFollowUps, today)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+    private FollowUpReturnDTO mapToDTO(FollowUp followUp) {
+        return new FollowUpReturnDTO(
+                followUp.getId(),
+                followUp.getDate(),
+                followUp.getStatus(),
+                followUp.getInstructions()
+        );
+    }
+
+    private List<FollowUp> filterFollowUpsForToday(List<FollowUp> followUps, Date today) {
+        // Filter follow-ups based on whether they are recurring or not recurring
+        return followUps.stream()
+                .filter(followUp -> followUp.getDate().equals(today) || isRecurringFollowUpForToday(followUp, today))
+                .collect(Collectors.toList());
+    }
+
+    private boolean isRecurringFollowUpForToday(FollowUp followUp, Date today) {
+        Date recurrenceStartTime = followUp.getRecurrenceStartTime();
+        Date recurrenceEndTime = followUp.getRecurrenceEndTime();
+
+        // Check if the follow-up falls within the recurrence time frame
+        return recurrenceStartTime != null && recurrenceEndTime != null &&
+                today.after(recurrenceStartTime) && today.before(recurrenceEndTime) &&
+                isTodayMatchingFrequency(followUp, today);
+    }
+    private boolean isTodayMatchingFrequency(FollowUp followUp, Date today) {
+        Frequency frequency = followUp.getFrequency();
+        switch (frequency) {
+            case DAILY:
+                return true;
+            case WEEKLY:
+                // Check if today is the same day of the week as the follow-up date
+                return today.getDay() == followUp.getDate().getDay();
+            case TWICE_A_WEEK:
+                // Check if today is one of the two days specified for follow-up
+                return today.getDay() == followUp.getDate().getDay() ||
+                        today.getDay() == (followUp.getDate().getDay() + 3) % 7; // 3 days after the initial day
+            case ALTERNATE_DAY:
+                // Check if the day difference between today and follow-up date is odd
+                return (today.getTime() - followUp.getDate().getTime()) / (1000 * 60 * 60 * 24) % 2 != 0;
+            case MONTHLY:
+                // Check if today's day of the month matches the follow-up date's day of the month
+                return today.getDate() == followUp.getDate().getDate();
+            case TWICE_A_MONTH:
+                // Check if today is one of the two dates specified for follow-up
+                return today.getDate() == followUp.getDate().getDate() ||
+                        today.getDate() == followUp.getDate().getDate() + 15;
+            case ALTERNATE_MONTH:
+                // Check if the month difference between today and follow-up date is odd
+                return (today.getMonth() - followUp.getDate().getMonth()) % 2 != 0;
+            case QUARTERLY:
+                // Check if today's month is one of the specified months for follow-up
+                return (today.getMonth() % 3) == (followUp.getDate().getMonth() % 3);
+            case BIANNUALLY:
+                // Check if today's month is one of the specified months for follow-up
+                return (today.getMonth() % 6) == (followUp.getDate().getMonth() % 6);
+            case ANNUALLY:
+                // Check if today's month and day match the follow-up date's month and day
+                return today.getMonth() == followUp.getDate().getMonth() &&
+                        today.getDate() == followUp.getDate().getDate();
+            default:
+                return false;
+        }
     }
 }
 //import java.io.IOException;

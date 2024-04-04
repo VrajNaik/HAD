@@ -6,8 +6,11 @@ import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.repository.*;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -51,13 +54,13 @@ public class DoctorService {
         Doctor doctor = doctorRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RoleNotFoundException("Doctor not found with username: " + request.getUsername()));
 
-        if (doctorRepository.existsByEmail(request.getEmail()) && doctor.getEmail() != request.getEmail()) {
+        if (doctorRepository.existsByEmail(request.getEmail()) && !Objects.equals(doctor.getEmail(), request.getEmail())) {
             throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
         }
-        if (doctorRepository.existsByLicenseId(request.getLicenseId()) && doctor.getLicenseId() != request.getLicenseId()) {
+        if (doctorRepository.existsByLicenseId(request.getLicenseId()) && !Objects.equals(doctor.getLicenseId(), request.getLicenseId())) {
             throw new DuplicateLicenseIdException("Doctor with the same license ID already exists.");
         }
-        if (doctorRepository.existsByPhoneNum(request.getPhoneNum()) && doctor.getPhoneNum() != request.getPhoneNum()) {
+        if (doctorRepository.existsByPhoneNum(request.getPhoneNum()) && !Objects.equals(doctor.getPhoneNum(), request.getPhoneNum())) {
             throw new DuplicateEmailIdException("Doctor with the same Phone Number already exists.");
         }
         if (request.getName() != null) {
@@ -130,7 +133,12 @@ public class DoctorService {
         System.out.println("Doctor's District: " + savedDoctor.getDistrict());
         // 2
         System.out.println(generatedRandomPassword);
-        sendCredentialsByEmail(savedDoctor.getEmail(), generatedUsername, generatedRandomPassword);
+        try {
+            sendCredentialsByEmail(savedDoctor.getEmail(), generatedUsername, generatedRandomPassword);
+        }
+        catch (MessagingException e) {
+            System.out.println("Error");
+        }
         return savedDoctor;
     }
 
@@ -551,6 +559,28 @@ public class DoctorService {
         return convertToDTO(doctor);
     }
 
+    public void addFollowUp(FollowUpCreationByDoctorDTO followUpDTO) {
+        FollowUp followUp = new FollowUp();
+        Long healthRecordId = followUpDTO.getHealthRecordId();
+        if(healthRecordId != null) {
+            HealthRecord healthRecord = healthRecordRepository.findById(healthRecordId)
+                    .orElseThrow(() -> new RoleNotFoundException("HealthRecord not found with id: " + healthRecordId));
+            followUp.setHealthRecord(healthRecord);
+        }
+        Long workerId = followUpDTO.getFieldHealthCareWorkerId();
+        if(workerId != null) {
+            FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findById(workerId)
+                    .orElseThrow(() -> new RoleNotFoundException("Field Health care Worker not found with id: " + healthRecordId));
+            followUp.setFieldHealthCareWorker(worker);
+        }
+        followUp.setDate(followUpDTO.getScheduledDateTime());
+        followUp.setFrequency(followUpDTO.getFrequency());
+        followUp.setRecurrenceStartTime(new Date());
+        followUp.setRecurrenceEndTime(followUpDTO.getRecurrenceEndTime());
+
+        followUpRepository.save(followUp);
+    }
+
     private String generateUniqueUsername() {
         String generatedUsername = null;
         boolean isUnique = false;
@@ -572,14 +602,38 @@ public class DoctorService {
         }
         return password.toString();
     }
-    private void sendCredentialsByEmail(String email, String username, String password) {
-        // Prepare email message
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(email);
-        mailMessage.setSubject("Credentials for accessing the system");
-        mailMessage.setText("Your username: " + username + "\nYour password: " + password);
 
-        javaMailSender.send(mailMessage);
+    public void sendCredentialsByEmail(String email, String username, String password) throws MessagingException {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        helper.setTo(email);
+        helper.setSubject("Welcome to Zencare - Your Credentials");
+
+        String emailBody = "<!DOCTYPE html>\n" +
+                "<html lang=\"en\">\n" +
+                "<head>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
+                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                "    <title>Zencare - Your Credentials</title>\n" +
+                "</head>\n" +
+                "<body style=\"font-family: Arial, sans-serif;\">\n" +
+                "    <div style=\"background-color: #f5f5f5; padding: 20px; border-radius: 10px;\">\n" +
+                "        <h1 style=\"color: #333333;\">Welcome to Zencare!</h1>\n" +
+                "        <p style=\"color: #666666;\">Below are your login credentials:</p>\n" +
+                "        <ul>\n" +
+                "            <li><strong>Username:</strong> " + username + "</li>\n" +
+                "            <li><strong>Password:</strong> " + password + "</li>\n" +
+                "        </ul>\n" +
+                "        <p style=\"color: #666666;\">Please keep your credentials secure and do not share them with anyone.</p>\n" +
+                "        <p style=\"color: #666666;\">If you have any questions or need assistance, feel free to contact our support team.</p>\n" +
+                "        <p style=\"color: #666666;\">Best regards,<br>Zencare Team</p>\n" +
+                "    </div>\n" +
+                "</body>\n" +
+                "</html>";
+        helper.setText(emailBody, true);
+        helper.setFrom("noreply@zencare.com");
+        javaMailSender.send(mimeMessage);
     }
 }
 
@@ -951,4 +1005,14 @@ public class DoctorService {
 //
 //        HealthRecord updatedHealthRecord = healthRecordRepository.save(healthRecord);
 //        return convertToDTO(updatedHealthRecord);
+//    }
+
+//    private void sendCredentialsByEmail(String email, String username, String password) {
+//        // Prepare email message
+//        SimpleMailMessage mailMessage = new SimpleMailMessage();
+//        mailMessage.setTo(email);
+//        mailMessage.setSubject("Credentials for accessing the system");
+//        mailMessage.setText("Your username: " + username + "\nYour password: " + password);
+//
+//        javaMailSender.send(mailMessage);
 //    }

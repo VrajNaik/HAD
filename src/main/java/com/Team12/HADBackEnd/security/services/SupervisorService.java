@@ -8,9 +8,12 @@ import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.*;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,8 +89,13 @@ public class SupervisorService {
         // Save supervisor
         Supervisor savedSupervisor = supervisorRepository.save(supervisor);
 
-        // Send email with username and password
-        sendCredentialsByEmail(savedSupervisor.getEmail(), generatedUsername, generatedRandomPassword);
+        try {
+            // Send email with username and password
+            sendCredentialsByEmail(savedSupervisor.getEmail(), generatedUsername, generatedRandomPassword);
+        }
+        catch (MessagingException e) {
+            System.out.println("Error in sending Mail !!!");
+        }
 
         return savedSupervisor;
     }
@@ -102,11 +110,11 @@ public class SupervisorService {
         Supervisor supervisor = supervisorRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with Username: " + request.getUsername()));
 
-        if (supervisorRepository.existsByEmail(request.getEmail()) && supervisor.getEmail() != request.getEmail()) {
+        if (supervisorRepository.existsByEmail(request.getEmail()) && !Objects.equals(supervisor.getEmail(), request.getEmail())) {
             throw new DuplicateEmailIdException("Supervisor with the same Email ID already exists.");
         }
 
-        if (supervisorRepository.existsByPhoneNum(request.getPhoneNum()) && supervisor.getPhoneNum() != request.getPhoneNum()) {
+        if (supervisorRepository.existsByPhoneNum(request.getPhoneNum()) && !Objects.equals(supervisor.getPhoneNum(), request.getPhoneNum())) {
             throw new DuplicateEmailIdException("Supervisor with the same Phone Number already exists.");
         }
         if (request.getName() != null) {
@@ -218,15 +226,47 @@ public class SupervisorService {
         }
         return password.toString();
     }
-    private void sendCredentialsByEmail(String email, String username, String password) {
-        // Prepare email message
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(email);
-        mailMessage.setSubject("Credentials for accessing the system");
-        mailMessage.setText("Your username: " + username + "\nYour password: " + password);
+//    private void sendCredentialsByEmail(String email, String username, String password) {
+//        // Prepare email message
+//        SimpleMailMessage mailMessage = new SimpleMailMessage();
+//        mailMessage.setTo(email);
+//        mailMessage.setSubject("Credentials for accessing the system");
+//        mailMessage.setText("Your username: " + username + "\nYour password: " + password);
+//
+//        // Send email
+//        javaMailSender.send(mailMessage);
+//    }
 
-        // Send email
-        javaMailSender.send(mailMessage);
+    public void sendCredentialsByEmail(String email, String username, String password) throws MessagingException {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        helper.setTo(email);
+        helper.setSubject("Welcome to Zencare - Your Credentials");
+        String emailBody = "<!DOCTYPE html>\n" +
+                "<html lang=\"en\">\n" +
+                "<head>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
+                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                "    <title>Zencare - Your Credentials</title>\n" +
+                "</head>\n" +
+                "<body style=\"font-family: Arial, sans-serif;\">\n" +
+                "    <div style=\"background-color: #f5f5f5; padding: 20px; border-radius: 10px;\">\n" +
+                "        <h1 style=\"color: #333333;\">Welcome to Zencare!</h1>\n" +
+                "        <p style=\"color: #666666;\">Below are your login credentials:</p>\n" +
+                "        <ul>\n" +
+                "            <li><strong>Username:</strong> " + username + "</li>\n" +
+                "            <li><strong>Password:</strong> " + password + "</li>\n" +
+                "        </ul>\n" +
+                "        <p style=\"color: #666666;\">Please keep your credentials secure and do not share them with anyone.</p>\n" +
+                "        <p style=\"color: #666666;\">If you have any questions or need assistance, feel free to contact our support team.</p>\n" +
+                "        <p style=\"color: #666666;\">Best regards,<br>Zencare Team</p>\n" +
+                "    </div>\n" +
+                "</body>\n" +
+                "</html>";
+        helper.setText(emailBody, true);
+        helper.setFrom("noreply@zencare.com");
+        javaMailSender.send(mimeMessage);
     }
     public String assignWorkerToLocalArea(String username, Long localAreaId) {
         FieldHealthCareWorker worker = workerRepository.findUsername(username);

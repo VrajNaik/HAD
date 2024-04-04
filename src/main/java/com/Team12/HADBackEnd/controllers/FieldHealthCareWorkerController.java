@@ -1,5 +1,6 @@
 package com.Team12.HADBackEnd.controllers;
 
+import com.Team12.HADBackEnd.models.FollowUp;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
 import com.Team12.HADBackEnd.payload.exception.RoleNotFoundException;
@@ -26,32 +27,6 @@ public class FieldHealthCareWorkerController {
     private FieldHealthCareWorkerService fieldHealthCareWorkerService;
     @Autowired
     private UserRepository userRepository;
-
-
-//    @PostMapping("/addFieldHealthCareWorker")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public FieldHealthCareWorker addFieldHealthCareWorker(@RequestBody FieldHealthCareWorker fieldHealthCareWorker) {
-//        try{
-//            return fieldHealthCareWorkerService.addFieldHealthCareWorker(fieldHealthCareWorker);
-//        }
-//        catch (DuplicateEmailIdException e) {
-//            throw new AuthenticationServiceException(e.getMessage(), e);
-//        }
-//    }
-//
-//    @GetMapping("/viewFieldHealthCareWorkers")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getAllFieldHealthCareWorker() {
-//        List<FieldHealthcareWorkerDTO> worker = fieldHealthCareWorkerService.getAllFieldHealthCareWorkersWithDistricts();
-//        return new ResponseEntity<>(worker, HttpStatus.OK);
-//    }
-//
-//    @PutMapping("/updateFieldHealthCareWorker")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<FieldHealthcareWorkerDTO> updateDoctor(@RequestBody SupervisorUpdateRequestDTO request) {
-//        FieldHealthcareWorkerDTO updatedWorkerDTO = fieldHealthCareWorkerService.updateFieldHealthCareWorker(request);
-//        return ResponseEntity.ok(updatedWorkerDTO);
-//    }
 
     @PutMapping("/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
@@ -186,6 +161,12 @@ public class FieldHealthCareWorkerController {
         return fieldHealthCareWorkerService.getFollowUpsByHealthRecordId(healthRecordId);
     }
 
+    @GetMapping("/getFollowUpsByUsername")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public List<FollowUpReturnDTO> getFollowUpsForToday(@RequestParam String username) {
+        return fieldHealthCareWorkerService.getFollowUpsForToday(username);
+    }
+
 }
 //@RestController
 //@CrossOrigin(origins = "*", maxAge = 3600)
@@ -229,4 +210,31 @@ public class FieldHealthCareWorkerController {
 //    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getUnassignedFieldHealthCareWorkers() {
 //        List<FieldHealthcareWorkerDTO> unassignedWorkers = fieldHealthCareWorkerService.getUnassignedFieldHealthCareWorkerDTOs();
 //        return new ResponseEntity<>(unassignedWorkers, HttpStatus.OK);
+//    }
+
+
+
+//    @PostMapping("/addFieldHealthCareWorker")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public FieldHealthCareWorker addFieldHealthCareWorker(@RequestBody FieldHealthCareWorker fieldHealthCareWorker) {
+//        try{
+//            return fieldHealthCareWorkerService.addFieldHealthCareWorker(fieldHealthCareWorker);
+//        }
+//        catch (DuplicateEmailIdException e) {
+//            throw new AuthenticationServiceException(e.getMessage(), e);
+//        }
+//    }
+//
+//    @GetMapping("/viewFieldHealthCareWorkers")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getAllFieldHealthCareWorker() {
+//        List<FieldHealthcareWorkerDTO> worker = fieldHealthCareWorkerService.getAllFieldHealthCareWorkersWithDistricts();
+//        return new ResponseEntity<>(worker, HttpStatus.OK);
+//    }
+//
+//    @PutMapping("/updateFieldHealthCareWorker")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<FieldHealthcareWorkerDTO> updateDoctor(@RequestBody SupervisorUpdateRequestDTO request) {
+//        FieldHealthcareWorkerDTO updatedWorkerDTO = fieldHealthCareWorkerService.updateFieldHealthCareWorker(request);
+//        return ResponseEntity.ok(updatedWorkerDTO);
 //    }

@@ -31,63 +31,6 @@ public class SupervisorController {
     @Autowired
     private UserRepository userRepository;
 
-//    @PostMapping("/addSupervisor")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public Supervisor addSupervisor(@RequestBody Supervisor supervisor) {
-//        try{
-//            return supervisorService.addSupervisor(supervisor);
-//        }
-//        catch (DuplicateLicenseIdException | DuplicateEmailIdException e) {
-//            throw new AuthenticationServiceException(e.getMessage(), e);
-//        }
-//    }
-//    @GetMapping("/viewSupervisors")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<List<SupervisorDTO>> getAllSupervisor() {
-//        List<SupervisorDTO> supervisor = supervisorService.getAllSupervisorsWithDistricts();
-//        return new ResponseEntity<>(supervisor, HttpStatus.OK);
-//    }
-//
-//    @PutMapping("/updateSupervisor")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<SupervisorDTO> updateDoctor(@RequestBody SupervisorUpdateRequestDTO request) {
-//        SupervisorDTO updatedSupervisorDTO = supervisorService.updateSupervisor(request);
-//        return ResponseEntity.ok(updatedSupervisorDTO);
-//    }
-
-    @PutMapping("/deactivate")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deactivateSupervisor(@RequestBody UsernameDTO usernameDTO) {
-        try {
-            User user = userRepository.findByUsername(usernameDTO.getUsername())
-                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
-            supervisorService.setActiveStatusByUsername(usernameDTO.getUsername(), false);
-            return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (RoleNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (DoctorAlreadyDeactivatedException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-    @PutMapping("/activate")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> activateSupervisor(@RequestBody UsernameDTO usernameDTO) {
-        try {
-            User user = userRepository.findByUsername(usernameDTO.getUsername())
-                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
-            supervisorService.setActiveStatusByUsername(usernameDTO.getUsername(), true);
-            return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (RoleNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (DoctorAlreadyDeactivatedException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-
     @PostMapping("/assignWorkerToLocalArea")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
@@ -158,6 +101,39 @@ public class SupervisorController {
         }
         return ResponseEntity.ok(followUps);
     }
+
+    @PutMapping("/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deactivateSupervisor(@RequestBody UsernameDTO usernameDTO) {
+        try {
+            User user = userRepository.findByUsername(usernameDTO.getUsername())
+                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
+            supervisorService.setActiveStatusByUsername(usernameDTO.getUsername(), false);
+            return ResponseEntity.ok().build();
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (RoleNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (DoctorAlreadyDeactivatedException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+    @PutMapping("/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> activateSupervisor(@RequestBody UsernameDTO usernameDTO) {
+        try {
+            User user = userRepository.findByUsername(usernameDTO.getUsername())
+                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
+            supervisorService.setActiveStatusByUsername(usernameDTO.getUsername(), true);
+            return ResponseEntity.ok().build();
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (RoleNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (DoctorAlreadyDeactivatedException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 }
 //@RestController
 //@CrossOrigin(origins = "*", maxAge = 3600)
@@ -172,3 +148,26 @@ public class SupervisorController {
 //    }
 
 
+//    @PostMapping("/addSupervisor")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public Supervisor addSupervisor(@RequestBody Supervisor supervisor) {
+//        try{
+//            return supervisorService.addSupervisor(supervisor);
+//        }
+//        catch (DuplicateLicenseIdException | DuplicateEmailIdException e) {
+//            throw new AuthenticationServiceException(e.getMessage(), e);
+//        }
+//    }
+//    @GetMapping("/viewSupervisors")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<List<SupervisorDTO>> getAllSupervisor() {
+//        List<SupervisorDTO> supervisor = supervisorService.getAllSupervisorsWithDistricts();
+//        return new ResponseEntity<>(supervisor, HttpStatus.OK);
+//    }
+//
+//    @PutMapping("/updateSupervisor")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<SupervisorDTO> updateDoctor(@RequestBody SupervisorUpdateRequestDTO request) {
+//        SupervisorDTO updatedSupervisorDTO = supervisorService.updateSupervisor(request);
+//        return ResponseEntity.ok(updatedSupervisorDTO);
+//    }

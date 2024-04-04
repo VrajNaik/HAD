@@ -191,6 +191,12 @@ public class DistrictService {
             fieldHealthcareWorkerDTO.setEmail(fieldHealthcareWorker.getEmail());
             fieldHealthcareWorkerDTO.setPhoneNum(fieldHealthcareWorker.getPhoneNum());
             fieldHealthcareWorkerDTO.setAge(fieldHealthcareWorker.getAge());
+            District district = fieldHealthcareWorker.getDistrict();
+            if(district != null) {
+                DistrictDTO dto = new DistrictDTO();
+                dto.setName(district.getName());
+                fieldHealthcareWorkerDTO.setDistrict(dto);
+            }
             fieldHealthcareWorkerDTO.setGender(fieldHealthcareWorker.getGender());
             localAreaDTO.setFieldHealthcareWorkerDTO(fieldHealthcareWorkerDTO);
         }

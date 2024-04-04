@@ -1,0 +1,21 @@
+package com.Team12.HADBackEnd.models;
+
+public enum Frequency {
+    NONE,
+    DAILY,
+    WEEKLY,
+    TWICE_A_WEEK,
+    ALTERNATE_DAY,
+    EVERY_FEW_DAYS,
+    MONTHLY,
+    TWICE_A_MONTH,
+    ALTERNATE_MONTH,
+    EVERY_FEW_WEEKS,
+    SPECIFIC_DAYS_OF_WEEK,
+    SPECIFIC_DATES,
+    QUARTERLY,
+    BIANNUALLY,
+    ANNUALLY,
+    CUSTOM
+}
+
