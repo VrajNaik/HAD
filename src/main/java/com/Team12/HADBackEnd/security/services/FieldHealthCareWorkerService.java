@@ -517,6 +517,84 @@ public class FieldHealthCareWorkerService {
         return citizenDTO;
     }
 
+    public List<FollowUpReturnDTO> getFollowUpsForToday(String username) {
+        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+                .orElseThrow(() -> new RoleNotFoundException("Healthcare Worker not found with this username:" + username));
+        Date today = new Date();
+        List<FollowUp> allFollowUps = followUpRepository.findByFieldHealthCareWorker(worker)
+                .orElseThrow(() -> new HealthRecordNotFoundException("FollowUps not found with worker: " + username));
+        if(allFollowUps.isEmpty()) {
+            throw new HealthRecordNotFoundException("FollowUps not found with worker: " + username);
+        }
+        return filterFollowUpsForToday(allFollowUps, today)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+    private FollowUpReturnDTO mapToDTO(FollowUp followUp) {
+        return new FollowUpReturnDTO(
+                followUp.getId(),
+                followUp.getDate(),
+                followUp.getStatus(),
+                followUp.getInstructions()
+        );
+    }
+
+    private List<FollowUp> filterFollowUpsForToday(List<FollowUp> followUps, Date today) {
+        // Filter follow-ups based on whether they are recurring or not recurring
+        return followUps.stream()
+                .filter(followUp -> followUp.getDate().equals(today) || isRecurringFollowUpForToday(followUp, today))
+                .collect(Collectors.toList());
+    }
+
+    private boolean isRecurringFollowUpForToday(FollowUp followUp, Date today) {
+        Date recurrenceStartTime = followUp.getRecurrenceStartTime();
+        Date recurrenceEndTime = followUp.getRecurrenceEndTime();
+
+        // Check if the follow-up falls within the recurrence time frame
+        return recurrenceStartTime != null && recurrenceEndTime != null &&
+                today.after(recurrenceStartTime) && today.before(recurrenceEndTime) &&
+                isTodayMatchingFrequency(followUp, today);
+    }
+    private boolean isTodayMatchingFrequency(FollowUp followUp, Date today) {
+        Frequency frequency = followUp.getFrequency();
+        switch (frequency) {
+            case DAILY:
+                return true;
+            case WEEKLY:
+                // Check if today is the same day of the week as the follow-up date
+                return today.getDay() == followUp.getDate().getDay();
+            case TWICE_A_WEEK:
+                // Check if today is one of the two days specified for follow-up
+                return today.getDay() == followUp.getDate().getDay() ||
+                        today.getDay() == (followUp.getDate().getDay() + 3) % 7; // 3 days after the initial day
+            case ALTERNATE_DAY:
+                // Check if the day difference between today and follow-up date is odd
+                return (today.getTime() - followUp.getDate().getTime()) / (1000 * 60 * 60 * 24) % 2 != 0;
+            case MONTHLY:
+                // Check if today's day of the month matches the follow-up date's day of the month
+                return today.getDate() == followUp.getDate().getDate();
+            case TWICE_A_MONTH:
+                // Check if today is one of the two dates specified for follow-up
+                return today.getDate() == followUp.getDate().getDate() ||
+                        today.getDate() == followUp.getDate().getDate() + 15;
+            case ALTERNATE_MONTH:
+                // Check if the month difference between today and follow-up date is odd
+                return (today.getMonth() - followUp.getDate().getMonth()) % 2 != 0;
+            case QUARTERLY:
+                // Check if today's month is one of the specified months for follow-up
+                return (today.getMonth() % 3) == (followUp.getDate().getMonth() % 3);
+            case BIANNUALLY:
+                // Check if today's month is one of the specified months for follow-up
+                return (today.getMonth() % 6) == (followUp.getDate().getMonth() % 6);
+            case ANNUALLY:
+                // Check if today's month and day match the follow-up date's month and day
+                return today.getMonth() == followUp.getDate().getMonth() &&
+                        today.getDate() == followUp.getDate().getDate();
+            default:
+                return false;
+        }
+    }
     private String generateUniqueUsername() {
         String generatedUsername = null;
         boolean isUnique = false;
@@ -726,84 +804,7 @@ public class FieldHealthCareWorkerService {
         return dto;
     }
 
-    public List<FollowUpReturnDTO> getFollowUpsForToday(String username) {
-        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
-                .orElseThrow(() -> new RoleNotFoundException("Healthcare Worker not found with this username:" + username));
-        Date today = new Date();
-        List<FollowUp> allFollowUps = followUpRepository.findByFieldHealthCareWorker(worker)
-                .orElseThrow(() -> new HealthRecordNotFoundException("FollowUps not found with worker: " + username));
-        if(allFollowUps.isEmpty()) {
-            throw new HealthRecordNotFoundException("FollowUps not found with worker: " + username);
-        }
-        return filterFollowUpsForToday(allFollowUps, today)
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-    }
-    private FollowUpReturnDTO mapToDTO(FollowUp followUp) {
-        return new FollowUpReturnDTO(
-                followUp.getId(),
-                followUp.getDate(),
-                followUp.getStatus(),
-                followUp.getInstructions()
-        );
-    }
-
-    private List<FollowUp> filterFollowUpsForToday(List<FollowUp> followUps, Date today) {
-        // Filter follow-ups based on whether they are recurring or not recurring
-        return followUps.stream()
-                .filter(followUp -> followUp.getDate().equals(today) || isRecurringFollowUpForToday(followUp, today))
-                .collect(Collectors.toList());
-    }
-
-    private boolean isRecurringFollowUpForToday(FollowUp followUp, Date today) {
-        Date recurrenceStartTime = followUp.getRecurrenceStartTime();
-        Date recurrenceEndTime = followUp.getRecurrenceEndTime();
-
-        // Check if the follow-up falls within the recurrence time frame
-        return recurrenceStartTime != null && recurrenceEndTime != null &&
-                today.after(recurrenceStartTime) && today.before(recurrenceEndTime) &&
-                isTodayMatchingFrequency(followUp, today);
-    }
-    private boolean isTodayMatchingFrequency(FollowUp followUp, Date today) {
-        Frequency frequency = followUp.getFrequency();
-        switch (frequency) {
-            case DAILY:
-                return true;
-            case WEEKLY:
-                // Check if today is the same day of the week as the follow-up date
-                return today.getDay() == followUp.getDate().getDay();
-            case TWICE_A_WEEK:
-                // Check if today is one of the two days specified for follow-up
-                return today.getDay() == followUp.getDate().getDay() ||
-                        today.getDay() == (followUp.getDate().getDay() + 3) % 7; // 3 days after the initial day
-            case ALTERNATE_DAY:
-                // Check if the day difference between today and follow-up date is odd
-                return (today.getTime() - followUp.getDate().getTime()) / (1000 * 60 * 60 * 24) % 2 != 0;
-            case MONTHLY:
-                // Check if today's day of the month matches the follow-up date's day of the month
-                return today.getDate() == followUp.getDate().getDate();
-            case TWICE_A_MONTH:
-                // Check if today is one of the two dates specified for follow-up
-                return today.getDate() == followUp.getDate().getDate() ||
-                        today.getDate() == followUp.getDate().getDate() + 15;
-            case ALTERNATE_MONTH:
-                // Check if the month difference between today and follow-up date is odd
-                return (today.getMonth() - followUp.getDate().getMonth()) % 2 != 0;
-            case QUARTERLY:
-                // Check if today's month is one of the specified months for follow-up
-                return (today.getMonth() % 3) == (followUp.getDate().getMonth() % 3);
-            case BIANNUALLY:
-                // Check if today's month is one of the specified months for follow-up
-                return (today.getMonth() % 6) == (followUp.getDate().getMonth() % 6);
-            case ANNUALLY:
-                // Check if today's month and day match the follow-up date's month and day
-                return today.getMonth() == followUp.getDate().getMonth() &&
-                        today.getDate() == followUp.getDate().getDate();
-            default:
-                return false;
-        }
-    }
+//
 }
 //import java.io.IOException;
 //import java.util.HashMap;
@@ -1083,4 +1084,84 @@ public class FieldHealthCareWorkerService {
 //        return unassignedWorkers.stream()
 //                .map(this::convertToDTO2)
 //                .collect(Collectors.toList());
+//    }
+
+
+//public List<FollowUpReturnDTO> getFollowUpsForToday(String username) {
+//        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+//                .orElseThrow(() -> new RoleNotFoundException("Healthcare Worker not found with this username:" + username));
+//        Date today = new Date();
+//        List<FollowUp> allFollowUps = followUpRepository.findByFieldHealthCareWorker(worker)
+//                .orElseThrow(() -> new HealthRecordNotFoundException("FollowUps not found with worker: " + username));
+//        if(allFollowUps.isEmpty()) {
+//            throw new HealthRecordNotFoundException("FollowUps not found with worker: " + username);
+//        }
+//        return filterFollowUpsForToday(allFollowUps, today)
+//                .stream()
+//                .map(this::mapToDTO)
+//                .collect(Collectors.toList());
+//    }
+//    private FollowUpReturnDTO mapToDTO(FollowUp followUp) {
+//        return new FollowUpReturnDTO(
+//                followUp.getId(),
+//                followUp.getDate(),
+//                followUp.getStatus(),
+//                followUp.getInstructions()
+//        );
+//    }
+//
+//    private List<FollowUp> filterFollowUpsForToday(List<FollowUp> followUps, Date today) {
+//        // Filter follow-ups based on whether they are recurring or not recurring
+//        return followUps.stream()
+//                .filter(followUp -> followUp.getDate().equals(today) || isRecurringFollowUpForToday(followUp, today))
+//                .collect(Collectors.toList());
+//    }
+//
+//    private boolean isRecurringFollowUpForToday(FollowUp followUp, Date today) {
+//        Date recurrenceStartTime = followUp.getRecurrenceStartTime();
+//        Date recurrenceEndTime = followUp.getRecurrenceEndTime();
+//
+//        // Check if the follow-up falls within the recurrence time frame
+//        return recurrenceStartTime != null && recurrenceEndTime != null &&
+//                today.after(recurrenceStartTime) && today.before(recurrenceEndTime) &&
+//                isTodayMatchingFrequency(followUp, today);
+//    }
+//    private boolean isTodayMatchingFrequency(FollowUp followUp, Date today) {
+//        Frequency frequency = followUp.getFrequency();
+//        switch (frequency) {
+//            case DAILY:
+//                return true;
+//            case WEEKLY:
+//                // Check if today is the same day of the week as the follow-up date
+//                return today.getDay() == followUp.getDate().getDay();
+//            case TWICE_A_WEEK:
+//                // Check if today is one of the two days specified for follow-up
+//                return today.getDay() == followUp.getDate().getDay() ||
+//                        today.getDay() == (followUp.getDate().getDay() + 3) % 7; // 3 days after the initial day
+//            case ALTERNATE_DAY:
+//                // Check if the day difference between today and follow-up date is odd
+//                return (today.getTime() - followUp.getDate().getTime()) / (1000 * 60 * 60 * 24) % 2 != 0;
+//            case MONTHLY:
+//                // Check if today's day of the month matches the follow-up date's day of the month
+//                return today.getDate() == followUp.getDate().getDate();
+//            case TWICE_A_MONTH:
+//                // Check if today is one of the two dates specified for follow-up
+//                return today.getDate() == followUp.getDate().getDate() ||
+//                        today.getDate() == followUp.getDate().getDate() + 15;
+//            case ALTERNATE_MONTH:
+//                // Check if the month difference between today and follow-up date is odd
+//                return (today.getMonth() - followUp.getDate().getMonth()) % 2 != 0;
+//            case QUARTERLY:
+//                // Check if today's month is one of the specified months for follow-up
+//                return (today.getMonth() % 3) == (followUp.getDate().getMonth() % 3);
+//            case BIANNUALLY:
+//                // Check if today's month is one of the specified months for follow-up
+//                return (today.getMonth() % 6) == (followUp.getDate().getMonth() % 6);
+//            case ANNUALLY:
+//                // Check if today's month and day match the follow-up date's month and day
+//                return today.getMonth() == followUp.getDate().getMonth() &&
+//                        today.getDate() == followUp.getDate().getDate();
+//            default:
+//                return false;
+//        }
 //    }
