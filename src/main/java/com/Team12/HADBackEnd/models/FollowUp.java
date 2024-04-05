@@ -17,6 +17,7 @@ public class FollowUp {
     @ManyToOne
     @JoinColumn(name = "healthcare_worker_id")
     private FieldHealthCareWorker fieldHealthCareWorker;
+
     @Enumerated(EnumType.STRING)
     private Frequency frequency;
 
