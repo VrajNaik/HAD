@@ -80,6 +80,30 @@ public class DoctorController {
         return ResponseEntity.ok("Follow-up added successfully");
     }
 
+    @PostMapping("/getFollowUp")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
+    public ResponseEntity<?> getResponse(@RequestBody FollowUpCreationByDoctorDTO followUpDTO) {
+        doctorService.addFollowUp(followUpDTO);
+//        return ResponseEntity.ok("Follow-up added successfully");
+        String username = "";
+        try {
+            DoctorDTO doctorDTO = doctorService.getDoctorByUsername(username);
+            if (doctorDTO == null) {
+                // Handle the case where no supervisor is found with the provided username
+                String message = "Doctor Not Found with a given username";
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
+            }
+            return ResponseEntity.ok(doctorDTO);
+        } catch (RoleNotFoundException ex) {
+            // Handle the case where supervisor is not found
+            String message = "Doctor Not Found with a given username";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
+        } catch (Exception e) {
+            // Handle other exceptions here
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @PostMapping("/getByUsername")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
