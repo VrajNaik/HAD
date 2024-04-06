@@ -10,12 +10,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-//    @ExceptionHandler(RoleNotFoundException.class)
-//    public ResponseEntity<?> handleRoleNotFoundException(RoleNotFoundException ex) {
-//        ErrorMessage errorMessage = new ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.getMessage());
-//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
-//    }
     @ExceptionHandler(FollowUpNotFoundException.class)
     public ResponseEntity<?> handleFollowUpNotFoundException(FollowUpNotFoundException ex) {
         ErrorMessage errorMessage = new ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.getMessage());
@@ -27,3 +21,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
     }
 }
+
+//    @ExceptionHandler(RoleNotFoundException.class)
+//    public ResponseEntity<?> handleRoleNotFoundException(RoleNotFoundException ex) {
+//        ErrorMessage errorMessage = new ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+//    }
