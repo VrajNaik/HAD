@@ -149,7 +149,7 @@ public class DoctorService {
                 .collect(Collectors.toList());
     }
 
-    private DoctorDTO convertToDTO(Doctor doctor) {
+    public DoctorDTO convertToDTO(Doctor doctor) {
         DoctorDTO doctorDTO = new DoctorDTO();
 
         doctorDTO.setId(doctor.getId());

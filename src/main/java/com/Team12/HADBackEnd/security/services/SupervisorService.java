@@ -142,7 +142,7 @@ public class SupervisorService {
         return convertToDTO(updatedSupervisor);
     }
 
-    private SupervisorDTO convertToDTO(Supervisor supervisor) {
+    public SupervisorDTO convertToDTO(Supervisor supervisor) {
         SupervisorDTO supervisorDTO = new SupervisorDTO();
         supervisorDTO.setId(supervisor.getId());
 

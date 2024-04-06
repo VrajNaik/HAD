@@ -278,7 +278,7 @@ public class FieldHealthCareWorkerService {
                 .map(this::convertToDTO2)
                 .collect(Collectors.toList());
     }
-    private FieldHealthcareWorkerDTO convertToDTO2(FieldHealthCareWorker worker) {
+    public FieldHealthcareWorkerDTO convertToDTO2(FieldHealthCareWorker worker) {
         FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
         workerDTO.setId(worker.getId());
 

@@ -9,8 +9,12 @@ import com.Team12.HADBackEnd.payload.request.LoginRequest;
 import com.Team12.HADBackEnd.payload.request.SignupRequest;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.*;
+import com.Team12.HADBackEnd.security.services.DoctorService;
+import com.Team12.HADBackEnd.security.services.FieldHealthCareWorkerService;
+import com.Team12.HADBackEnd.security.services.SupervisorService;
 import jakarta.validation.Valid;
 
+import net.bytebuddy.implementation.bind.annotation.Super;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,6 +60,12 @@ public class AuthController {
 
   @Autowired
   FieldHealthCareWorkerRepository fieldHealthcareWorkerRepository;
+    @Autowired
+    private DoctorService doctorService;
+    @Autowired
+    private SupervisorService supervisorService;
+    @Autowired
+    private FieldHealthCareWorkerService fieldHealthCareWorkerService;
 
 //  @PostMapping("/signin")
 //  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -113,7 +123,7 @@ public class AuthController {
 
       SecurityContextHolder.getContext().setAuthentication(authentication);
       String jwt = jwtUtils.generateJwtToken(authentication);
-
+      Object userRole = null;
       // Check if the user is an admin
       boolean isAdmin = userDetails.getAuthorities().stream()
               .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
@@ -142,7 +152,7 @@ public class AuthController {
                         roles,
                         userDetails.isLogInFirst()
                         ),
-                counts));
+                counts, userRole));
       } else {
         // Fetch user's role and count from respective table
         String role = null;
@@ -155,15 +165,23 @@ public class AuthController {
           role = "doctor";
           roleCount = doctorRepository.countByActiveTrue();
           userDetail = doctorRepository.findByUsername(userDetails.getUsername()); // Fetch doctor details
+          Doctor doctor = doctorRepository.findByUsername(userDetails.getUsername())
+                  .orElseThrow(() -> new RuntimeException("Error: DOCTOR role not found."));
+          userRole = doctorService.convertToDTO(doctor);
         } else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_SUPERVISOR"))) {
           role = "supervisor";
           roleCount = supervisorRepository.countByActiveTrue();
           userDetail = supervisorRepository.findByUsername(userDetails.getUsername()); // Fetch supervisor details
+          Supervisor supervisor = supervisorRepository.findByUsername(userDetails.getUsername())
+                  .orElseThrow(() -> new RuntimeException("Error: SUPERVISOR role not found."));
+          userRole = supervisorService.convertToDTO(supervisor);
         } else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_FIELD_HEALTHCARE_WORKER"))) {
           role = "fieldHealthcareWorker";
           roleCount = fieldHealthcareWorkerRepository.countByActiveTrue();
           userDetail = fieldHealthcareWorkerRepository.findByUsername(userDetails.getUsername()); // Fetch field healthcare worker details
-
+          FieldHealthCareWorker fieldHealthCareWorker = fieldHealthcareWorkerRepository.findByUsername(userDetails.getUsername())
+                  .orElseThrow(() -> new RuntimeException("Error: FIELD HEALTH CARE WORKER role not found."));
+          userRole = fieldHealthCareWorkerService.convertToDTO2(fieldHealthCareWorker);
         }
 
         // Return the response with the user's role, count, and details
@@ -175,7 +193,8 @@ public class AuthController {
                         Collections.singletonList(role),
                         userDetails.isLogInFirst()
                         ), // Return user's role
-                Collections.singletonMap(role, roleCount)// Return role count
+                Collections.singletonMap(role, roleCount),
+                userRole
                 // Return user's details
         ));
       }
