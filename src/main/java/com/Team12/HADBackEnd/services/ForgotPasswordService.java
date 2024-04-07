@@ -1,10 +1,10 @@
-package com.Team12.HADBackEnd.security.services;
+package com.Team12.HADBackEnd.services;
 
 import com.Team12.HADBackEnd.models.Doctor;
 import com.Team12.HADBackEnd.models.FieldHealthCareWorker;
 import com.Team12.HADBackEnd.models.Supervisor;
 import com.Team12.HADBackEnd.models.User;
-import com.Team12.HADBackEnd.payload.exception.RoleNotFoundException;
+import com.Team12.HADBackEnd.payload.exception.NotFoundException;
 import com.Team12.HADBackEnd.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -66,7 +66,7 @@ public class ForgotPasswordService {
     }
     public boolean changePassword(String username, String newPassword) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RoleNotFoundException("User not found with username: " + username));
+                .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
         String userTypePrefix = username.substring(0, 2);
 
         if (user != null && user.isLogInFirst() == false) {
@@ -75,20 +75,20 @@ public class ForgotPasswordService {
                 case "FH":
                     // Fetch user from FieldHealthCareWorker repository
                     FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findByUsername(username)
-                            .orElseThrow(() -> new RoleNotFoundException("Field Health Care Worker not found with username: " + username));
+                            .orElseThrow(() -> new NotFoundException("Field Health Care Worker not found with username: " + username));
                     fieldHealthCareWorker.setPassword(password);
                     break;
                 // Add cases for other user types if needed
                 case "SV":
                     // Fetch user from FieldHealthCareWorker repository
                     Supervisor supervisor = supervisorRepository.findByUsername(username)
-                            .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with username: " + username));
+                            .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + username));
                     supervisor.setPassword(password);
                     break;
                 case "DR":
                     // Fetch user from FieldHealthCareWorker repository
                     Doctor doctor = doctorRepository.findByUsername(username)
-                            .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with username: " + username));
+                            .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + username));
                     doctor.setPassword(password);
                     break;
                 default:

@@ -1,23 +1,18 @@
 package com.Team12.HADBackEnd.controllers;
 
-import com.Team12.HADBackEnd.models.ICD10Code;
-import com.Team12.HADBackEnd.models.Questionnaire;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
-import com.Team12.HADBackEnd.payload.exception.RoleNotFoundException;
+import com.Team12.HADBackEnd.payload.exception.NotFoundException;
 import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
-import com.Team12.HADBackEnd.payload.request.QuestionnaireDTO;
-import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.UserRepository;
-import com.Team12.HADBackEnd.security.services.SupervisorService;
+import com.Team12.HADBackEnd.services.Supervisor.SupervisorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 
 
@@ -26,13 +21,27 @@ import java.util.List;
 @RequestMapping("/supervisor")
 public class SupervisorController {
 
-    @Autowired
-    private SupervisorService supervisorService;
-    @Autowired
-    private UserRepository userRepository;
+    private final SupervisorService supervisorService;
 
-    @PostMapping("/assignWorkerToLocalArea")
-//    @PreAuthorize("hasRole('ADMIN')")
+    private final UserRepository userRepository;
+
+
+    @Autowired
+    public SupervisorController(SupervisorService supervisorService,
+                                UserRepository userRepository) {
+        this.supervisorService = supervisorService;
+        this.userRepository = userRepository;
+    }
+
+
+    @GetMapping("/getLocalAreasWithinDistrict")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<List<LocalAreaDTO>> getLocalAreasInDistrict(@RequestParam String username) {
+        List<LocalAreaDTO> localAreas = supervisorService.getAllLocalAreasByUsername(username);
+        return ResponseEntity.ok(localAreas);
+    }
+
+    @PostMapping("/assignFHWToLocalArea")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<String> assignWorkerToLocalArea(@RequestBody AssignmentRequest request) {
         String result = supervisorService.assignWorkerToLocalArea(request.getUsername(), request.getLocalAreaId());
@@ -41,55 +50,6 @@ public class SupervisorController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
         }
-    }
-    @PostMapping("/getByUsername")
-//    @PreAuthorize("hasRole('ADMIN')")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
-    public ResponseEntity<?> getSupervisorByUsername(@RequestBody UsernameDTO usernameRequest) {
-        String username = usernameRequest.getUsername();
-        try {
-            SupervisorDTO supervisorDTO = supervisorService.getSupervisorByUsername(username);
-            if (supervisorDTO == null) {
-                // Handle the case where no supervisor is found with the provided username
-                String message = "Supervisor Not Found with a given username";
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
-            }
-            return ResponseEntity.ok(supervisorDTO);
-        } catch (RoleNotFoundException ex) {
-            // Handle the case where supervisor is not found
-            String message = "Supervisor Not Found with a given username";
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
-        } catch (Exception e) {
-            // Handle other exceptions here
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-    @PostMapping("/icd10codes")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
-    public ResponseEntity<List<ICD10Code>> createICD10Codes(@RequestBody List<ICD10Code> icd10Codes) {
-        List<ICD10Code> savedICD10Codes = supervisorService.createICD10Codes(icd10Codes);
-        return new ResponseEntity<>(savedICD10Codes, HttpStatus.CREATED);
-    }
-    @PostMapping("/icd10code")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
-    public ResponseEntity<ICD10Code> createICD10Code(@RequestBody ICD10Code icd10Code) {
-        ICD10Code savedICD10Code = supervisorService.createICD10Code(icd10Code);
-        return new ResponseEntity<>(savedICD10Code, HttpStatus.CREATED);
-    }
-
-    @PostMapping("/createQuestionnaire")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
-    public ResponseEntity<Questionnaire> createQuestionnaire(@RequestBody QuestionnaireDTO questionnaireDto) {
-        Questionnaire createdQuestionnaire = supervisorService.createQuestionnaire(questionnaireDto);
-        return ResponseEntity.ok(createdQuestionnaire);
-    }
-
-    @PostMapping("/getQuestionnaire")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
-    public ResponseEntity<?> getQuestionnaireById(@RequestBody QuestionnaireIdDTO questionnaireIdRequest) {
-        Long id = questionnaireIdRequest.getId();
-        QuestionnaireResponseDTO questionnaireResponse = supervisorService.getQuestionnaireById(id);
-        return ResponseEntity.ok(questionnaireResponse);
     }
 
     @GetMapping("/getPendingFollowUps")
@@ -102,6 +62,22 @@ public class SupervisorController {
         return ResponseEntity.ok(followUps);
     }
 
+    @GetMapping("/getUnassignedFHW")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getUnassignedFieldHealthCareWorkers(@RequestParam String username) {
+        List<FieldHealthcareWorkerDTO> unassignedWorkers = supervisorService.getUnassignedFieldHealthCareWorkerDTOs(username);
+        return new ResponseEntity<>(unassignedWorkers, HttpStatus.OK);
+    }
+
+
+    @GetMapping("/getByUsername")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<SupervisorDTO> getSupervisorByUsername(@RequestParam String username) {
+        SupervisorDTO supervisorDTO = supervisorService.getSupervisorByUsername(username);
+        return ResponseEntity.ok(supervisorDTO);
+    }
+
+
     @PutMapping("/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deactivateSupervisor(@RequestBody UsernameDTO usernameDTO) {
@@ -112,7 +88,7 @@ public class SupervisorController {
             return ResponseEntity.ok().build();
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (RoleNotFoundException e) {
+        } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (DoctorAlreadyDeactivatedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -128,13 +104,16 @@ public class SupervisorController {
             return ResponseEntity.ok().build();
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (RoleNotFoundException e) {
+        } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (DoctorAlreadyDeactivatedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 }
+
+
+
 //@RestController
 //@CrossOrigin(origins = "*", maxAge = 3600)
 //@RequestMapping("/FieldHealthCareWorker")
@@ -170,4 +149,25 @@ public class SupervisorController {
 //    public ResponseEntity<SupervisorDTO> updateDoctor(@RequestBody SupervisorUpdateRequestDTO request) {
 //        SupervisorDTO updatedSupervisorDTO = supervisorService.updateSupervisor(request);
 //        return ResponseEntity.ok(updatedSupervisorDTO);
+//    }
+
+
+//    @GetMapping("/getByUsername")
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+//    public ResponseEntity<?> getSupervisorByUsername(@RequestParam String username) {
+//        try {
+//            SupervisorDTO supervisorDTO = supervisorService.getSupervisorByUsername(username);
+//            if (supervisorDTO == null) {
+//                String message = "Supervisor Not Found with a given username";
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
+//            }
+//            return ResponseEntity.ok(supervisorDTO);
+//        }
+//        catch (RoleNotFoundException ex) {
+//            String message = "Supervisor Not Found with a given username";
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
+//        }
+//        catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
 //    }

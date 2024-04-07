@@ -1,4 +1,4 @@
-package com.Team12.HADBackEnd.security.services;
+package com.Team12.HADBackEnd.services.FieldHealthCareWorker;
 
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.*;
@@ -9,7 +9,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -106,7 +105,7 @@ public class FieldHealthCareWorkerService {
     @Transactional(rollbackFor = Exception.class)
     public FieldHealthcareWorkerDTO updateFieldHealthCareWorker(SupervisorUpdateRequestDTO request) {
         FieldHealthCareWorker worker  = fieldHealthCareWorkerRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RoleNotFoundException("Field HealthCare Worker not found with Username: " + request.getUsername()));
+                .orElseThrow(() -> new NotFoundException("Field HealthCare Worker not found with Username: " + request.getUsername()));
 
         if (fieldHealthCareWorkerRepository.existsByEmail(request.getEmail()) && !Objects.equals(worker.getEmail(), request.getEmail())) {
             throw new DuplicateEmailIdException("Field Healthcare Worker with the same Email ID already exists.");
@@ -201,7 +200,7 @@ public class FieldHealthCareWorkerService {
     public void setActiveStatusByUsername(String username, boolean active) {
 
         FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
-                .orElseThrow(() -> new RoleNotFoundException("Field Health Care Worker not found with username: " + username));
+                .orElseThrow(() -> new NotFoundException("Field Health Care Worker not found with username: " + username));
         if (worker.isActive() == active) {
             throw new DoctorAlreadyDeactivatedException("Field Health Care Worker is already " + (active ? "activated" : "deactivated"));
         }
@@ -225,7 +224,7 @@ public class FieldHealthCareWorkerService {
                 message.append(" - This worker is associated with follow-up records.\n");
             }
 
-            throw new RoleNotFoundException(message.toString());
+            throw new NotFoundException(message.toString());
         }
 
         // Update the active status of the field health care worker
@@ -255,21 +254,10 @@ public class FieldHealthCareWorkerService {
 
     public FieldHealthcareWorkerDTO getFieldHealthcareWorkerByUsername(String username) {
         FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
-                .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with username: " + username));
+                .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + username));
         return convertToDTO2(worker);
     }
 
-    public List<FieldHealthcareWorkerDTO> getUnassignedFieldHealthCareWorkerDTOs(String username) {
-        Supervisor supervisor = supervisorRepository.findByUsername(username)
-                .orElseThrow(() -> new RoleNotFoundException("Supervisor not found with username: " + username));
-
-        // Get the district from the supervisor object
-        District district = supervisor.getDistrict();
-        List<FieldHealthCareWorker> unassignedWorkers = fieldHealthCareWorkerRepository.findByLocalAreaIsNullAndDistrictId(district.getId());
-        return unassignedWorkers.stream()
-                .map(this::convertToDTO2)
-                .collect(Collectors.toList());
-    }
 
 
     public List<FieldHealthcareWorkerDTO> getFieldHealthCareWorkerDTOs(Long districtId) {
@@ -519,7 +507,7 @@ public class FieldHealthCareWorkerService {
 
     public List<FollowUpReturnDTO> getFollowUpsForToday(String username) {
         FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
-                .orElseThrow(() -> new RoleNotFoundException("Healthcare Worker not found with this username:" + username));
+                .orElseThrow(() -> new NotFoundException("Healthcare Worker not found with this username:" + username));
         Date today = new Date();
         List<FollowUp> allFollowUps = followUpRepository.findByFieldHealthCareWorker(worker)
                 .orElseThrow(() -> new HealthRecordNotFoundException("FollowUps not found with worker: " + username));
@@ -691,7 +679,7 @@ public class FieldHealthCareWorkerService {
 
     public ResponseEntity<?> getDoctorsByFHWUsername(String username) {
         FieldHealthCareWorker fhw = fieldHealthCareWorkerRepository.findByUsername(username)
-                .orElseThrow(() -> new RoleNotFoundException("Field Health Care Worker not found with username: " + username));
+                .orElseThrow(() -> new NotFoundException("Field Health Care Worker not found with username: " + username));
 
         Long districtId = fhw.getDistrict().getId();
 

@@ -1,9 +1,9 @@
 package com.Team12.HADBackEnd.controllers;
 
-import com.Team12.HADBackEnd.payload.exception.RoleNotFoundException;
+import com.Team12.HADBackEnd.payload.exception.NotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.repository.UserRepository;
-import com.Team12.HADBackEnd.security.services.DoctorService;
+import com.Team12.HADBackEnd.services.Doctor.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -94,7 +94,7 @@ public class DoctorController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
             }
             return ResponseEntity.ok(doctorDTO);
-        } catch (RoleNotFoundException ex) {
+        } catch (NotFoundException ex) {
             // Handle the case where supervisor is not found
             String message = "Doctor Not Found with a given username";
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
@@ -117,7 +117,7 @@ public class DoctorController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
             }
             return ResponseEntity.ok(doctorDTO);
-        } catch (RoleNotFoundException ex) {
+        } catch (NotFoundException ex) {
             // Handle the case where supervisor is not found
             String message = "Doctor Not Found with a given username";
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));

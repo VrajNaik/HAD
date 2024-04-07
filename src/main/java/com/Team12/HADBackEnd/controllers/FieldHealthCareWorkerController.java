@@ -1,14 +1,13 @@
 package com.Team12.HADBackEnd.controllers;
 
-import com.Team12.HADBackEnd.models.FollowUp;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
-import com.Team12.HADBackEnd.payload.exception.RoleNotFoundException;
+import com.Team12.HADBackEnd.payload.exception.NotFoundException;
 import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.UserRepository;
-import com.Team12.HADBackEnd.security.services.FieldHealthCareWorkerService;
+import com.Team12.HADBackEnd.services.FieldHealthCareWorker.FieldHealthCareWorkerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +37,7 @@ public class FieldHealthCareWorkerController {
             return ResponseEntity.ok().build();
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (RoleNotFoundException e) {
+        } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (DoctorAlreadyDeactivatedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -54,18 +53,17 @@ public class FieldHealthCareWorkerController {
             return ResponseEntity.ok().build();
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (RoleNotFoundException e) {
+        } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (DoctorAlreadyDeactivatedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    @PostMapping("/getByUsername")
+    @GetMapping("/getByUsername")
 //    @PreAuthorize("hasRole('ADMIN')")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
-    public ResponseEntity<?> getFieldHealthcareWorkerByUsername(@RequestBody UsernameDTO usernameRequest) {
-        String username = usernameRequest.getUsername();
+    public ResponseEntity<?> getFieldHealthcareWorkerByUsername(@RequestParam String username) {
         System.out.println(username);
         try {
             FieldHealthcareWorkerDTO workerDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
@@ -74,7 +72,7 @@ public class FieldHealthCareWorkerController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
             }
             return ResponseEntity.ok(workerDTO);
-        } catch (RoleNotFoundException ex) {
+        } catch (NotFoundException ex) {
             String message = "Field Health Care Worker Not Found with a given username";
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
         } catch (Exception e) {
@@ -83,13 +81,7 @@ public class FieldHealthCareWorkerController {
     }
 
 
-    @PostMapping("/getUnassignedFHW")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
-    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getUnassignedFieldHealthCareWorkers(@RequestBody DistrictIdRequestDTO request) {
-        String username = request.getUsername();
-        List<FieldHealthcareWorkerDTO> unassignedWorkers = fieldHealthCareWorkerService.getUnassignedFieldHealthCareWorkerDTOs(username);
-        return new ResponseEntity<>(unassignedWorkers, HttpStatus.OK);
-    }
+
 
     @PostMapping("/getFHWByDistrictId")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
@@ -130,7 +122,7 @@ public class FieldHealthCareWorkerController {
         try {
             fieldHealthCareWorkerService.updateFollowUpStatus(request.getFollowUpId(), request.getStatus());
             return ResponseEntity.ok(new MessageResponse("Follow-up status updated successfully."));
-        } catch (RoleNotFoundException e) {
+        } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(e.getMessage()));
         }
     }

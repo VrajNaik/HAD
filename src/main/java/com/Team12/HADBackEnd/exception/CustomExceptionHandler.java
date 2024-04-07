@@ -4,7 +4,7 @@ package com.Team12.HADBackEnd.exception;
 import com.Team12.HADBackEnd.payload.exception.CustomErrorResponse;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyActivatedException;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
-import com.Team12.HADBackEnd.payload.exception.RoleNotFoundException;
+import com.Team12.HADBackEnd.payload.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -15,8 +15,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({RoleNotFoundException.class})
-    public ResponseEntity<CustomErrorResponse> handleRoleNotFoundException(RoleNotFoundException ex, WebRequest request) {
+    @ExceptionHandler({NotFoundException.class})
+    public ResponseEntity<CustomErrorResponse> handleRoleNotFoundException(NotFoundException ex, WebRequest request) {
         String path = request.getDescription(false); // Get the URL path where the exception occurred
         CustomErrorResponse errorResponse = new CustomErrorResponse(path, "Bad Request", ex.getMessage(), 400);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);

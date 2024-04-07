@@ -1,4 +1,4 @@
-package com.Team12.HADBackEnd.security;
+package com.Team12.HADBackEnd.config;
 
 
 import com.Team12.HADBackEnd.security.jwt.AuthEntryPointJwt;

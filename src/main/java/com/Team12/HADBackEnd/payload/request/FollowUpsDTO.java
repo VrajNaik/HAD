@@ -10,6 +10,8 @@ public class FollowUpsDTO {
     private String measureOfVitals;
     private Long healthWorkerId;
     private String healthWorkerName;
+    private String healthWorkerEmail;
+    private Long healthWorkerPhone;
 
     public Long getId() {
         return id;
@@ -65,5 +67,21 @@ public class FollowUpsDTO {
 
     public void setHealthWorkerName(String healthWorkerName) {
         this.healthWorkerName = healthWorkerName;
+    }
+
+    public String getHealthWorkerEmail() {
+        return healthWorkerEmail;
+    }
+
+    public void setHealthWorkerEmail(String healthWorkerEmail) {
+        this.healthWorkerEmail = healthWorkerEmail;
+    }
+
+    public Long getHealthWorkerPhone() {
+        return healthWorkerPhone;
+    }
+
+    public void setHealthWorkerPhone(Long healthWorkerPhone) {
+        this.healthWorkerPhone = healthWorkerPhone;
     }
 }

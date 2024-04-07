@@ -1,4 +1,4 @@
-package com.Team12.HADBackEnd.security.services;
+package com.Team12.HADBackEnd.services.Doctor;
 
 import com.Team12.HADBackEnd.models.*;
 
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +51,7 @@ public class DoctorService {
     @Transactional(rollbackFor = Exception.class)
     public DoctorDTO updateDoctor(DoctorUpdateRequestDTO request) {
         Doctor doctor = doctorRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RoleNotFoundException("Doctor not found with username: " + request.getUsername()));
+                .orElseThrow(() -> new NotFoundException("Doctor not found with username: " + request.getUsername()));
 
         if (doctorRepository.existsByEmail(request.getEmail()) && !Objects.equals(doctor.getEmail(), request.getEmail())) {
             throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
@@ -531,7 +530,7 @@ public class DoctorService {
     @Transactional
     public void setActiveStatusByUsername(String username, boolean active) {
         Doctor doctor = doctorRepository.findByUsername(username)
-                .orElseThrow(() -> new RoleNotFoundException("Doctor not found with username: " + username));
+                .orElseThrow(() -> new NotFoundException("Doctor not found with username: " + username));
         if (doctor.isActive() == active) {
             throw new DoctorAlreadyDeactivatedException("Doctor is already " + (active ? "activated" : "deactivated"));
         }
@@ -543,7 +542,7 @@ public class DoctorService {
             if (!doctor.getHealthRecords().isEmpty()) {
                 message.append(" - This doctor is associated with health records.\n");
             }
-            throw new RoleNotFoundException(message.toString());
+            throw new NotFoundException(message.toString());
         }
         doctor.setActive(active);
         doctorRepository.save(doctor);
@@ -555,7 +554,7 @@ public class DoctorService {
 
     public DoctorDTO getDoctorByUsername(String username) {
         Doctor doctor = doctorRepository.findByUsername(username)
-                .orElseThrow(() -> new RoleNotFoundException("Dcotor not found with username: " + username));
+                .orElseThrow(() -> new NotFoundException("Dcotor not found with username: " + username));
         return convertToDTO(doctor);
     }
 
@@ -564,13 +563,13 @@ public class DoctorService {
         Long healthRecordId = followUpDTO.getHealthRecordId();
         if(healthRecordId != null) {
             HealthRecord healthRecord = healthRecordRepository.findById(healthRecordId)
-                    .orElseThrow(() -> new RoleNotFoundException("HealthRecord not found with id: " + healthRecordId));
+                    .orElseThrow(() -> new NotFoundException("HealthRecord not found with id: " + healthRecordId));
             followUp.setHealthRecord(healthRecord);
         }
         Long workerId = followUpDTO.getFieldHealthCareWorkerId();
         if(workerId != null) {
             FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findById(workerId)
-                    .orElseThrow(() -> new RoleNotFoundException("Field Health care Worker not found with id: " + healthRecordId));
+                    .orElseThrow(() -> new NotFoundException("Field Health care Worker not found with id: " + healthRecordId));
             followUp.setFieldHealthCareWorker(worker);
         }
         followUp.setDate(followUpDTO.getScheduledDateTime());

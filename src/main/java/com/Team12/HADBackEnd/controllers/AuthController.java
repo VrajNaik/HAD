@@ -4,17 +4,21 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.Team12.HADBackEnd.models.*;
+import com.Team12.HADBackEnd.payload.exception.CustomErrorResponse;
 import com.Team12.HADBackEnd.payload.exception.UserDeactivatedException;
+import com.Team12.HADBackEnd.payload.request.ForgotPasswordRequest;
 import com.Team12.HADBackEnd.payload.request.LoginRequest;
+import com.Team12.HADBackEnd.payload.request.ResetPasswordRequest;
 import com.Team12.HADBackEnd.payload.request.SignupRequest;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.*;
-import com.Team12.HADBackEnd.security.services.DoctorService;
-import com.Team12.HADBackEnd.security.services.FieldHealthCareWorkerService;
-import com.Team12.HADBackEnd.security.services.SupervisorService;
+import com.Team12.HADBackEnd.security.services.*;
+import com.Team12.HADBackEnd.services.*;
+import com.Team12.HADBackEnd.services.Doctor.DoctorService;
+import com.Team12.HADBackEnd.services.FieldHealthCareWorker.FieldHealthCareWorkerService;
+import com.Team12.HADBackEnd.services.Supervisor.SupervisorService;
 import jakarta.validation.Valid;
 
-import net.bytebuddy.implementation.bind.annotation.Super;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,12 +34,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.Team12.HADBackEnd.security.jwt.JwtUtils;
-import com.Team12.HADBackEnd.security.services.UserDetailsImpl;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
   @Autowired
   AuthenticationManager authenticationManager;
 
@@ -60,54 +64,16 @@ public class AuthController {
 
   @Autowired
   FieldHealthCareWorkerRepository fieldHealthcareWorkerRepository;
-    @Autowired
-    private DoctorService doctorService;
-    @Autowired
-    private SupervisorService supervisorService;
-    @Autowired
-    private FieldHealthCareWorkerService fieldHealthCareWorkerService;
 
-//  @PostMapping("/signin")
-//  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-//    try {
-//      Authentication authentication = authenticationManager.authenticate(
-//              new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-//
-//      UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-//
-//      if (!userDetails.isActivate()) {
-//        throw new UserDeactivatedException("Sorry, you are deactivated by the Admin. Contact the Admin for further assistance.");
-//      }
-//
-//      SecurityContextHolder.getContext().setAuthentication(authentication);
-//      String jwt = jwtUtils.generateJwtToken(authentication);
-//
-//      long supervisorCount = supervisorRepository.countByActiveTrue(); // Count only active supervisors
-//      long doctorCount = doctorRepository.countByActiveTrue(); // Count only active doctors
-//      long fieldWorkerCount = fieldHealthcareWorkerRepository.countByActiveTrue(); // Count only active field healthcare workers
-//
-//
-//      Map<String, Long> counts = new HashMap<>();
-//      counts.put("supervisors", supervisorCount);
-//      counts.put("doctors", doctorCount);
-//      counts.put("fieldHealthcareWorkers", fieldWorkerCount);
-//
-//      List<String> roles = userDetails.getAuthorities().stream()
-//              .map(item -> item.getAuthority())
-//              .collect(Collectors.toList());
-//
-//      return ResponseEntity.ok(new AuthResponse(
-//              new JwtResponse(jwt,
-//                      userDetails.getId(),
-//                      userDetails.getUsername(),
-//                      userDetails.getEmail(),
-//                      roles),
-//              counts
-//      ));
-//    } catch (UserDeactivatedException e) {
-//      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
-//    }
-//  }
+  @Autowired
+  private DoctorService doctorService;
+  @Autowired
+  private SupervisorService supervisorService;
+  @Autowired
+  private FieldHealthCareWorkerService fieldHealthCareWorkerService;
+  @Autowired
+  private ForgotPasswordService forgotPasswordService;
+
 
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -269,6 +235,49 @@ public class AuthController {
 
     return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
   }
+  @PostMapping("/forgot-password")
+  public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+    String email = forgotPasswordRequest.getEmail();
+    // Check if user exists
+    User user = userRepository.findByEmail(email);
+    if (user == null) {
+      // User not found, return error response
+      CustomErrorResponse errorResponse = new CustomErrorResponse("/api/forgot-password", "User Not Found", "User with email " + email + " not found.", 404);
+      return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    // User found, initiate password reset
+    forgotPasswordService.initiatePasswordReset(email);
+    return ResponseEntity.ok("Password reset instructions sent to your email.");
+  }
+
+  @PostMapping("/reset-password")
+  public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
+    String token = resetPasswordRequest.getToken();
+    String newPassword = resetPasswordRequest.getNewPassword();
+    boolean success = forgotPasswordService.resetPassword(token, newPassword);
+    if (success) {
+      return ResponseEntity.ok("Password reset successfully.");
+    } else {
+      // Password reset failed, return error response
+      CustomErrorResponse errorResponse = new CustomErrorResponse("/api/reset-password", "Invalid Token", "Invalid or expired token.", 400);
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+  }
+  @PostMapping("/change-password")
+  public ResponseEntity<?> changePassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
+    String username = resetPasswordRequest.getToken();
+    String newPassword = resetPasswordRequest.getNewPassword();
+    boolean success = forgotPasswordService.changePassword(username, newPassword);
+    if (success) {
+      return ResponseEntity.ok("Password reset successfully.");
+    } else {
+      // Password reset failed, return error response
+      CustomErrorResponse errorResponse = new CustomErrorResponse("/api/change-password", "Invalid Token", "Invalid or expired token.", 400);
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+  }
+
 }
 
 //  @PostMapping("/signin")
@@ -351,3 +360,45 @@ public class AuthController {
 
 //@CrossOrigin("http://172.16.145.87")
 //@CrossOrigin("http://172.16.145.87")
+
+//  @PostMapping("/signin")
+//  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+//    try {
+//      Authentication authentication = authenticationManager.authenticate(
+//              new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+//
+//      UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+//
+//      if (!userDetails.isActivate()) {
+//        throw new UserDeactivatedException("Sorry, you are deactivated by the Admin. Contact the Admin for further assistance.");
+//      }
+//
+//      SecurityContextHolder.getContext().setAuthentication(authentication);
+//      String jwt = jwtUtils.generateJwtToken(authentication);
+//
+//      long supervisorCount = supervisorRepository.countByActiveTrue(); // Count only active supervisors
+//      long doctorCount = doctorRepository.countByActiveTrue(); // Count only active doctors
+//      long fieldWorkerCount = fieldHealthcareWorkerRepository.countByActiveTrue(); // Count only active field healthcare workers
+//
+//
+//      Map<String, Long> counts = new HashMap<>();
+//      counts.put("supervisors", supervisorCount);
+//      counts.put("doctors", doctorCount);
+//      counts.put("fieldHealthcareWorkers", fieldWorkerCount);
+//
+//      List<String> roles = userDetails.getAuthorities().stream()
+//              .map(item -> item.getAuthority())
+//              .collect(Collectors.toList());
+//
+//      return ResponseEntity.ok(new AuthResponse(
+//              new JwtResponse(jwt,
+//                      userDetails.getId(),
+//                      userDetails.getUsername(),
+//                      userDetails.getEmail(),
+//                      roles),
+//              counts
+//      ));
+//    } catch (UserDeactivatedException e) {
+//      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+//    }
+//  }
