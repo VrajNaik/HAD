@@ -684,6 +684,162 @@ public class FieldHealthCareWorkerService {
         dto.setAbhaId(citizen.getAbhaId());
         return dto;
     }
+
+    public boolean isLastFollowUp(Long followUpId) {
+        FollowUp followUp = followUpRepository.findById(followUpId).orElse(null);
+        if (followUp != null) {
+            if (followUp.getFrequency() != Frequency.NONE && followUp.getRecurrenceStartTime() != null && followUp.getRecurrenceEndTime() != null) {
+                Date nextOccurrence = calculateNextOccurrence(followUp);
+                return nextOccurrence == null;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Date calculateNextOccurrence(FollowUp followUp) {
+        Date today = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(today);
+        Date recurrenceStartTime = followUp.getRecurrenceStartTime();
+        Date recurrenceEndTime = followUp.getRecurrenceEndTime();
+        Frequency frequency = followUp.getFrequency();
+
+        if (recurrenceStartTime.after(today) || recurrenceEndTime.before(today))
+            return null;
+
+        switch (frequency) {
+            case DAILY:
+                return getNextDailyOccurrence(calendar, recurrenceEndTime);
+            case WEEKLY:
+                return getNextWeeklyOccurrence(calendar, recurrenceEndTime);
+            case TWICE_A_WEEK:
+                return getNextTwiceAWeekOccurrence(calendar, recurrenceEndTime);
+            case ALTERNATE_DAY:
+                return getNextAlternateDayOccurrence(calendar, recurrenceEndTime);
+            case EVERY_FEW_DAYS:
+                return getNextEveryFewDaysOccurrence(calendar, recurrenceEndTime);
+            case MONTHLY:
+                return getNextMonthlyOccurrence(calendar, recurrenceEndTime);
+            case TWICE_A_MONTH:
+                return getNextTwiceAMonthOccurrence(calendar, recurrenceEndTime);
+            case ALTERNATE_MONTH:
+                return getNextAlternateMonthOccurrence(calendar, recurrenceEndTime);
+            case EVERY_FEW_WEEKS:
+                return getNextEveryFewWeeksOccurrence(calendar, recurrenceEndTime);
+            case QUARTERLY:
+                return getNextQuarterlyOccurrence(calendar, recurrenceEndTime);
+            case BIANNUALLY:
+                return getNextBiannuallyOccurrence(calendar, recurrenceEndTime);
+            case ANNUALLY:
+                return getNextAnnuallyOccurrence(calendar, recurrenceEndTime);
+            default:
+                return null;
+        }
+    }
+
+    private Date getNextDailyOccurrence(Calendar calendar, Date recurrenceEndTime) {
+        while (calendar.getTime().before(recurrenceEndTime)) {
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        return calendar.getTime();
+    }
+
+    private Date getNextWeeklyOccurrence(Calendar calendar, Date recurrenceEndTime) {
+        while (calendar.getTime().before(recurrenceEndTime)) {
+            calendar.add(Calendar.WEEK_OF_YEAR, 1);
+        }
+        return calendar.getTime();
+    }
+
+    private Date getNextTwiceAWeekOccurrence(Calendar calendar, Date recurrenceEndTime) {
+        while (calendar.getTime().before(recurrenceEndTime)) {
+            calendar.add(Calendar.DAY_OF_MONTH, 3);
+        }
+        return calendar.getTime();
+    }
+
+    private Date getNextAlternateDayOccurrence(Calendar calendar, Date recurrenceEndTime) {
+        while (calendar.getTime().before(recurrenceEndTime)) {
+            calendar.add(Calendar.DAY_OF_MONTH, 2);
+        }
+        return calendar.getTime();
+    }
+
+    private Date getNextEveryFewDaysOccurrence(Calendar calendar, Date recurrenceEndTime) {
+        int days = 2;
+        while (calendar.getTime().before(recurrenceEndTime)) {
+            calendar.add(Calendar.DAY_OF_MONTH, days);
+        }
+        return calendar.getTime();
+    }
+
+    private Date getNextMonthlyOccurrence(Calendar calendar, Date recurrenceEndTime) {
+        while (calendar.getTime().before(recurrenceEndTime)) {
+            calendar.add(Calendar.MONTH, 1);
+        }
+        return calendar.getTime();
+    }
+
+    private Date getNextTwiceAMonthOccurrence(Calendar calendar, Date recurrenceEndTime) {
+        while (calendar.getTime().before(recurrenceEndTime)) {
+            calendar.add(Calendar.DAY_OF_MONTH, 15);
+        }
+        return calendar.getTime();
+    }
+
+    private Date getNextAlternateMonthOccurrence(Calendar calendar, Date recurrenceEndTime) {
+        while (calendar.getTime().before(recurrenceEndTime)) {
+            calendar.add(Calendar.MONTH, 2);
+        }
+        return calendar.getTime();
+    }
+
+    private Date getNextEveryFewWeeksOccurrence(Calendar calendar, Date recurrenceEndTime) {
+        int weeks = 2;
+        while (calendar.getTime().before(recurrenceEndTime)) {
+            calendar.add(Calendar.WEEK_OF_YEAR, weeks);
+        }
+        return calendar.getTime();
+    }
+
+    private Date getNextQuarterlyOccurrence(Calendar calendar, Date recurrenceEndTime) {
+        while (calendar.getTime().before(recurrenceEndTime)) {
+            calendar.add(Calendar.MONTH, 3);
+        }
+        return calendar.getTime();
+    }
+
+    private Date getNextBiannuallyOccurrence(Calendar calendar, Date recurrenceEndTime) {
+        while (calendar.getTime().before(recurrenceEndTime)) {
+            calendar.add(Calendar.MONTH, 6);
+        }
+        return calendar.getTime();
+    }
+
+    private Date getNextAnnuallyOccurrence(Calendar calendar, Date recurrenceEndTime) {
+        while (calendar.getTime().before(recurrenceEndTime)) {
+            calendar.add(Calendar.YEAR, 1);
+        }
+        return calendar.getTime();
+    }
+
+    public Optional<FollowUp> findAssignedFollowUpByAbhaId(String abhaId) {
+        Optional<Citizen> citizenOptional = citizenRepository.findByAbhaId(abhaId);
+        if (citizenOptional.isPresent()) {
+            HealthRecord healthRecord = citizenOptional.get().getHealthRecord();
+            if (healthRecord != null) {
+                List<FollowUp> followUps = healthRecord.getFollowUps();
+                for (FollowUp followUp : followUps) {
+                    if ("assigned".equals(followUp.getStatus())) {
+                        return Optional.of(followUp);
+                    }
+                }
+            }
+        }
+        return Optional.empty();
+    }
 }
 
 

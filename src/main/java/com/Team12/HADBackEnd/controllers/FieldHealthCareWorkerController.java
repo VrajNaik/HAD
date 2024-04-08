@@ -1,11 +1,14 @@
 package com.Team12.HADBackEnd.controllers;
 
+import com.Team12.HADBackEnd.models.Citizen;
+import com.Team12.HADBackEnd.models.FollowUp;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
 import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.*;
+import com.Team12.HADBackEnd.repository.CitizenRepository;
 import com.Team12.HADBackEnd.repository.UserRepository;
 import com.Team12.HADBackEnd.services.FieldHealthCareWorker.FieldHealthCareWorkerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -26,42 +30,11 @@ public class FieldHealthCareWorkerController {
     private FieldHealthCareWorkerService fieldHealthCareWorkerService;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private CitizenRepository citizenRepository;
 
-    @PutMapping("/deactivate")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deactivateFeildHealthCareWorker(@RequestBody UsernameDTO usernameDTO) {
-        try {
-            User user = userRepository.findByUsername(usernameDTO.getUsername())
-                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
-            fieldHealthCareWorkerService.setActiveStatusByUsername(usernameDTO.getUsername(), false);
-            return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (DoctorAlreadyDeactivatedException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-    @PutMapping("/activate")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> activateFeildHealthCareWorker(@RequestBody UsernameDTO usernameDTO) {
-        try {
-            User user = userRepository.findByUsername(usernameDTO.getUsername())
-                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
-            fieldHealthCareWorkerService.setActiveStatusByUsername(usernameDTO.getUsername(), true);
-            return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (DoctorAlreadyDeactivatedException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
 
     @GetMapping("/getByUsername")
-//    @PreAuthorize("hasRole('ADMIN')")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<?> getFieldHealthcareWorkerByUsername(@RequestParam String username) {
         System.out.println(username);
@@ -81,8 +54,6 @@ public class FieldHealthCareWorkerController {
     }
 
 
-
-
     @PostMapping("/getFHWByDistrictId")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<List<FieldHealthcareWorkerDTO>> getFieldHealthCareWorkersInDistrict(@RequestBody DistrictIdDTO districtRequestDTO) {
@@ -91,13 +62,15 @@ public class FieldHealthCareWorkerController {
         return new ResponseEntity<>(unassignedWorkers, HttpStatus.OK);
     }
 
+
     @PostMapping("/register")
-//    @PreAuthorize("hasRole('ADMIN')")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<CitizenDTO> registerCitizen(@RequestBody CitizenRegistrationDTO citizen) {
         CitizenDTO registeredCitizen = fieldHealthCareWorkerService.registerCitizen(citizen);
         return new ResponseEntity<>(registeredCitizen, HttpStatus.CREATED);
     }
+
+
     @PostMapping("/calculateScore")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> calculateScore(@RequestBody AnswersDTO answersDTO) {
@@ -129,26 +102,12 @@ public class FieldHealthCareWorkerController {
     @PostMapping("/getHealthRecordById")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> getHealthRecordByCitizenId(@RequestBody CitizenIdRequestDTO requestDTO) {
-//        try {
-//            HealthRecordDTO healthRecordDTO = fieldHealthCareWorkerService.getHealthRecordByCitizenId(requestDTO.getCitizenId());
-//            return ResponseEntity.ok(healthRecordDTO);
-//        } catch (HealthRecordNotFoundException e) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request.");
-//        }
         Long citizenId = requestDTO.getCitizenId();
         return fieldHealthCareWorkerService.getHealthRecordByCitizenId(citizenId);
     }
     @PostMapping("/getFollowUpsByHealthRecordId")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> getFollowUpsByHealthRecordId(@RequestBody CitizenIdRequestDTO requestDTO) {
-//        try {
-//            List<FollowUpDTO> followUpDTOs = followUpService.getFollowUpsByHealthRecordId(requestDTO);
-//            return ResponseEntity.ok(followUpDTOs);
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request.");
-//        }
         Long healthRecordId = requestDTO.getCitizenId();
         return fieldHealthCareWorkerService.getFollowUpsByHealthRecordId(healthRecordId);
     }
@@ -157,6 +116,52 @@ public class FieldHealthCareWorkerController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public List<FollowUpReturnDTO> getFollowUpsForToday(@RequestParam String username) {
         return fieldHealthCareWorkerService.getFollowUpsForToday(username);
+    }
+
+    @GetMapping("/isLastFollowUp")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> isLastFollowUp(@RequestParam String abhaId) {
+        Optional<FollowUp> followUpOptional = fieldHealthCareWorkerService.findAssignedFollowUpByAbhaId(abhaId);
+        if (followUpOptional.isPresent()) {
+            return ResponseEntity.ok(followUpOptional.get().getId());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deactivateFeildHealthCareWorker(@RequestBody UsernameDTO usernameDTO) {
+        try {
+            User user = userRepository.findByUsername(usernameDTO.getUsername())
+                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
+            fieldHealthCareWorkerService.setActiveStatusByUsername(usernameDTO.getUsername(), false);
+            return ResponseEntity.ok().build();
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (DoctorAlreadyDeactivatedException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+
+    @PutMapping("/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> activateFeildHealthCareWorker(@RequestBody UsernameDTO usernameDTO) {
+        try {
+            User user = userRepository.findByUsername(usernameDTO.getUsername())
+                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
+            fieldHealthCareWorkerService.setActiveStatusByUsername(usernameDTO.getUsername(), true);
+            return ResponseEntity.ok().build();
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (DoctorAlreadyDeactivatedException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
 }
@@ -230,3 +235,22 @@ public class FieldHealthCareWorkerController {
 //        FieldHealthcareWorkerDTO updatedWorkerDTO = fieldHealthCareWorkerService.updateFieldHealthCareWorker(request);
 //        return ResponseEntity.ok(updatedWorkerDTO);
 //    }
+
+
+
+//        try {
+//            List<FollowUpDTO> followUpDTOs = followUpService.getFollowUpsByHealthRecordId(requestDTO);
+//            return ResponseEntity.ok(followUpDTOs);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request.");
+//        }
+
+
+//        try {
+//            HealthRecordDTO healthRecordDTO = fieldHealthCareWorkerService.getHealthRecordByCitizenId(requestDTO.getCitizenId());
+//            return ResponseEntity.ok(healthRecordDTO);
+//        } catch (HealthRecordNotFoundException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request.");
+//        }

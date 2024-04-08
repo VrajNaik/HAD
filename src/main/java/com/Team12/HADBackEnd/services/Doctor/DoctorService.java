@@ -200,7 +200,8 @@ public class DoctorService {
     }
 
     public CitizenDTO getCitizenByAbhaId(String abhaId) {
-        Citizen citizen = citizenRepository.findByAbhaId(abhaId);
+        Citizen citizen = citizenRepository.findByAbhaId(abhaId)
+                .orElseThrow(() -> new RuntimeException("Citizen not found with ID: " + abhaId));
         if (citizen != null) {
             return mapToCitizenDTO(citizen);
         }
