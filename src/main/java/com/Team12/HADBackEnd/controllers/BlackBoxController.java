@@ -1,6 +1,7 @@
 package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.DTOs.District.DistrictForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.ICD10Code.ICD10CodesForDoctorDTO;
 import com.Team12.HADBackEnd.models.District;
 import com.Team12.HADBackEnd.models.ICD10Code;
 import com.Team12.HADBackEnd.models.Questionnaire;
@@ -89,6 +90,13 @@ public class BlackBoxController {
     public ResponseEntity<ICD10Code> createICD10Code(@RequestBody ICD10Code icd10Code) {
         ICD10Code savedICD10Code = icd10CodeService.createICD10Code(icd10Code);
         return new ResponseEntity<>(savedICD10Code, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/getICD10Codes")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
+    public ResponseEntity<List<ICD10CodesForDoctorDTO>> getAllICD10Codes() {
+        List<ICD10CodesForDoctorDTO> icd10CodesDTOs = icd10CodeService.getAllICD10Codes();
+        return ResponseEntity.ok(icd10CodesDTOs);
     }
 
     @PostMapping("/createQuestionnaire")

@@ -5,12 +5,11 @@ import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.FollowUpReturnDTO;
 import com.Team12.HADBackEnd.repository.*;
+import com.Team12.HADBackEnd.util.CredentialGenerator.CredentialService;
+import com.Team12.HADBackEnd.util.MailService.EmailService;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,10 +23,6 @@ public class FieldHealthCareWorkerService {
 
     @Autowired
     private FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository;
-    @Autowired
-    private LocalAreaRepository localAreaRepository;
-    @Autowired
-    private SupervisorRepository supervisorRepository;
     @Autowired
     private DistrictRepository districtRepository;
     @Autowired
@@ -45,18 +40,18 @@ public class FieldHealthCareWorkerService {
     @Autowired
     private PasswordEncoder encoder;
     @Autowired
-    private JavaMailSender javaMailSender; // Autowire the JavaMailSender
+    private EmailService emailService;
+    @Autowired
+    private CredentialService credentialService;
 
 
     @Transactional(rollbackFor = Exception.class)
     public FieldHealthCareWorker addFieldHealthCareWorker(@RequestBody FieldHealthCareWorker worker) throws DuplicateEmailIdException {
-        String generatedUsername = generateUniqueUsername();
-        String generatedRandomPassword = generateRandomPassword();
+        String generatedUsername = credentialService.generateUniqueUsername("FieldHealthCareWorker");
+        String generatedRandomPassword = credentialService.generateRandomPassword();
 
-        // Retrieve the associated District object
         District district = worker.getDistrict();
 
-        // Create new user's account
         User user = new User(generatedUsername,
                 worker.getEmail(),
                 encoder.encode(generatedRandomPassword));
@@ -68,7 +63,6 @@ public class FieldHealthCareWorkerService {
         user.setRoles(roles);
         userRepository.save(user);
 
-        // Check for duplicate email
         if (fieldHealthCareWorkerRepository.existsByEmail(worker.getEmail())) {
             throw new DuplicateEmailIdException("Field Healthcare Worker with the same Email ID already exists.");
         }
@@ -76,17 +70,14 @@ public class FieldHealthCareWorkerService {
             throw new DuplicateEmailIdException("Field Healthcare Worker with the same Phone Number already exists.");
         }
 
-        // Set supervisor's details
         worker.setUsername(generatedUsername);
         worker.setPassword(encoder.encode(generatedRandomPassword));
         worker.setDistrict(district);
 
-        // Save supervisor
         FieldHealthCareWorker savedWorker = fieldHealthCareWorkerRepository.save(worker);
 
         try {
-            // Send email with username and password
-            sendCredentialsByEmail(savedWorker.getEmail(), generatedUsername, generatedRandomPassword);
+            emailService.sendCredentialsByEmail(savedWorker.getEmail(), generatedUsername, generatedRandomPassword);
         }
         catch (MessagingException e) {
             System.out.println("Error in Sending Mail !!!");
@@ -178,24 +169,6 @@ public class FieldHealthCareWorkerService {
         return workerDTO;
     }
 
-//    @Transactional
-//    public void setActiveStatusByUsername(String username, boolean active) {
-//        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
-//                .orElseThrow(() -> new DoctorNotFoundException("Field Health Care Worker not found with username: " + username));
-//
-//        if (worker.isActive() == active) {
-//            throw new DoctorAlreadyDeactivatedException("Field Health Care Worker is already " + (active ? "activated" : "deactivated"));
-//        }
-//
-//        worker.setActive(active);
-//        fieldHealthCareWorkerRepository.save(worker);
-//
-//        User user = userRepository.findByUsername(username)
-//                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
-//        user.setActive(active);
-//        userRepository.save(user);
-//    }
-
     @Transactional
     public void setActiveStatusByUsername(String username, boolean active) {
 
@@ -227,30 +200,15 @@ public class FieldHealthCareWorkerService {
             throw new NotFoundException(message.toString());
         }
 
-        // Update the active status of the field health care worker
         worker.setActive(active);
         fieldHealthCareWorkerRepository.save(worker);
 
-        // Find the corresponding user by username
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
 
-        // Update the active status of the user
         user.setActive(active);
-        userRepository.save(user); // Save changes
+        userRepository.save(user);
     }
-
-
-//    public FieldHealthcareWorkerDTO getFieldHealthcareWorkerByUsername(String username) {
-//        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
-//                .orElseThrow(() -> new DoctorNotFoundException("Field Health Care Worker not found with username: " + username));
-//        if (worker == null) {
-//            // Handle the case where no worker is found with the provided username
-//            System.out.println("Hello\n");
-//            return null;
-//        }
-//        return convertToDTO2(worker);
-//    }
 
     public FieldHealthcareWorkerDTO getFieldHealthcareWorkerByUsername(String username) {
         FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
@@ -259,13 +217,14 @@ public class FieldHealthCareWorkerService {
     }
 
 
-
     public List<FieldHealthcareWorkerDTO> getFieldHealthCareWorkerDTOs(Long districtId) {
         List<FieldHealthCareWorker> unassignedWorkers = fieldHealthCareWorkerRepository.findByDistrictId(districtId);
         return unassignedWorkers.stream()
                 .map(this::convertToDTO2)
                 .collect(Collectors.toList());
     }
+
+
     public FieldHealthcareWorkerDTO convertToDTO2(FieldHealthCareWorker worker) {
         FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
         workerDTO.setId(worker.getId());
@@ -357,7 +316,6 @@ public class FieldHealthCareWorkerService {
             healthRecordDTO.setDoctorDTO(doctorDTO);
         }
 
-        // Convert FollowUps
         if (healthRecord.getFollowUps() != null && !healthRecord.getFollowUps().isEmpty()) {
             List<FollowUpDTO> followUpDTOs = healthRecord.getFollowUps().stream()
                     .map(this::convertToFollowUpDTO)
@@ -365,7 +323,6 @@ public class FieldHealthCareWorkerService {
             healthRecordDTO.setFollowUps(followUpDTOs);
         }
 
-        // Convert ICDCodes
         if (healthRecord.getIcd10Codes() != null && !healthRecord.getIcd10Codes().isEmpty()) {
             List<ICDCodesDTO> icd10CodesDTOs = healthRecord.getIcd10Codes().stream()
                     .map(this::convertToICDCodesDTO)
@@ -383,7 +340,6 @@ public class FieldHealthCareWorkerService {
         followUpDTO.setStatus(followUp.getStatus());
         followUpDTO.setInstructions(followUp.getInstructions());
         followUpDTO.setMeasureOfVitals(followUp.getMeasureOfVitals());
-        // Omitting setting of FieldHealthcareWorkerDTO and HealthRecordDTO
         return followUpDTO;
     }
 
@@ -397,15 +353,13 @@ public class FieldHealthCareWorkerService {
     }
 
     public CitizenDTO registerCitizen(CitizenRegistrationDTO citizenDTO) {
-        // Fetch the field healthcare worker by ID
+
         FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(citizenDTO.getFieldHealthCareWorkerId())
                 .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + citizenDTO.getFieldHealthCareWorkerId()));
 
-        // Fetch the doctor by ID
         Doctor doctor = doctorRepository.findById(citizenDTO.getDoctorId())
                 .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorId()));
 
-        // Map DTO to Citizen entity
         Citizen citizen = new Citizen();
         citizen.setName(citizenDTO.getName());
         citizen.setAge(citizenDTO.getAge());
@@ -415,20 +369,17 @@ public class FieldHealthCareWorkerService {
         citizen.setStatus(citizenDTO.getStatus());
         citizen.setState(citizenDTO.getState());
         citizen.setAbhaId(citizenDTO.getAbhaId());
-        citizen.setFieldHealthCareWorker(fieldHealthCareWorker); // Assign the fetched worker to the citizen
-        citizen.setDoctor(doctor); // Assign the fetched doctor to the citizen
+        citizen.setFieldHealthCareWorker(fieldHealthCareWorker);
+        citizen.setDoctor(doctor);
 
-        // Fetch the pincode and district from the associated LocalArea and set to the citizen
         LocalArea localArea = fieldHealthCareWorker.getLocalArea();
         String pincode = localArea.getPincode();
         citizen.setPincode(pincode);
         District district = localArea.getDistrict();
         citizen.setDistrict(district);
 
-        // Save the citizen entity
         Citizen savedCitizen = citizenRepository.save(citizen);
 
-        // Map saved citizen and worker to DTO
         CitizenDTO citizenResponse = mapToCitizenDTO(savedCitizen);
 
         return citizenResponse;
@@ -449,7 +400,6 @@ public class FieldHealthCareWorkerService {
         citizenDTO.setDistrict(citizen.getDistrict().getName());
         citizenDTO.setAbhaId(citizen.getAbhaId());
 
-        // Map FieldHealthCareWorker to FieldHealthCareWorkerDTO
         FieldHealthCareWorker fieldHealthCareWorker = citizen.getFieldHealthCareWorker();
         if (fieldHealthCareWorker != null) {
             FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
@@ -479,7 +429,6 @@ public class FieldHealthCareWorkerService {
             }
         }
 
-        // Map Doctor to DoctorDTO
         Doctor doctor = citizen.getDoctor();
         if (doctor != null) {
             DoctorDTO doctorDTO = new DoctorDTO();
@@ -529,7 +478,6 @@ public class FieldHealthCareWorkerService {
     }
 
     private List<FollowUp> filterFollowUpsForToday(List<FollowUp> followUps, Date today) {
-        // Filter follow-ups based on whether they are recurring or not recurring
         return followUps.stream()
                 .filter(followUp -> followUp.getDate().equals(today) || isRecurringFollowUpForToday(followUp, today))
                 .collect(Collectors.toList());
@@ -539,7 +487,6 @@ public class FieldHealthCareWorkerService {
         Date recurrenceStartTime = followUp.getRecurrenceStartTime();
         Date recurrenceEndTime = followUp.getRecurrenceEndTime();
 
-        // Check if the follow-up falls within the recurrence time frame
         return recurrenceStartTime != null && recurrenceEndTime != null &&
                 today.after(recurrenceStartTime) && today.before(recurrenceEndTime) &&
                 isTodayMatchingFrequency(followUp, today);
@@ -549,108 +496,51 @@ public class FieldHealthCareWorkerService {
         switch (frequency) {
             case DAILY:
                 return true;
+
             case WEEKLY:
-                // Check if today is the same day of the week as the follow-up date
+
                 return today.getDay() == followUp.getDate().getDay();
+
             case TWICE_A_WEEK:
-                // Check if today is one of the two days specified for follow-up
+
                 return today.getDay() == followUp.getDate().getDay() ||
-                        today.getDay() == (followUp.getDate().getDay() + 3) % 7; // 3 days after the initial day
+                        today.getDay() == (followUp.getDate().getDay() + 3) % 7;
+
             case ALTERNATE_DAY:
-                // Check if the day difference between today and follow-up date is odd
+
                 return (today.getTime() - followUp.getDate().getTime()) / (1000 * 60 * 60 * 24) % 2 != 0;
+
             case MONTHLY:
-                // Check if today's day of the month matches the follow-up date's day of the month
+
                 return today.getDate() == followUp.getDate().getDate();
+
             case TWICE_A_MONTH:
-                // Check if today is one of the two dates specified for follow-up
+
                 return today.getDate() == followUp.getDate().getDate() ||
                         today.getDate() == followUp.getDate().getDate() + 15;
+
             case ALTERNATE_MONTH:
-                // Check if the month difference between today and follow-up date is odd
+
                 return (today.getMonth() - followUp.getDate().getMonth()) % 2 != 0;
+
             case QUARTERLY:
-                // Check if today's month is one of the specified months for follow-up
+
                 return (today.getMonth() % 3) == (followUp.getDate().getMonth() % 3);
+
             case BIANNUALLY:
-                // Check if today's month is one of the specified months for follow-up
+
                 return (today.getMonth() % 6) == (followUp.getDate().getMonth() % 6);
+
             case ANNUALLY:
-                // Check if today's month and day match the follow-up date's month and day
+
                 return today.getMonth() == followUp.getDate().getMonth() &&
                         today.getDate() == followUp.getDate().getDate();
             default:
                 return false;
         }
     }
-    private String generateUniqueUsername() {
-        String generatedUsername = null;
-        boolean isUnique = false;
-        while (!isUnique) {
-            // Generate a username starting with "FHW" followed by a sequence of numbers
-            int randomNumber = new Random().nextInt(90000) + 10000; // Generates a random 5-digit number
-            generatedUsername = "FHW" + randomNumber;
-            isUnique = !fieldHealthCareWorkerRepository.existsByUsername(generatedUsername);
-        }
-        return generatedUsername;
-    }
-
-    private String generateRandomPassword() {
-        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        StringBuilder password = new StringBuilder();
-        Random rnd = new Random();
-        while (password.length() < 10) { // length of the random string.
-            int index = (int) (rnd.nextFloat() * characters.length());
-            password.append(characters.charAt(index));
-        }
-        return password.toString();
-    }
-
-//    private void sendCredentialsByEmail(String email, String username, String password) {
-//        // Prepare email message
-//        SimpleMailMessage mailMessage = new SimpleMailMessage();
-//        mailMessage.setTo(email);
-//        mailMessage.setSubject("Credentials for accessing the system");
-//        mailMessage.setText("Your username: " + username + "\nYour password: " + password);
-//
-//        // Send email
-//        javaMailSender.send(mailMessage);
-//    }
-
-    public void sendCredentialsByEmail(String email, String username, String password) throws MessagingException {
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-        helper.setTo(email);
-        helper.setSubject("Welcome to Zencare - Your Credentials");
-        String emailBody = "<!DOCTYPE html>\n" +
-                "<html lang=\"en\">\n" +
-                "<head>\n" +
-                "    <meta charset=\"UTF-8\">\n" +
-                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
-                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "    <title>Zencare - Your Credentials</title>\n" +
-                "</head>\n" +
-                "<body style=\"font-family: Arial, sans-serif;\">\n" +
-                "    <div style=\"background-color: #f5f5f5; padding: 20px; border-radius: 10px;\">\n" +
-                "        <h1 style=\"color: #333333;\">Welcome to Zencare!</h1>\n" +
-                "        <p style=\"color: #666666;\">Below are your login credentials:</p>\n" +
-                "        <ul>\n" +
-                "            <li><strong>Username:</strong> " + username + "</li>\n" +
-                "            <li><strong>Password:</strong> " + password + "</li>\n" +
-                "        </ul>\n" +
-                "        <p style=\"color: #666666;\">Please keep your credentials secure and do not share them with anyone.</p>\n" +
-                "        <p style=\"color: #666666;\">If you have any questions or need assistance, feel free to contact our support team.</p>\n" +
-                "        <p style=\"color: #666666;\">Best regards,<br>Zencare Team</p>\n" +
-                "    </div>\n" +
-                "</body>\n" +
-                "</html>";
-        helper.setText(emailBody, true);
-        helper.setFrom("noreply@zencare.com");
-        javaMailSender.send(mimeMessage);
-    }
 
     public int calculateScore(List<String> answers) {
-        // Validate the number of answers
         if (answers.size() != 10) {
             throw new IllegalArgumentException("Exactly 10 answers are required.");
         }
@@ -668,7 +558,6 @@ public class FieldHealthCareWorkerService {
                     score += 1;
                     break;
                 case "D":
-                    // No points for D
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid answer: " + answer);
@@ -685,7 +574,6 @@ public class FieldHealthCareWorkerService {
 
         List<Doctor> doctorsInDistrict = doctorRepository.findAllByDistrictId(districtId);
 
-        // Convert doctors to DTOs
         List<DoctorDTO> doctorDTOs = doctorsInDistrict.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -725,7 +613,6 @@ public class FieldHealthCareWorkerService {
             doctorDTO.setPhoneNum(doctor.getPhoneNum());
         }
 
-        // Set DistrictDTO if doctor has a district
         if (doctor.getDistrict() != null) {
             DistrictDTO districtDTO = new DistrictDTO();
             districtDTO.setId(doctor.getDistrict().getId());
@@ -746,24 +633,23 @@ public class FieldHealthCareWorkerService {
         HealthRecord healthRecord = healthRecordRepository.findByCitizen_Id(citizenId)
                 .orElseThrow(() -> new HealthRecordNotFoundException("Citizen not found with ID: " + citizenId));
 
-//        if (healthRecord == null) {
-//            throw new HealthRecordNotFoundException("Health record not found for citizen id: " + citizenId);
-//        }
         return ResponseEntity.ok(convertToHealthRecordDTO(healthRecord));
     }
 
     public ResponseEntity<?> getFollowUpsByHealthRecordId(Long healthRecordId) {
         List<FollowUp> followUps = followUpRepository.findByHealthRecordId(healthRecordId)
                 .orElseThrow(() -> new HealthRecordNotFoundException("FollowUps not found with ID: " + healthRecordId));
+
         if (followUps == null || followUps.isEmpty()) {
             throw new HealthRecordNotFoundException("FollowUps not found with ID: " + healthRecordId);
         }
+
         return ResponseEntity.ok(followUps.stream()
                 .map(this::convertToFollowUpDTO)
                 .collect(Collectors.toList()));
     }
+
     public List<CitizensDTO> getAllCitizens() {
-        //List<Citizen> citizens = citizenRepository.findAll();
         List<Citizen> citizens = citizenRepository.findByStatus("ongoing");
         List<CitizensDTO> citizenDTOs = new ArrayList<>();
         for (Citizen citizen : citizens) {
@@ -771,6 +657,7 @@ public class FieldHealthCareWorkerService {
         }
         return citizenDTOs;
     }
+
     public static CitizensDTO toDTO(Citizen citizen) {
         CitizensDTO dto = new CitizensDTO();
         dto.setId(citizen.getId());
@@ -791,9 +678,10 @@ public class FieldHealthCareWorkerService {
         dto.setAbhaId(citizen.getAbhaId());
         return dto;
     }
-
-//
 }
+
+
+
 //import java.io.IOException;
 //import java.util.HashMap;
 //import java.util.Map;
@@ -1152,4 +1040,103 @@ public class FieldHealthCareWorkerService {
 //            default:
 //                return false;
 //        }
+//    }
+
+//    private void sendCredentialsByEmail(String email, String username, String password) {
+//        // Prepare email message
+//        SimpleMailMessage mailMessage = new SimpleMailMessage();
+//        mailMessage.setTo(email);
+//        mailMessage.setSubject("Credentials for accessing the system");
+//        mailMessage.setText("Your username: " + username + "\nYour password: " + password);
+//
+//        // Send email
+//        javaMailSender.send(mailMessage);
+//    }
+
+//    public void sendCredentialsByEmail(String email, String username, String password) throws MessagingException {
+//        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+//        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+//        helper.setTo(email);
+//        helper.setSubject("Welcome to Zencare - Your Credentials");
+//        String emailBody = "<!DOCTYPE html>\n" +
+//                "<html lang=\"en\">\n" +
+//                "<head>\n" +
+//                "    <meta charset=\"UTF-8\">\n" +
+//                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
+//                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+//                "    <title>Zencare - Your Credentials</title>\n" +
+//                "</head>\n" +
+//                "<body style=\"font-family: Arial, sans-serif;\">\n" +
+//                "    <div style=\"background-color: #f5f5f5; padding: 20px; border-radius: 10px;\">\n" +
+//                "        <h1 style=\"color: #333333;\">Welcome to Zencare!</h1>\n" +
+//                "        <p style=\"color: #666666;\">Below are your login credentials:</p>\n" +
+//                "        <ul>\n" +
+//                "            <li><strong>Username:</strong> " + username + "</li>\n" +
+//                "            <li><strong>Password:</strong> " + password + "</li>\n" +
+//                "        </ul>\n" +
+//                "        <p style=\"color: #666666;\">Please keep your credentials secure and do not share them with anyone.</p>\n" +
+//                "        <p style=\"color: #666666;\">If you have any questions or need assistance, feel free to contact our support team.</p>\n" +
+//                "        <p style=\"color: #666666;\">Best regards,<br>Zencare Team</p>\n" +
+//                "    </div>\n" +
+//                "</body>\n" +
+//                "</html>";
+//        helper.setText(emailBody, true);
+//        helper.setFrom("noreply@zencare.com");
+//        javaMailSender.send(mimeMessage);
+//    }
+
+
+//    private String generateUniqueUsername() {
+//        String generatedUsername = null;
+//        boolean isUnique = false;
+//        while (!isUnique) {
+//            // Generate a username starting with "FHW" followed by a sequence of numbers
+//            int randomNumber = new Random().nextInt(90000) + 10000; // Generates a random 5-digit number
+//            generatedUsername = "FHW" + randomNumber;
+//            isUnique = !fieldHealthCareWorkerRepository.existsByUsername(generatedUsername);
+//        }
+//        return generatedUsername;
+//    }
+//
+//    private String generateRandomPassword() {
+//        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+//        StringBuilder password = new StringBuilder();
+//        Random rnd = new Random();
+//        while (password.length() < 10) { // length of the random string.
+//            int index = (int) (rnd.nextFloat() * characters.length());
+//            password.append(characters.charAt(index));
+//        }
+//        return password.toString();
+//    }
+
+
+
+//    @Transactional
+//    public void setActiveStatusByUsername(String username, boolean active) {
+//        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+//                .orElseThrow(() -> new DoctorNotFoundException("Field Health Care Worker not found with username: " + username));
+//
+//        if (worker.isActive() == active) {
+//            throw new DoctorAlreadyDeactivatedException("Field Health Care Worker is already " + (active ? "activated" : "deactivated"));
+//        }
+//
+//        worker.setActive(active);
+//        fieldHealthCareWorkerRepository.save(worker);
+//
+//        User user = userRepository.findByUsername(username)
+//                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+//        user.setActive(active);
+//        userRepository.save(user);
+//    }
+
+
+//    public FieldHealthcareWorkerDTO getFieldHealthcareWorkerByUsername(String username) {
+//        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+//                .orElseThrow(() -> new DoctorNotFoundException("Field Health Care Worker not found with username: " + username));
+//        if (worker == null) {
+//            // Handle the case where no worker is found with the provided username
+//            System.out.println("Hello\n");
+//            return null;
+//        }
+//        return convertToDTO2(worker);
 //    }

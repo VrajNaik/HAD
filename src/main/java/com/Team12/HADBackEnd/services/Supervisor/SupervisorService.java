@@ -22,12 +22,6 @@ public interface SupervisorService {
 
     void setActiveStatusByUsername(String username, boolean active);
 
-    String generateUniqueUsername();
-
-    String generateRandomPassword();
-
-    void sendCredentialsByEmail(String email, String username, String password) throws MessagingException;
-
     String assignWorkerToLocalArea(String username, Long localAreaId);
 
     List<FollowUpsDTO> getFollowUpsForSupervisor(String supervisorUsername);

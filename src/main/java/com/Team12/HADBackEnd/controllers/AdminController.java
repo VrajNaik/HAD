@@ -27,22 +27,33 @@ import java.util.Map;
 @CrossOrigin(originPatterns = "*", exposedHeaders = "*", origins = "*")
 @RequestMapping("/admin")
 public class AdminController {
+    private final DoctorService doctorService;
+    private final DoctorRepository doctorRepository;
+    private final SupervisorRepository supervisorRepository;
+    private final FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository;
+    private final CitizenRepository citizenRepository;
+    private final UserRepository userRepository;
+    private final SupervisorService supervisorService;
+    private final FieldHealthCareWorkerService fieldHealthCareWorkerService;
+
     @Autowired
-    private DoctorService doctorService;
-    @Autowired
-    private DoctorRepository doctorRepository;
-    @Autowired
-    private SupervisorRepository supervisorRepository;
-    @Autowired
-    private FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository;
-    @Autowired
-    private CitizenRepository citizenRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private SupervisorService supervisorService;
-    @Autowired
-    private FieldHealthCareWorkerService fieldHealthCareWorkerService;
+    public AdminController(DoctorService doctorService,
+                           DoctorRepository doctorRepository,
+                           SupervisorRepository supervisorRepository,
+                           FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository,
+                           CitizenRepository citizenRepository,
+                           UserRepository userRepository,
+                           SupervisorService supervisorService,
+                           FieldHealthCareWorkerService fieldHealthCareWorkerService) {
+        this.doctorService = doctorService;
+        this.doctorRepository = doctorRepository;
+        this.supervisorRepository = supervisorRepository;
+        this.fieldHealthCareWorkerRepository = fieldHealthCareWorkerRepository;
+        this.citizenRepository = citizenRepository;
+        this.userRepository = userRepository;
+        this.supervisorService = supervisorService;
+        this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
+    }
 
 
     @PostMapping("/addDoctor")
@@ -135,6 +146,30 @@ public class AdminController {
             throw new AuthenticationServiceException(e.getMessage(), e);
         }
     }
+
+    @GetMapping("/viewCitizens")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<CitizensDTO> getAllCitizens() {
+        return fieldHealthCareWorkerService.getAllCitizens();
+    }
+
+    @GetMapping("/getRoleCounts")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Map<String, Object> getRoleCounts() {
+        long doctorCount = doctorRepository.countByActiveTrue();
+        long supervisorCount = supervisorRepository.countByActiveTrue();
+        long fieldWorkerCount = fieldHealthCareWorkerRepository.countByActiveTrue();
+        long citizen = citizenRepository.count();
+        Map<String, Object> response = new HashMap<>();
+        Map<String, Long> counts = new HashMap<>();
+        counts.put("doctors", doctorCount);
+        counts.put("supervisors", supervisorCount);
+        counts.put("fieldHealthcareWorkers", fieldWorkerCount);
+        counts.put("citizens", citizen);
+        response.put("counts", counts);
+        return response;
+    }
+
     @PutMapping("/activate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> activateUser(@RequestBody UsernameDTO usernameDTO) {
@@ -182,29 +217,6 @@ public class AdminController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid username prefix");
         }
-    }
-
-    @GetMapping("/viewCitizens")
-    @PreAuthorize("hasRole('ADMIN')")
-    public List<CitizensDTO> getAllCitizens() {
-        return fieldHealthCareWorkerService.getAllCitizens();
-    }
-
-    @GetMapping("/getRoleCounts")
-    @PreAuthorize("hasRole('ADMIN')")
-    public Map<String, Object> getRoleCounts() {
-        long doctorCount = doctorRepository.countByActiveTrue();
-        long supervisorCount = supervisorRepository.countByActiveTrue();
-        long fieldWorkerCount = fieldHealthCareWorkerRepository.countByActiveTrue();
-        long citizen = citizenRepository.count();
-        Map<String, Object> response = new HashMap<>();
-        Map<String, Long> counts = new HashMap<>();
-        counts.put("doctors", doctorCount);
-        counts.put("supervisors", supervisorCount);
-        counts.put("fieldHealthcareWorkers", fieldWorkerCount);
-        counts.put("citizens", citizen);
-        response.put("counts", counts);
-        return response;
     }
 
 }

@@ -6,6 +6,8 @@ import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.repository.*;
 
+import com.Team12.HADBackEnd.util.CredentialGenerator.CredentialService;
+import com.Team12.HADBackEnd.util.MailService.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +48,10 @@ public class DoctorService {
     @Autowired
     private PasswordEncoder encoder;
     @Autowired
-    private JavaMailSender javaMailSender;
+    private EmailService emailService;
+    @Autowired
+    private CredentialService credentialService;
+
 
     @Transactional(rollbackFor = Exception.class)
     public DoctorDTO updateDoctor(DoctorUpdateRequestDTO request) {
@@ -94,8 +99,8 @@ public class DoctorService {
     }
     @Transactional(rollbackFor = Exception.class)
     public Doctor addDoctor(Doctor doctor) throws DuplicateLicenseIdException, DuplicateEmailIdException {
-        String generatedUsername = generateUniqueUsername();
-        String generatedRandomPassword = generateRandomPassword();
+        String generatedUsername = credentialService.generateUniqueUsername("doctor");
+        String generatedRandomPassword = credentialService.generateRandomPassword();
 
         System.out.println("Received Doctor object: " + doctor);
 
@@ -133,7 +138,7 @@ public class DoctorService {
         // 2
         System.out.println(generatedRandomPassword);
         try {
-            sendCredentialsByEmail(savedDoctor.getEmail(), generatedUsername, generatedRandomPassword);
+            emailService.sendCredentialsByEmail(savedDoctor.getEmail(), generatedUsername, generatedRandomPassword);
         }
         catch (MessagingException e) {
             System.out.println("Error");
@@ -579,61 +584,6 @@ public class DoctorService {
 
         followUpRepository.save(followUp);
     }
-
-    private String generateUniqueUsername() {
-        String generatedUsername = null;
-        boolean isUnique = false;
-        while (!isUnique) {
-            // Generate a username starting with "DR" followed by a sequence of numbers
-            int randomNumber = new Random().nextInt(90000) + 10000; // Generates a random 5-digit number
-            generatedUsername = "DR" + randomNumber;
-            isUnique = !doctorRepository.existsByUsername(generatedUsername);
-        }
-        return generatedUsername;
-    }
-    private String generateRandomPassword() {
-        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        StringBuilder password = new StringBuilder();
-        Random rnd = new Random();
-        while (password.length() < 10) { // length of the random string.
-            int index = (int) (rnd.nextFloat() * characters.length());
-            password.append(characters.charAt(index));
-        }
-        return password.toString();
-    }
-
-    public void sendCredentialsByEmail(String email, String username, String password) throws MessagingException {
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-        helper.setTo(email);
-        helper.setSubject("Welcome to Zencare - Your Credentials");
-
-        String emailBody = "<!DOCTYPE html>\n" +
-                "<html lang=\"en\">\n" +
-                "<head>\n" +
-                "    <meta charset=\"UTF-8\">\n" +
-                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
-                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "    <title>Zencare - Your Credentials</title>\n" +
-                "</head>\n" +
-                "<body style=\"font-family: Arial, sans-serif;\">\n" +
-                "    <div style=\"background-color: #f5f5f5; padding: 20px; border-radius: 10px;\">\n" +
-                "        <h1 style=\"color: #333333;\">Welcome to Zencare!</h1>\n" +
-                "        <p style=\"color: #666666;\">Below are your login credentials:</p>\n" +
-                "        <ul>\n" +
-                "            <li><strong>Username:</strong> " + username + "</li>\n" +
-                "            <li><strong>Password:</strong> " + password + "</li>\n" +
-                "        </ul>\n" +
-                "        <p style=\"color: #666666;\">Please keep your credentials secure and do not share them with anyone.</p>\n" +
-                "        <p style=\"color: #666666;\">If you have any questions or need assistance, feel free to contact our support team.</p>\n" +
-                "        <p style=\"color: #666666;\">Best regards,<br>Zencare Team</p>\n" +
-                "    </div>\n" +
-                "</body>\n" +
-                "</html>";
-        helper.setText(emailBody, true);
-        helper.setFrom("noreply@zencare.com");
-        javaMailSender.send(mimeMessage);
-    }
 }
 
 
@@ -1015,3 +965,26 @@ public class DoctorService {
 //
 //        javaMailSender.send(mailMessage);
 //    }
+
+
+//private String generateUniqueUsername() {
+//    String generatedUsername = null;
+//    boolean isUnique = false;
+//    while (!isUnique) {
+//        // Generate a username starting with "DR" followed by a sequence of numbers
+//        int randomNumber = new Random().nextInt(90000) + 10000; // Generates a random 5-digit number
+//        generatedUsername = "DR" + randomNumber;
+//        isUnique = !doctorRepository.existsByUsername(generatedUsername);
+//    }
+//    return generatedUsername;
+//}
+//private String generateRandomPassword() {
+//    String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+//    StringBuilder password = new StringBuilder();
+//    Random rnd = new Random();
+//    while (password.length() < 10) { // length of the random string.
+//        int index = (int) (rnd.nextFloat() * characters.length());
+//        password.append(characters.charAt(index));
+//    }
+//    return password.toString();
+//}

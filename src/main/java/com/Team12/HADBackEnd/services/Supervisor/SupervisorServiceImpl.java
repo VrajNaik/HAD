@@ -7,13 +7,11 @@ import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException
 import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
 import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
-import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.*;
+import com.Team12.HADBackEnd.util.CredentialGenerator.CredentialService;
+import com.Team12.HADBackEnd.util.MailService.EmailService;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,13 +30,11 @@ public class SupervisorServiceImpl implements SupervisorService {
     private final FieldHealthCareWorkerRepository workerRepository;
     private final LocalAreaRepository localAreaRepository;
     private final PasswordEncoder encoder;
-    private final ICD10CodeRepository icd10CodeRepository;
-    private final QuestionnaireRepository questionnaireRepository;
-    private final QuestionRepository questionRepository;
     private final FollowUpRepository followUpRepository;
-    private final OptionRepository optionRepository;
     private final FieldHealthCareWorkerService fieldHealthCareWorkerService;
-    private final JavaMailSender javaMailSender;
+    private final EmailService emailService;
+    private final CredentialService credentialService;
+
 
 
     @Autowired
@@ -50,13 +46,10 @@ public class SupervisorServiceImpl implements SupervisorService {
             FieldHealthCareWorkerRepository workerRepository,
             LocalAreaRepository localAreaRepository,
             PasswordEncoder encoder,
-            ICD10CodeRepository icd10CodeRepository,
-            QuestionnaireRepository questionnaireRepository,
-            QuestionRepository questionRepository,
             FollowUpRepository followUpRepository,
-            OptionRepository optionRepository,
             FieldHealthCareWorkerService fieldHealthCareWorkerService,
-            JavaMailSender javaMailSender
+            EmailService emailService,
+            CredentialService credentialService
     ) {
         this.supervisorRepository = supervisorRepository;
         this.districtRepository = districtRepository;
@@ -65,23 +58,18 @@ public class SupervisorServiceImpl implements SupervisorService {
         this.workerRepository = workerRepository;
         this.localAreaRepository = localAreaRepository;
         this.encoder = encoder;
-        this.icd10CodeRepository = icd10CodeRepository;
-        this.questionnaireRepository = questionnaireRepository;
-        this.questionRepository = questionRepository;
         this.followUpRepository = followUpRepository;
-        this.optionRepository = optionRepository;
         this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
-        this.javaMailSender = javaMailSender;
+        this.emailService = emailService;
+        this.credentialService = credentialService;
     }
 
-
-    private final AtomicInteger counter = new AtomicInteger(10000);
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Supervisor addSupervisor(Supervisor supervisor) throws DuplicateEmailIdException {
-        String generatedUsername = generateUniqueUsername();
-        String generatedRandomPassword = generateRandomPassword();
+        String generatedUsername = credentialService.generateUniqueUsername("supervisor");
+        String generatedRandomPassword = credentialService.generateRandomPassword();
 
         District district = supervisor.getDistrict();
 
@@ -111,7 +99,7 @@ public class SupervisorServiceImpl implements SupervisorService {
         Supervisor savedSupervisor = supervisorRepository.save(supervisor);
 
         try {
-            sendCredentialsByEmail(savedSupervisor.getEmail(), generatedUsername, generatedRandomPassword);
+            emailService.sendCredentialsByEmail(savedSupervisor.getEmail(), generatedUsername, generatedRandomPassword);
         }
         catch (MessagingException e) {
             System.out.println("Error in sending Mail !!!");
@@ -345,59 +333,6 @@ public class SupervisorServiceImpl implements SupervisorService {
             localAreaDTO.setFieldHealthcareWorkerDTO(fieldHealthcareWorkerDTO);
         }
         return localAreaDTO;
-    }
-
-    public String generateUniqueUsername() {
-        String generatedUsername = null;
-        boolean isUnique = false;
-        while (!isUnique) {
-            // Generate a username starting with "SV" followed by a sequence of numbers
-            int sequenceNumber = counter.getAndIncrement();
-            generatedUsername = "SV" + sequenceNumber;
-            isUnique = !supervisorRepository.existsByUsername(generatedUsername);
-        }
-        return generatedUsername;
-    }
-    public String generateRandomPassword() {
-        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        StringBuilder password = new StringBuilder();
-        Random rnd = new Random();
-        while (password.length() < 10) { // length of the random string.
-            int index = (int) (rnd.nextFloat() * characters.length());
-            password.append(characters.charAt(index));
-        }
-        return password.toString();
-    }
-    public void sendCredentialsByEmail(String email, String username, String password) throws MessagingException {
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-        helper.setTo(email);
-        helper.setSubject("Welcome to Zencare - Your Credentials");
-        String emailBody = "<!DOCTYPE html>\n" +
-                "<html lang=\"en\">\n" +
-                "<head>\n" +
-                "    <meta charset=\"UTF-8\">\n" +
-                "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n" +
-                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "    <title>Zencare - Your Credentials</title>\n" +
-                "</head>\n" +
-                "<body style=\"font-family: Arial, sans-serif;\">\n" +
-                "    <div style=\"background-color: #f5f5f5; padding: 20px; border-radius: 10px;\">\n" +
-                "        <h1 style=\"color: #333333;\">Welcome to Zencare!</h1>\n" +
-                "        <p style=\"color: #666666;\">Below are your login credentials:</p>\n" +
-                "        <ul>\n" +
-                "            <li><strong>Username:</strong> " + username + "</li>\n" +
-                "            <li><strong>Password:</strong> " + password + "</li>\n" +
-                "        </ul>\n" +
-                "        <p style=\"color: #666666;\">Please keep your credentials secure and do not share them with anyone.</p>\n" +
-                "        <p style=\"color: #666666;\">If you have any questions or need assistance, feel free to contact our support team.</p>\n" +
-                "        <p style=\"color: #666666;\">Best regards,<br>Zencare Team</p>\n" +
-                "    </div>\n" +
-                "</body>\n" +
-                "</html>";
-        helper.setText(emailBody, true);
-        helper.setFrom("noreply@zencare.com");
-        javaMailSender.send(mimeMessage);
     }
 }
 

@@ -25,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -40,39 +41,56 @@ import com.Team12.HADBackEnd.security.jwt.JwtUtils;
 @RequestMapping("/auth")
 public class AuthController {
 
-  @Autowired
-  AuthenticationManager authenticationManager;
+  private final AuthenticationManager authenticationManager;
+
+  private final UserRepository userRepository;
+
+  private final RoleRepository roleRepository;
+
+  private final DoctorRepository doctorRepository;
+
+  private final SupervisorRepository supervisorRepository;
+
+  private final FieldHealthCareWorkerRepository fieldHealthcareWorkerRepository;
+
+  private final DoctorService doctorService;
+
+  private final SupervisorService supervisorService;
+
+  private final FieldHealthCareWorkerService fieldHealthCareWorkerService;
+
+  private final ForgotPasswordService forgotPasswordService;
+
+  private final PasswordEncoder encoder;
+
+  private final JwtUtils jwtUtils;
 
   @Autowired
-  UserRepository userRepository;
-
-  @Autowired
-  RoleRepository roleRepository;
-  @Autowired
-  private CitizenRepository citizenRepository;
-
-  @Autowired
-  PasswordEncoder encoder;
-
-  @Autowired
-  JwtUtils jwtUtils;
-  @Autowired
-  SupervisorRepository supervisorRepository;
-
-  @Autowired
-  DoctorRepository doctorRepository;
-
-  @Autowired
-  FieldHealthCareWorkerRepository fieldHealthcareWorkerRepository;
-
-  @Autowired
-  private DoctorService doctorService;
-  @Autowired
-  private SupervisorService supervisorService;
-  @Autowired
-  private FieldHealthCareWorkerService fieldHealthCareWorkerService;
-  @Autowired
-  private ForgotPasswordService forgotPasswordService;
+  public AuthController(AuthenticationManager authenticationManager,
+                        UserRepository userRepository,
+                        RoleRepository roleRepository,
+                        DoctorRepository doctorRepository,
+                        SupervisorRepository supervisorRepository,
+                        FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository,
+                        DoctorService doctorService,
+                        SupervisorService supervisorService,
+                        FieldHealthCareWorkerService fieldHealthCareWorkerService,
+                        ForgotPasswordService forgotPasswordService,
+                        PasswordEncoder encoder,
+                        JwtUtils jwtUtils) {
+    this.authenticationManager = authenticationManager;
+    this.userRepository = userRepository;
+    this.roleRepository = roleRepository;
+    this.doctorRepository = doctorRepository;
+    this.supervisorRepository = supervisorRepository;
+    this.fieldHealthcareWorkerRepository = fieldHealthCareWorkerRepository;
+    this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
+    this.doctorService = doctorService;
+    this.supervisorService = supervisorService;
+    this.forgotPasswordService = forgotPasswordService;
+    this.encoder = encoder;
+    this.jwtUtils = jwtUtils;
+  }
 
 
   @PostMapping("/signin")
@@ -86,29 +104,14 @@ public class AuthController {
       if (!userDetails.isActivate()) {
         throw new UserDeactivatedException("Sorry, you are deactivated by the Admin. Contact the Admin for further assistance.");
       }
-
       SecurityContextHolder.getContext().setAuthentication(authentication);
       String jwt = jwtUtils.generateJwtToken(authentication);
       Object userRole = null;
-      // Check if the user is an admin
       boolean isAdmin = userDetails.getAuthorities().stream()
               .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
-
       if (isAdmin) {
-        // Count only active doctors, supervisors, and field healthcare workers
-        long doctorCount = doctorRepository.countByActiveTrue();
-        long supervisorCount = supervisorRepository.countByActiveTrue();
-        long fieldWorkerCount = fieldHealthcareWorkerRepository.countByActiveTrue();
-        long citizen = citizenRepository.count();
-
-        Map<String, Long> counts = new HashMap<>();
-        counts.put("doctors", doctorCount);
-        counts.put("supervisors", supervisorCount);
-        counts.put("fieldHealthcareWorkers", fieldWorkerCount);
-        counts.put("citizens", citizen);
-
         List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
+                .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(new AuthResponse(
                 new JwtResponse(jwt,
@@ -118,39 +121,27 @@ public class AuthController {
                         roles,
                         userDetails.isLogInFirst()
                         ),
-                counts, userRole));
-      } else {
-        // Fetch user's role and count from respective table
+                 null));
+      }
+      else {
         String role = null;
-        long roleCount = 0;
-        Object userDetail = null;
-
-        // Fetch the user's role based on their username/email
-        // Fetch user details based on their role
         if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_DOCTOR"))) {
           role = "doctor";
-          roleCount = doctorRepository.countByActiveTrue();
-          userDetail = doctorRepository.findByUsername(userDetails.getUsername()); // Fetch doctor details
           Doctor doctor = doctorRepository.findByUsername(userDetails.getUsername())
                   .orElseThrow(() -> new RuntimeException("Error: DOCTOR role not found."));
           userRole = doctorService.convertToDTO(doctor);
-        } else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_SUPERVISOR"))) {
+        }
+        else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_SUPERVISOR"))) {
           role = "supervisor";
-          roleCount = supervisorRepository.countByActiveTrue();
-          userDetail = supervisorRepository.findByUsername(userDetails.getUsername()); // Fetch supervisor details
           Supervisor supervisor = supervisorRepository.findByUsername(userDetails.getUsername())
                   .orElseThrow(() -> new RuntimeException("Error: SUPERVISOR role not found."));
           userRole = supervisorService.convertToDTO(supervisor);
         } else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_FIELD_HEALTHCARE_WORKER"))) {
           role = "fieldHealthcareWorker";
-          roleCount = fieldHealthcareWorkerRepository.countByActiveTrue();
-          userDetail = fieldHealthcareWorkerRepository.findByUsername(userDetails.getUsername()); // Fetch field healthcare worker details
           FieldHealthCareWorker fieldHealthCareWorker = fieldHealthcareWorkerRepository.findByUsername(userDetails.getUsername())
                   .orElseThrow(() -> new RuntimeException("Error: FIELD HEALTH CARE WORKER role not found."));
           userRole = fieldHealthCareWorkerService.convertToDTO2(fieldHealthCareWorker);
         }
-
-        // Return the response with the user's role, count, and details
         return ResponseEntity.ok(new AuthResponse(
                 new JwtResponse(jwt,
                         userDetails.getId(),
@@ -158,10 +149,8 @@ public class AuthController {
                         userDetails.getEmail(),
                         Collections.singletonList(role),
                         userDetails.isLogInFirst()
-                        ), // Return user's role
-                Collections.singletonMap(role, roleCount),
+                        ),
                 userRole
-                // Return user's details
         ));
       }
     } catch (UserDeactivatedException e) {
@@ -183,7 +172,6 @@ public class AuthController {
           .body(new MessageResponse("Error: Email is already in use!"));
     }
 
-    // Create new user's account
     User user = new User(signUpRequest.getUsername(),
                signUpRequest.getEmail(),
                encoder.encode(signUpRequest.getPassword()));
@@ -218,7 +206,7 @@ public class AuthController {
             break;
           case "fieldhealthcareworker":
             Role fhwRole = roleRepository.findByName(ERole.ROLE_FIELD_HEALTHCARE_WORKER)
-                    .orElseThrow(() -> new RuntimeException("Error: FEILD HEALTHCARE WORKER is not found."));
+                    .orElseThrow(() -> new RuntimeException("Error: FIELD HEALTHCARE WORKER is not found."));
             roles.add(fhwRole);
 
             break;
@@ -235,23 +223,20 @@ public class AuthController {
 
     return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
   }
-  @PostMapping("/forgot-password")
+
+  @PostMapping("/forgotPassword")
   public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
     String email = forgotPasswordRequest.getEmail();
-    // Check if user exists
     User user = userRepository.findByEmail(email);
     if (user == null) {
-      // User not found, return error response
       CustomErrorResponse errorResponse = new CustomErrorResponse("/api/forgot-password", "User Not Found", "User with email " + email + " not found.", 404);
       return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
-
-    // User found, initiate password reset
     forgotPasswordService.initiatePasswordReset(email);
     return ResponseEntity.ok("Password reset instructions sent to your email.");
   }
 
-  @PostMapping("/reset-password")
+  @PostMapping("/resetPassword")
   public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
     String token = resetPasswordRequest.getToken();
     String newPassword = resetPasswordRequest.getNewPassword();
@@ -259,12 +244,12 @@ public class AuthController {
     if (success) {
       return ResponseEntity.ok("Password reset successfully.");
     } else {
-      // Password reset failed, return error response
       CustomErrorResponse errorResponse = new CustomErrorResponse("/api/reset-password", "Invalid Token", "Invalid or expired token.", 400);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
   }
-  @PostMapping("/change-password")
+
+  @PostMapping("/changePassword")
   public ResponseEntity<?> changePassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
     String username = resetPasswordRequest.getToken();
     String newPassword = resetPasswordRequest.getNewPassword();
@@ -272,12 +257,10 @@ public class AuthController {
     if (success) {
       return ResponseEntity.ok("Password reset successfully.");
     } else {
-      // Password reset failed, return error response
       CustomErrorResponse errorResponse = new CustomErrorResponse("/api/change-password", "Invalid Token", "Invalid or expired token.", 400);
       return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
   }
-
 }
 
 //  @PostMapping("/signin")
@@ -402,3 +385,20 @@ public class AuthController {
 //      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
 //    }
 //  }
+
+
+
+
+
+//
+//        Map<String, Long> counts = new HashMap<>();
+//        counts.put("doctors", doctorCount);
+//        counts.put("supervisors", supervisorCount);
+//        counts.put("fieldHealthcareWorkers", fieldWorkerCount);
+//        counts.put("citizens", citizen);
+
+//        // Count only active doctors, supervisors, and field healthcare workers
+//        long doctorCount = doctorRepository.countByActiveTrue();
+//        long supervisorCount = supervisorRepository.countByActiveTrue();
+//        long fieldWorkerCount = fieldHealthcareWorkerRepository.countByActiveTrue();
+//        long citizen = citizenRepository.count();
