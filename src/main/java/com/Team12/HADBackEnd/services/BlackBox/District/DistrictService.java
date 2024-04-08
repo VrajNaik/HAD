@@ -18,6 +18,7 @@ public interface DistrictService {
 
 
     List<DistrictForAdminDTO> getAllDistricts();
+
 }
 
 //    public List<District> getAllDistricts() {

@@ -1,11 +1,15 @@
 package com.Team12.HADBackEnd.services.FieldHealthCareWorker;
 
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.FollowUpReturnDTO;
 import com.Team12.HADBackEnd.repository.*;
 import com.Team12.HADBackEnd.util.CredentialGenerator.CredentialService;
+import com.Team12.HADBackEnd.util.DTOConverter.DTOConverter;
 import com.Team12.HADBackEnd.util.MailService.EmailService;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +47,8 @@ public class FieldHealthCareWorkerService {
     private EmailService emailService;
     @Autowired
     private CredentialService credentialService;
+    @Autowired
+    private DTOConverter dtoConverter;
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -86,15 +92,15 @@ public class FieldHealthCareWorkerService {
         return savedWorker;
     }
 
-    public List<FieldHealthcareWorkerDTO> getAllFieldHealthCareWorkersWithDistricts() {
+    public List<FieldHealthCareWorkerForAdminDTO> getAllFieldHealthCareWorkersWithDistricts() {
         List<FieldHealthCareWorker> workers = fieldHealthCareWorkerRepository.findAll();
         return workers.stream()
-                .map(this::convertToDTO)
+                .map(dtoConverter::convertToFieldHealthCareWorkerForAdminDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public FieldHealthcareWorkerDTO updateFieldHealthCareWorker(SupervisorUpdateRequestDTO request) {
+    public FieldHealthcareWorkerDTO updateFieldHealthCareWorker(FieldHealthCareWorkerUpdateRequestDTO request) {
         FieldHealthCareWorker worker  = fieldHealthCareWorkerRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new NotFoundException("Field HealthCare Worker not found with Username: " + request.getUsername()));
 

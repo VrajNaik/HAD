@@ -1,5 +1,7 @@
 package com.Team12.HADBackEnd.services.Doctor;
 
+import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Doctor.DoctorUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.*;
 
 import com.Team12.HADBackEnd.payload.exception.*;
@@ -7,12 +9,11 @@ import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.repository.*;
 
 import com.Team12.HADBackEnd.util.CredentialGenerator.CredentialService;
+import com.Team12.HADBackEnd.util.DTOConverter.DTOConverter;
 import com.Team12.HADBackEnd.util.MailService.EmailService;
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.springframework.mail.javamail.JavaMailSender;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +51,8 @@ public class DoctorService {
     private EmailService emailService;
     @Autowired
     private CredentialService credentialService;
+    @Autowired
+    private DTOConverter dtoConverter;
 
 
     @Transactional(rollbackFor = Exception.class)
@@ -146,10 +148,10 @@ public class DoctorService {
         return savedDoctor;
     }
 
-    public List<DoctorDTO> getAllDoctorsWithDistricts() {
+    public List<DoctorForAdminDTO> getAllDoctorsWithDistricts() {
         List<Doctor> doctors = doctorRepository.findAll();
         return doctors.stream()
-                .map(this::convertToDTO)
+                .map(dtoConverter::convertToDoctorForAdminDTO)
                 .collect(Collectors.toList());
     }
 

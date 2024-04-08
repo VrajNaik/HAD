@@ -1,5 +1,11 @@
 package com.Team12.HADBackEnd.controllers;
 
+import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Doctor.DoctorUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.Doctor;
 import com.Team12.HADBackEnd.models.FieldHealthCareWorker;
 import com.Team12.HADBackEnd.models.Supervisor;
@@ -27,6 +33,7 @@ import java.util.Map;
 @CrossOrigin(originPatterns = "*", exposedHeaders = "*", origins = "*")
 @RequestMapping("/admin")
 public class AdminController {
+
     private final DoctorService doctorService;
     private final DoctorRepository doctorRepository;
     private final SupervisorRepository supervisorRepository;
@@ -67,10 +74,11 @@ public class AdminController {
         }
     }
 
+
     @GetMapping("/getDoctors")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<DoctorDTO>> viewDoctors() {
-        List<DoctorDTO> doctorDTOs = doctorService.getAllDoctorsWithDistricts();
+    public ResponseEntity<List<DoctorForAdminDTO>> viewDoctors() {
+        List<DoctorForAdminDTO> doctorDTOs = doctorService.getAllDoctorsWithDistricts();
         return new ResponseEntity<>(doctorDTOs, HttpStatus.OK);
     }
 
@@ -99,16 +107,18 @@ public class AdminController {
         }
     }
 
+
     @GetMapping("/getFieldHealthCareWorkers")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getAllFieldHealthCareWorker() {
-        List<FieldHealthcareWorkerDTO> worker = fieldHealthCareWorkerService.getAllFieldHealthCareWorkersWithDistricts();
+    public ResponseEntity<List<FieldHealthCareWorkerForAdminDTO>> getAllFieldHealthCareWorker() {
+        List<FieldHealthCareWorkerForAdminDTO> worker = fieldHealthCareWorkerService.getAllFieldHealthCareWorkersWithDistricts();
         return new ResponseEntity<>(worker, HttpStatus.OK);
     }
 
+
     @PostMapping("/updateFieldHealthCareWorker")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateFieldHealthCareWorker(@RequestBody SupervisorUpdateRequestDTO request) {
+    public ResponseEntity<?> updateFieldHealthCareWorker(@RequestBody FieldHealthCareWorkerUpdateRequestDTO request) {
         try {
             FieldHealthcareWorkerDTO updatedWorkerDTO = fieldHealthCareWorkerService.updateFieldHealthCareWorker(request);
             return ResponseEntity.ok(updatedWorkerDTO);
@@ -117,6 +127,7 @@ public class AdminController {
             throw new AuthenticationServiceException(e.getMessage(), e);
         }
     }
+
 
     @PostMapping("/addSupervisor")
     @PreAuthorize("hasRole('ADMIN')")
@@ -128,12 +139,15 @@ public class AdminController {
             throw new AuthenticationServiceException(e.getMessage(), e);
         }
     }
+
+
     @GetMapping("/getSupervisors")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<SupervisorDTO>> getAllSupervisor() {
-        List<SupervisorDTO> supervisor = supervisorService.getAllSupervisorsWithDistricts();
+    public ResponseEntity<List<SupervisorForAdminDTO>> getAllSupervisor() {
+        List<SupervisorForAdminDTO> supervisor = supervisorService.getAllSupervisorsWithDistricts();
         return new ResponseEntity<>(supervisor, HttpStatus.OK);
     }
+
 
     @PostMapping("/updateSupervisor")
     @PreAuthorize("hasRole('ADMIN')")
@@ -147,11 +161,13 @@ public class AdminController {
         }
     }
 
+
     @GetMapping("/viewCitizens")
     @PreAuthorize("hasRole('ADMIN')")
     public List<CitizensDTO> getAllCitizens() {
         return fieldHealthCareWorkerService.getAllCitizens();
     }
+
 
     @GetMapping("/getRoleCounts")
     @PreAuthorize("hasRole('ADMIN')")
@@ -169,6 +185,7 @@ public class AdminController {
         response.put("counts", counts);
         return response;
     }
+
 
     @PutMapping("/activate")
     @PreAuthorize("hasRole('ADMIN')")
@@ -194,6 +211,8 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid username prefix");
         }
     }
+
+
     @PutMapping("/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deactivateUser(@RequestBody UsernameDTO usernameDTO) {
@@ -218,7 +237,6 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid username prefix");
         }
     }
-
 }
 
 //@PutMapping("/updateDoctor")

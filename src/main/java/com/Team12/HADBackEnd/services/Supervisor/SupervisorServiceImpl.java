@@ -1,5 +1,7 @@
 package com.Team12.HADBackEnd.services.Supervisor;
 
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
 import com.Team12.HADBackEnd.services.FieldHealthCareWorker.FieldHealthCareWorkerService;
 import com.Team12.HADBackEnd.models.*;
@@ -9,6 +11,7 @@ import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.repository.*;
 import com.Team12.HADBackEnd.util.CredentialGenerator.CredentialService;
+import com.Team12.HADBackEnd.util.DTOConverter.DTOConverter;
 import com.Team12.HADBackEnd.util.MailService.EmailService;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
@@ -34,6 +36,7 @@ public class SupervisorServiceImpl implements SupervisorService {
     private final FieldHealthCareWorkerService fieldHealthCareWorkerService;
     private final EmailService emailService;
     private final CredentialService credentialService;
+    private final DTOConverter dtoConverter;
 
 
 
@@ -49,7 +52,8 @@ public class SupervisorServiceImpl implements SupervisorService {
             FollowUpRepository followUpRepository,
             FieldHealthCareWorkerService fieldHealthCareWorkerService,
             EmailService emailService,
-            CredentialService credentialService
+            CredentialService credentialService,
+            DTOConverter dtoConverter
     ) {
         this.supervisorRepository = supervisorRepository;
         this.districtRepository = districtRepository;
@@ -62,6 +66,7 @@ public class SupervisorServiceImpl implements SupervisorService {
         this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
         this.emailService = emailService;
         this.credentialService = credentialService;
+        this.dtoConverter = dtoConverter;
     }
 
 
@@ -109,10 +114,10 @@ public class SupervisorServiceImpl implements SupervisorService {
     }
 
     @Override
-    public List<SupervisorDTO> getAllSupervisorsWithDistricts() {
+    public List<SupervisorForAdminDTO> getAllSupervisorsWithDistricts() {
         List<Supervisor> supervisors = supervisorRepository.findAll();
         return supervisors.stream()
-                .map(this::convertToDTO)
+                .map(dtoConverter::convertToSupervisorAdminDTO)
                 .collect(Collectors.toList());
     }
 
@@ -153,6 +158,7 @@ public class SupervisorServiceImpl implements SupervisorService {
         Supervisor updatedSupervisor = supervisorRepository.save(supervisor);
         return convertToDTO(updatedSupervisor);
     }
+
 
     public SupervisorDTO convertToDTO(Supervisor supervisor) {
         SupervisorDTO supervisorDTO = new SupervisorDTO();

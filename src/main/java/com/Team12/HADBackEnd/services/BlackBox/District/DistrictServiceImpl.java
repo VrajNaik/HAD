@@ -3,6 +3,7 @@ package com.Team12.HADBackEnd.services.BlackBox.District;
 import com.Team12.HADBackEnd.DTOs.District.DistrictForAdminDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.repository.DistrictRepository;
+import com.Team12.HADBackEnd.util.DTOConverter.DTOConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -12,11 +13,14 @@ import java.util.stream.Collectors;
 public class DistrictServiceImpl implements DistrictService{
 
     private final DistrictRepository districtRepository;
+    private final DTOConverter dtoConverter;
 
 
     @Autowired
-    public DistrictServiceImpl(DistrictRepository districtRepository) {
+    public DistrictServiceImpl(DistrictRepository districtRepository,
+                               DTOConverter dtoConverter) {
         this.districtRepository = districtRepository;
+        this.dtoConverter = dtoConverter;
     }
 
     @Override
@@ -35,7 +39,7 @@ public class DistrictServiceImpl implements DistrictService{
         List<District> districts = districtRepository.findAll();
         return districts.stream()
                 .filter(district -> district.getSupervisor() == null)
-                .map(this::convertToDTO)
+                .map(dtoConverter::convertToDistrictForAdminDTO)
                 .collect(Collectors.toList());
     }
 
@@ -43,15 +47,8 @@ public class DistrictServiceImpl implements DistrictService{
     public List<DistrictForAdminDTO> getAllDistricts() {
         List<District> districts = districtRepository.findAll();
         return districts.stream()
-                .map(this::convertToDTO)
+                .map(dtoConverter::convertToDistrictForAdminDTO)
                 .collect(Collectors.toList());
-    }
-
-    private DistrictForAdminDTO convertToDTO(District district) {
-        DistrictForAdminDTO dto = new DistrictForAdminDTO();
-        dto.setId(district.getId());
-        dto.setName(district.getName());
-        return dto;
     }
 }
 

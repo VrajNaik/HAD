@@ -1,13 +1,14 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker;
 
-public class SupervisorUpdateRequestDTO {
+import com.Team12.HADBackEnd.payload.request.DistrictDTO;
+
+public class FieldHealthCareWorkerUpdateRequestDTO {
     private String username;
     private String name;
     private int age;
     private String gender;
     private String email;
     private Long phoneNum;
-//    private Long newDistrictId;
     private DistrictDTO district;
 
     public String getUsername() {
@@ -66,4 +67,3 @@ public class SupervisorUpdateRequestDTO {
         this.phoneNum = phoneNum;
     }
 }
-

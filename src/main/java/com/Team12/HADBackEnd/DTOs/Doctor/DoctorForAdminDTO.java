@@ -1,7 +1,8 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.Doctor;
 
-public class DoctorUpdateRequestDTO {
-    private String username;
+import com.Team12.HADBackEnd.DTOs.District.DistrictForAdminDTO;
+
+public class DoctorForAdminDTO {
     private String name;
     private String licenseId;
     private int age;
@@ -9,17 +10,9 @@ public class DoctorUpdateRequestDTO {
     private String specialty;
     private Long phoneNum;
     private String email;
-//    private Long newDistrictId;
-    private DistrictDTO district;
-
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    private String username;
+    private boolean active = true;
+    private DistrictForAdminDTO district;
 
     public String getName() {
         return name;
@@ -77,11 +70,27 @@ public class DoctorUpdateRequestDTO {
         this.email = email;
     }
 
-    public DistrictDTO getDistrict() {
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public DistrictForAdminDTO getDistrict() {
         return district;
     }
 
-    public void setDistrict(DistrictDTO district) {
+    public void setDistrict(DistrictForAdminDTO district) {
         this.district = district;
     }
 }

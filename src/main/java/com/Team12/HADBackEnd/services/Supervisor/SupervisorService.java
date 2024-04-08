@@ -1,10 +1,10 @@
 package com.Team12.HADBackEnd.services.Supervisor;
 
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
 import com.Team12.HADBackEnd.payload.request.*;
-
-import jakarta.mail.MessagingException;
 
 import java.util.*;
 
@@ -12,7 +12,7 @@ public interface SupervisorService {
 
     Supervisor addSupervisor(Supervisor supervisor) throws DuplicateEmailIdException;
 
-    List<SupervisorDTO> getAllSupervisorsWithDistricts();
+    List<SupervisorForAdminDTO> getAllSupervisorsWithDistricts();
 
     SupervisorDTO updateSupervisor(SupervisorUpdateRequestDTO request);
 
