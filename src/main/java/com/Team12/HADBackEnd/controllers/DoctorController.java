@@ -1,5 +1,6 @@
 package com.Team12.HADBackEnd.controllers;
 
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.repository.UserRepository;
@@ -18,10 +19,12 @@ import java.util.List;
 @RequestMapping("/doctor")
 public class DoctorController {
 
+    private final DoctorService doctorService;
+
     @Autowired
-    private DoctorService doctorService;
-    @Autowired
-    private UserRepository userRepository;
+    public DoctorController(DoctorService doctorService) {
+        this.doctorService = doctorService;
+    }
 
     @PostMapping("/getPatientById")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
@@ -37,9 +40,8 @@ public class DoctorController {
 
     @GetMapping("/getPatientsbyDocID")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public ResponseEntity<List<CitizenDTO>> getCitizensByDoctorId(@RequestBody DoctorIdRequest request) {
-        Long doctorId = request.getDoctorId();
-        List<CitizenDTO> citizens = doctorService.getCitizensByDoctorId(doctorId);
+    public ResponseEntity<List<CitizenForDoctorDTO>> getCitizensByDoctorId(@RequestParam String username) {
+        List<CitizenForDoctorDTO> citizens = doctorService.getCitizensByDoctorId(username);
         return ResponseEntity.ok(citizens);
     }
 

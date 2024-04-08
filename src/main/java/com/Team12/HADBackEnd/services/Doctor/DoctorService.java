@@ -1,5 +1,6 @@
 package com.Team12.HADBackEnd.services.Doctor;
 
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.*;
@@ -208,15 +209,14 @@ public class DoctorService {
         return null;
     }
 
-
-    public List<CitizenDTO> getCitizensByDoctorId(Long doctorId) {
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + doctorId));
+    public List<CitizenForDoctorDTO> getCitizensByDoctorId(String username) {
+        Doctor doctor = doctorRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Doctor not found with Username: " + username));
 
         List<Citizen> citizens = citizenRepository.findByDoctor(doctor);
 
         return citizens.stream()
-                .map(this::mapToCitizenDTO)
+                .map(dtoConverter::convertToCitizenForDoctorDTO)
                 .collect(Collectors.toList());
     }
 
@@ -314,6 +314,8 @@ public class DoctorService {
         return citizenDTO;
     }
 
+
+
     private FollowUpDTO convertToFollowUpDTO(FollowUp followUp) {
         FollowUpDTO followUpDTO = new FollowUpDTO();
         followUpDTO.setId(followUp.getId());
@@ -334,9 +336,6 @@ public class DoctorService {
 
         Doctor doctor = doctorRepository.findById(healthRecordCreationDTO.getDoctorId())
                 .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + healthRecordCreationDTO.getDoctorId()));
-
-//        ICD10Code icd10Code = icd10CodeRepository.findById(healthRecordCreationDTO.getIcd10CodeId())
-//                .orElseThrow(() -> new RuntimeException("ICD-10 code not found with ID: " + healthRecordCreationDTO.getIcd10CodeId()));
 
         List<ICD10Code> icd10Codes = icd10CodeRepository.findAllById(healthRecordCreationDTO.getIcd10CodeId());
         List<String> prescriptions = Collections.singletonList(healthRecordCreationDTO.getPrescription());
