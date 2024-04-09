@@ -1,4 +1,4 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.FollowUp;
 
 import com.Team12.HADBackEnd.models.Frequency;
 

@@ -3,589 +3,42 @@ package com.Team12.HADBackEnd.services.Doctor;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpCreationByDoctorDTO;
+import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordCreationDTO;
+import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionDTO;
 import com.Team12.HADBackEnd.models.*;
-
-import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.payload.request.*;
-import com.Team12.HADBackEnd.repository.*;
 
-import com.Team12.HADBackEnd.util.CredentialGenerator.CredentialService;
-import com.Team12.HADBackEnd.util.DTOConverter.DTOConverter;
-import com.Team12.HADBackEnd.util.MailService.EmailService;
-import jakarta.mail.MessagingException;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-
+import org.springframework.http.ResponseEntity;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
-import org.springframework.transaction.annotation.Transactional;
+public interface DoctorService {
 
-@Service
-public class DoctorService {
 
-    @Autowired
-    private DoctorRepository doctorRepository;
-    @Autowired
-    private DistrictRepository districtRepository;
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository;
-    @Autowired
-    private CitizenRepository citizenRepository;
-    @Autowired
-    private HealthRecordRepository healthRecordRepository;
-    @Autowired
-    private FollowUpRepository followUpRepository;
-    @Autowired
-    private ICD10CodeRepository icd10CodeRepository;
-    @Autowired
-    private PasswordEncoder encoder;
-    @Autowired
-    private EmailService emailService;
-    @Autowired
-    private CredentialService credentialService;
-    @Autowired
-    private DTOConverter dtoConverter;
+    DoctorDTO updateDoctor(DoctorUpdateRequestDTO request);
 
+    Doctor addDoctor(Doctor doctor);
 
-    @Transactional(rollbackFor = Exception.class)
-    public DoctorDTO updateDoctor(DoctorUpdateRequestDTO request) {
-        Doctor doctor = doctorRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new NotFoundException("Doctor not found with username: " + request.getUsername()));
+    List<DoctorForAdminDTO> getAllDoctorsWithDistricts();
 
-        if (doctorRepository.existsByEmail(request.getEmail()) && !Objects.equals(doctor.getEmail(), request.getEmail())) {
-            throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
-        }
-        if (doctorRepository.existsByLicenseId(request.getLicenseId()) && !Objects.equals(doctor.getLicenseId(), request.getLicenseId())) {
-            throw new DuplicateLicenseIdException("Doctor with the same license ID already exists.");
-        }
-        if (doctorRepository.existsByPhoneNum(request.getPhoneNum()) && !Objects.equals(doctor.getPhoneNum(), request.getPhoneNum())) {
-            throw new DuplicateEmailIdException("Doctor with the same Phone Number already exists.");
-        }
-        if (request.getName() != null) {
-            doctor.setName(request.getName());
-        }
-        if (request.getLicenseId() != null) {
-            doctor.setLicenseId(request.getLicenseId());
-        }
-        if (request.getAge() != 0) {
-            doctor.setAge(request.getAge());
-        }
-        if (request.getGender() != null) {
-            doctor.setGender(request.getGender());
-        }
-        if (request.getSpecialty() != null) {
-            doctor.setSpecialty(request.getSpecialty());
-        }
-        if (request.getPhoneNum() != null) {
-            doctor.setPhoneNum(request.getPhoneNum());
-        }
-        if (request.getEmail() != null) {
-            doctor.setEmail(request.getEmail());
-        }
-        if (request.getDistrict().getId() != null) {
-            District newDistrict = districtRepository.findById(request.getDistrict().getId())
-                    .orElseThrow(() -> new RuntimeException("District not found with id: " + request.getDistrict().getId()));
-            doctor.setDistrict(newDistrict);
-        }
+    DoctorDTO getDoctorByUsername(String username);
 
-        Doctor updatedDoctor = doctorRepository.save(doctor);
-        return convertToDTO(updatedDoctor);
-    }
-    @Transactional(rollbackFor = Exception.class)
-    public Doctor addDoctor(Doctor doctor) throws DuplicateLicenseIdException, DuplicateEmailIdException {
-        String generatedUsername = credentialService.generateUniqueUsername("doctor");
-        String generatedRandomPassword = credentialService.generateRandomPassword();
+    CitizenForDoctorDTO getCitizenByAbhaId(String abhaId);
 
-        System.out.println("Received Doctor object: " + doctor);
+    List<CitizenForDoctorDTO> getCitizensByDoctorId(String username);
 
-        District district = doctor.getDistrict();
-        System.out.println("Associated District object: " + district);
+    ResponseEntity<?> createHealthRecord(HealthRecordCreationDTO healthRecordCreationDTO);
 
-        User user = new User(generatedUsername,
-                doctor.getEmail(),
-                encoder.encode(generatedRandomPassword));
+    ResponseEntity<?> addPrescriptionToHealthRecord(PrescriptionDTO prescriptionDTO);
 
-        Set<Role> roles = new HashSet<>();
-        Role doctorRole = roleRepository.findByName(ERole.ROLE_DOCTOR)
-                .orElseThrow(() -> new RuntimeException("Error: DOCTOR role not found."));
-        roles.add(doctorRole);
-        user.setRoles(roles);
-        userRepository.save(user);
+    ResponseEntity<?> editLastPrescription(PrescriptionDTO editPrescriptionDTO);
 
-        if (doctorRepository.existsByLicenseId(doctor.getLicenseId())) {
-            throw new DuplicateLicenseIdException("Doctor with the same license ID already exists.");
-        }
+    ResponseEntity<?> addFollowUp(FollowUpCreationByDoctorDTO followUpDTO);
 
-        if (doctorRepository.existsByEmail(doctor.getEmail())) {
-            throw new DuplicateEmailIdException("Doctor with the same Email ID already exists.");
-        }
-        if (doctorRepository.existsByPhoneNum(doctor.getPhoneNum())) {
-            throw new DuplicateEmailIdException("Doctor with the same Phone Number already exists.");
-        }
+    void setActiveStatusByUsername(String username, boolean active);
 
-        doctor.setUsername(generatedUsername);
-        doctor.setPassword(encoder.encode(generatedRandomPassword));
-        doctor.setDistrict(district);
-//        doctor.setCitizens(districtRepository.findById(doctor.getDistrictId()));
-        Doctor savedDoctor = doctorRepository.save(doctor);
-        System.out.println("Doctor's District: " + savedDoctor.getDistrict());
-        // 2
-        System.out.println(generatedRandomPassword);
-        try {
-            emailService.sendCredentialsByEmail(savedDoctor.getEmail(), generatedUsername, generatedRandomPassword);
-        }
-        catch (MessagingException e) {
-            System.out.println("Error");
-        }
-        return savedDoctor;
-    }
-
-    public List<DoctorForAdminDTO> getAllDoctorsWithDistricts() {
-        List<Doctor> doctors = doctorRepository.findAll();
-        return doctors.stream()
-                .map(dtoConverter::convertToDoctorForAdminDTO)
-                .collect(Collectors.toList());
-    }
-
-    public DoctorDTO convertToDTO(Doctor doctor) {
-        DoctorDTO doctorDTO = new DoctorDTO();
-
-        doctorDTO.setId(doctor.getId());
-
-        if (doctor.getName() != null) {
-            doctorDTO.setName(doctor.getName());
-        }
-        if (doctor.getLicenseId() != null) {
-            doctorDTO.setLicenseId(doctor.getLicenseId());
-        }
-        if (doctor.getAge() != 0) {
-            doctorDTO.setAge(doctor.getAge());
-        }
-        if (doctor.getEmail() != null) {
-            doctorDTO.setEmail(doctor.getEmail());
-        }
-        if (doctor.getGender() != null) {
-            doctorDTO.setGender(doctor.getGender());
-        }
-        if (doctor.getSpecialty() != null) {
-            doctorDTO.setSpecialty(doctor.getSpecialty());
-        }
-        if (doctor.getUsername() != null) {
-            doctorDTO.setUsername(doctor.getUsername());
-        }
-        if (doctor.getPassword() != null) {
-            doctorDTO.setPassword(doctor.getPassword());
-        }
-        if (doctor.getPhoneNum() != null) {
-            doctorDTO.setPhoneNum(doctor.getPhoneNum());
-        }
-
-        // Set DistrictDTO if doctor has a district
-        if (doctor.getDistrict() != null) {
-            DistrictDTO districtDTO = new DistrictDTO();
-            districtDTO.setId(doctor.getDistrict().getId());
-            districtDTO.setName(doctor.getDistrict().getName());
-            doctorDTO.setDistrict(districtDTO);
-        }
-
-        return doctorDTO;
-    }
-
-    public CitizenDTO getCitizenByAbhaId(String abhaId) {
-        Citizen citizen = citizenRepository.findByAbhaId(abhaId)
-                .orElseThrow(() -> new RuntimeException("Citizen not found with ID: " + abhaId));
-        if (citizen != null) {
-            return mapToCitizenDTO(citizen);
-        }
-        return null;
-    }
-
-    public List<CitizenForDoctorDTO> getCitizensByDoctorId(String username) {
-        Doctor doctor = doctorRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Doctor not found with Username: " + username));
-
-        List<Citizen> citizens = citizenRepository.findByDoctor(doctor);
-
-        return citizens.stream()
-                .map(dtoConverter::convertToCitizenForDoctorDTO)
-                .collect(Collectors.toList());
-    }
-
-    private CitizenDTO mapToCitizenDTO(Citizen citizen) {
-        CitizenDTO citizenDTO = new CitizenDTO();
-        citizenDTO.setId(citizen.getId());
-        citizenDTO.setName(citizen.getName());
-        citizenDTO.setAge(citizen.getAge());
-        citizenDTO.setGender(citizen.getGender());
-        citizenDTO.setAddress(citizen.getAddress());
-        citizenDTO.setConsent(citizen.isConsent());
-        citizenDTO.setPincode(citizen.getPincode());
-        citizenDTO.setStatus(citizen.getStatus());
-        citizenDTO.setState(citizen.getState());
-        citizenDTO.setDistrict(citizen.getDistrict().getName() );
-        citizenDTO.setAbhaId(citizen.getAbhaId());
-
-        FieldHealthCareWorker fieldHealthCareWorker = citizen.getFieldHealthCareWorker();
-        if (fieldHealthCareWorker != null) {
-            FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
-            workerDTO.setId(fieldHealthCareWorker.getId());
-            workerDTO.setName(fieldHealthCareWorker.getName());
-            workerDTO.setAge(fieldHealthCareWorker.getAge());
-            workerDTO.setGender(fieldHealthCareWorker.getGender());
-
-            workerDTO.setUsername(fieldHealthCareWorker.getUsername());
-
-            workerDTO.setPassword(fieldHealthCareWorker.getPassword());
-            workerDTO.setEmail(fieldHealthCareWorker.getEmail());
-            workerDTO.setPhoneNum(fieldHealthCareWorker.getPhoneNum());
-            citizenDTO.setFieldHealthCareWorker(workerDTO);
-            if (fieldHealthCareWorker.getDistrict() != null) {
-                DistrictDTO districtDTO = new DistrictDTO();
-                districtDTO.setId(fieldHealthCareWorker.getDistrict().getId());
-                districtDTO.setName(fieldHealthCareWorker.getDistrict().getName());
-                workerDTO.setDistrict(districtDTO);
-            }
-            if (fieldHealthCareWorker.getLocalArea() != null) {
-                LocalAreaDTO localAreaDTO = new LocalAreaDTO();
-                localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
-                localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
-                localAreaDTO.setPincode(fieldHealthCareWorker.getLocalArea().getPincode());
-                workerDTO.setLocalArea(localAreaDTO);
-            }
-        }
-
-        Doctor doctor = citizen.getDoctor();
-        if (doctor != null) {
-            DoctorDTO doctorDTO = new DoctorDTO();
-            doctorDTO.setId(doctor.getId());
-            doctorDTO.setName(doctor.getName());
-            doctorDTO.setAge(doctor.getAge());
-            doctorDTO.setGender(doctor.getGender());
-            doctorDTO.setPhoneNum(doctor.getPhoneNum());
-            doctorDTO.setUsername(doctor.getUsername());
-            doctorDTO.setSpecialty(doctor.getSpecialty());
-            doctorDTO.setPassword(doctor.getPassword());
-            doctorDTO.setEmail(doctor.getEmail());
-            doctorDTO.setLicenseId(doctor.getLicenseId());
-            if (doctor.getDistrict() != null) {
-                DistrictDTO districtDTO = new DistrictDTO();
-                districtDTO.setId(doctor.getDistrict().getId());
-                districtDTO.setName(doctor.getDistrict().getName());
-                doctorDTO.setDistrict(districtDTO);
-            }
-            citizenDTO.setDoctorDTO(doctorDTO);
-        }
-        HealthRecord healthRecord = citizen.getHealthRecord();
-        if (healthRecord != null) {
-            HealthRecordDTO healthRecordDTO = new HealthRecordDTO();
-            healthRecordDTO.setId(healthRecord.getId());
-            healthRecordDTO.setPrescriptions(healthRecord.getPrescriptions());
-            healthRecordDTO.setConclusion(healthRecord.getConclusion());
-            healthRecordDTO.setDiagnosis(healthRecord.getDiagnosis());
-            healthRecordDTO.setTimestamp(healthRecord.getTimestamp());
-            healthRecordDTO.setStatus(healthRecord.getStatus());
-            citizenDTO.setHealthRecordDTO(healthRecordDTO);
-
-        }
-        if (citizen.getHealthRecord() != null && citizen.getHealthRecord().getFollowUps() != null) {
-            List<FollowUpDTO> followUpsDTO = citizen.getHealthRecord().getFollowUps().stream()
-                    .map(this::convertToFollowUpDTO)
-                    .collect(Collectors.toList());
-            HealthRecordDTO healthRecordDTO = citizenDTO.getHealthRecordDTO();
-            healthRecordDTO.setFollowUps(followUpsDTO);
-        }
-        if (citizen.getHealthRecord() != null && citizen.getHealthRecord().getIcd10Codes() != null) {
-            List<ICDCodesDTO> icdCodesDTO = citizen.getHealthRecord().getIcd10Codes().stream()
-                    .map(this::convertToICD10CodeDTO)
-                    .collect(Collectors.toList());
-            HealthRecordDTO healthRecordDTO = citizenDTO.getHealthRecordDTO();
-            healthRecordDTO.setIcd10codes(icdCodesDTO);
-        }
-
-        return citizenDTO;
-    }
-
-
-
-    private FollowUpDTO convertToFollowUpDTO(FollowUp followUp) {
-        FollowUpDTO followUpDTO = new FollowUpDTO();
-        followUpDTO.setId(followUp.getId());
-        followUpDTO.setDate(followUp.getDate());
-        followUpDTO.setStatus(followUp.getStatus());
-        followUpDTO.setInstructions(followUp.getInstructions());
-        followUpDTO.setMeasureOfVitals(followUp.getMeasureOfVitals());
-        return followUpDTO;
-    }
-
-    public HealthRecordDTO createHealthRecord(HealthRecordCreationDTO healthRecordCreationDTO) {
-
-        Citizen citizen = citizenRepository.findById(healthRecordCreationDTO.getCitizenId())
-                .orElseThrow(() -> new RuntimeException("Citizen not found with ID: " + healthRecordCreationDTO.getCitizenId()));
-
-        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(healthRecordCreationDTO.getWorkerId())
-                .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + healthRecordCreationDTO.getWorkerId()));
-
-        Doctor doctor = doctorRepository.findById(healthRecordCreationDTO.getDoctorId())
-                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + healthRecordCreationDTO.getDoctorId()));
-
-        List<ICD10Code> icd10Codes = icd10CodeRepository.findAllById(healthRecordCreationDTO.getIcd10CodeId());
-        List<String> prescriptions = Collections.singletonList(healthRecordCreationDTO.getPrescription());
-
-        HealthRecord healthRecord = new HealthRecord();
-        healthRecord.setCitizen(citizen);
-        healthRecord.setFieldHealthCareWorker(fieldHealthCareWorker);
-        healthRecord.setDoctor(doctor);
-        healthRecord.setPrescriptions(prescriptions);
-        healthRecord.setConclusion(healthRecordCreationDTO.getConclusion());
-        healthRecord.setDiagnosis(healthRecordCreationDTO.getDiagnosis());
-        healthRecord.setTimestamp(healthRecordCreationDTO.getTimestamp());
-        healthRecord.setIcd10Codes(icd10Codes);
-
-        HealthRecord savedHealthRecord = healthRecordRepository.save(healthRecord);
-
-        return convertToDTO(savedHealthRecord);
-    }
-
-    private HealthRecordDTO convertToDTO(HealthRecord healthRecord) {
-        HealthRecordDTO dto = new HealthRecordDTO();
-        dto.setId(healthRecord.getId());
-        dto.setPrescriptions(healthRecord.getPrescriptions());
-        dto.setConclusion(healthRecord.getConclusion());
-        dto.setDiagnosis(healthRecord.getDiagnosis());
-        dto.setTimestamp(healthRecord.getTimestamp());
-        dto.setStatus(healthRecord.getStatus());
-        Doctor doctor = healthRecord.getDoctor();
-        if (doctor != null) {
-            DoctorDTO doctorDTO = new DoctorDTO();
-            doctorDTO.setId(doctor.getId());
-            doctorDTO.setName(doctor.getName());
-            doctorDTO.setAge(doctor.getAge());
-            doctorDTO.setGender(doctor.getGender());
-            doctorDTO.setPhoneNum(doctor.getPhoneNum());
-            doctorDTO.setUsername(doctor.getUsername());
-            doctorDTO.setSpecialty(doctor.getSpecialty());
-            doctorDTO.setPassword(doctor.getPassword());
-            doctorDTO.setEmail(doctor.getEmail());
-            doctorDTO.setLicenseId(doctor.getLicenseId());
-            if (doctor.getDistrict() != null) {
-                DistrictDTO districtDTO = new DistrictDTO();
-                districtDTO.setId(doctor.getDistrict().getId());
-                districtDTO.setName(doctor.getDistrict().getName());
-                doctorDTO.setDistrict(districtDTO);
-            }
-            dto.setDoctorDTO(doctorDTO);
-        }
-        FieldHealthCareWorker fieldHealthCareWorker = healthRecord.getFieldHealthCareWorker();
-        if (fieldHealthCareWorker != null) {
-            FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
-            workerDTO.setId(fieldHealthCareWorker.getId());
-            workerDTO.setName(fieldHealthCareWorker.getName());
-            workerDTO.setAge(fieldHealthCareWorker.getAge());
-            workerDTO.setGender(fieldHealthCareWorker.getGender());
-
-            workerDTO.setUsername(fieldHealthCareWorker.getUsername());
-
-            workerDTO.setPassword(fieldHealthCareWorker.getPassword());
-            workerDTO.setEmail(fieldHealthCareWorker.getEmail());
-            workerDTO.setPhoneNum(fieldHealthCareWorker.getPhoneNum());
-            dto.setFieldHealthCareWorker(workerDTO);
-            if (fieldHealthCareWorker.getDistrict() != null) {
-                DistrictDTO districtDTO = new DistrictDTO();
-                districtDTO.setId(fieldHealthCareWorker.getDistrict().getId());
-                districtDTO.setName(fieldHealthCareWorker.getDistrict().getName());
-                workerDTO.setDistrict(districtDTO);
-            }
-            if (fieldHealthCareWorker.getLocalArea() != null) {
-                LocalAreaDTO localAreaDTO = new LocalAreaDTO();
-                localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
-                localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
-                localAreaDTO.setPincode(fieldHealthCareWorker.getLocalArea().getPincode());
-                workerDTO.setLocalArea(localAreaDTO);
-            }
-        }
-        Citizen citizen = healthRecord.getCitizen();
-        CitizenDTO citizenDTO = mapToCitizenDTO(citizen);
-        dto.setIcd10codes(healthRecord.getIcd10Codes().stream()
-                .map(this::convertToICD10CodeDTO)
-                .collect(Collectors.toList()));
-        dto.setCitizenDTO(citizenDTO);
-        return dto;
-    }
-    private ICDCodesDTO convertToICD10CodeDTO(ICD10Code icd10Code) {
-        ICDCodesDTO icd10CodeDTO = new ICDCodesDTO();
-        icd10CodeDTO.setId(icd10Code.getId());
-        icd10CodeDTO.setCode(icd10Code.getCode());
-        icd10CodeDTO.setName(icd10Code.getName());
-        icd10CodeDTO.setDescription(icd10Code.getDescription());
-        return icd10CodeDTO;
-    }
-
-    public HealthRecordDTO addPrescriptionToHealthRecord(PrescriptionDTO prescriptionDTO) {
-        HealthRecord healthRecord = healthRecordRepository.findById(prescriptionDTO.getHealthRecordId())
-                .orElseThrow(() -> new RuntimeException("Health record not found with ID: " + prescriptionDTO.getHealthRecordId()));
-
-        List<String> prescriptions = healthRecord.getPrescriptions();
-        if (prescriptions == null) {
-            prescriptions = new ArrayList<>();
-        }
-        prescriptions.add(prescriptionDTO.getPrescription());
-        healthRecord.setPrescriptions(prescriptions);
-
-        HealthRecord updatedHealthRecord = healthRecordRepository.save(healthRecord);
-        return convertToDTO(updatedHealthRecord);
-    }
-
-    public HealthRecordDTO editLastPrescription(PrescriptionDTO editPrescriptionDTO) {
-        HealthRecord healthRecord = healthRecordRepository.findById(editPrescriptionDTO.getHealthRecordId())
-                .orElseThrow(() -> new RuntimeException("Health record not found with ID: " + editPrescriptionDTO.getHealthRecordId()));
-
-        // Retrieve or initialize prescriptions list
-        List<String> prescriptions = healthRecord.getPrescriptions();
-        if (prescriptions == null || prescriptions.isEmpty()) {
-            throw new RuntimeException("No prescriptions found for the health record");
-        }
-
-        // Update the last prescription
-        int lastIndex = prescriptions.size() - 1;
-        prescriptions.set(lastIndex, editPrescriptionDTO.getPrescription());
-        healthRecord.setPrescriptions(prescriptions);
-
-        HealthRecord updatedHealthRecord = healthRecordRepository.save(healthRecord);
-        return convertToDTO(updatedHealthRecord);
-    }
-
-    public FollowUpDTO createFollowUp(FollowUpCreationDTO followUpRequestDTO) {
-        // Fetch the health record by ID
-        HealthRecord healthRecord = healthRecordRepository.findById(followUpRequestDTO.getHealthRecordId())
-                .orElseThrow(() -> new RuntimeException("Health record not found with ID: " + followUpRequestDTO.getHealthRecordId()));
-
-        // Fetch the field healthcare worker by ID
-        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(followUpRequestDTO.getFieldHealthCareWorkerId())
-                .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + followUpRequestDTO.getFieldHealthCareWorkerId()));
-
-        // Create a new follow-up entity
-        FollowUp followUp = new FollowUp();
-        followUp.setHealthRecord(healthRecord);
-        followUp.setFieldHealthCareWorker(fieldHealthCareWorker);
-        followUp.setDate(followUpRequestDTO.getDate());
-        followUp.setStatus(followUpRequestDTO.getStatus());
-        followUp.setInstructions(followUpRequestDTO.getInstructions());
-        followUp.setMeasureOfVitals(followUpRequestDTO.getMeasureOfVitals());
-
-        FollowUp savedFollowUp = followUpRepository.save(followUp);
-
-        Citizen citizen = healthRecord.getCitizen();
-        citizen.setStatus("ongoing");
-        citizenRepository.save(citizen);
-
-        return convertToDTO(savedFollowUp);
-    }
-
-    private FollowUpDTO convertToDTO(FollowUp followUp) {
-        FollowUpDTO followUpDTO = new FollowUpDTO();
-        followUpDTO.setId(followUp.getId());
-        followUpDTO.setDate(followUp.getDate());
-        followUpDTO.setStatus(followUp.getStatus());
-        followUpDTO.setInstructions(followUp.getInstructions());
-        followUpDTO.setMeasureOfVitals(followUp.getMeasureOfVitals());
-        FieldHealthCareWorker fieldHealthCareWorker = followUp.getFieldHealthCareWorker();
-        if (fieldHealthCareWorker != null) {
-            FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
-            workerDTO.setId(fieldHealthCareWorker.getId());
-            workerDTO.setName(fieldHealthCareWorker.getName());
-            workerDTO.setAge(fieldHealthCareWorker.getAge());
-            workerDTO.setGender(fieldHealthCareWorker.getGender());
-
-            workerDTO.setUsername(fieldHealthCareWorker.getUsername());
-
-            workerDTO.setPassword(fieldHealthCareWorker.getPassword());
-            workerDTO.setEmail(fieldHealthCareWorker.getEmail());
-            workerDTO.setPhoneNum(fieldHealthCareWorker.getPhoneNum());
-            followUpDTO.setFieldHealthCareWorker(workerDTO);
-            if (fieldHealthCareWorker.getDistrict() != null) {
-                DistrictDTO districtDTO = new DistrictDTO();
-                districtDTO.setId(fieldHealthCareWorker.getDistrict().getId());
-                districtDTO.setName(fieldHealthCareWorker.getDistrict().getName());
-                workerDTO.setDistrict(districtDTO);
-            }
-            if (fieldHealthCareWorker.getLocalArea() != null) {
-                LocalAreaDTO localAreaDTO = new LocalAreaDTO();
-                localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
-                localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
-                localAreaDTO.setPincode(fieldHealthCareWorker.getLocalArea().getPincode());
-                workerDTO.setLocalArea(localAreaDTO);
-            }
-        }
-        HealthRecord healthRecord = followUp.getHealthRecord();
-        if(healthRecord != null) {
-            HealthRecordDTO healthRecordDTO = convertToDTO(healthRecord);
-            followUpDTO.setHealthRecord(healthRecordDTO);
-        }
-        return followUpDTO;
-    }
-
-
-    @Transactional
-    public void setActiveStatusByUsername(String username, boolean active) {
-        Doctor doctor = doctorRepository.findByUsername(username)
-                .orElseThrow(() -> new NotFoundException("Doctor not found with username: " + username));
-        if (doctor.isActive() == active) {
-            throw new DoctorAlreadyDeactivatedException("Doctor is already " + (active ? "activated" : "deactivated"));
-        }
-        if (!doctor.getCitizens().isEmpty() || !doctor.getHealthRecords().isEmpty()) {
-            StringBuilder message = new StringBuilder("Cannot deactivate doctor due to associated entities:\n");
-            if (!doctor.getCitizens().isEmpty()) {
-                message.append(" - This doctor is associated with citizens.\n");
-            }
-            if (!doctor.getHealthRecords().isEmpty()) {
-                message.append(" - This doctor is associated with health records.\n");
-            }
-            throw new NotFoundException(message.toString());
-        }
-        doctor.setActive(active);
-        doctorRepository.save(doctor);
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
-        user.setActive(active);
-        userRepository.save(user);
-    }
-
-    public DoctorDTO getDoctorByUsername(String username) {
-        Doctor doctor = doctorRepository.findByUsername(username)
-                .orElseThrow(() -> new NotFoundException("Dcotor not found with username: " + username));
-        return convertToDTO(doctor);
-    }
-
-    public void addFollowUp(FollowUpCreationByDoctorDTO followUpDTO) {
-        FollowUp followUp = new FollowUp();
-        Long healthRecordId = followUpDTO.getHealthRecordId();
-        if(healthRecordId != null) {
-            HealthRecord healthRecord = healthRecordRepository.findById(healthRecordId)
-                    .orElseThrow(() -> new NotFoundException("HealthRecord not found with id: " + healthRecordId));
-            followUp.setHealthRecord(healthRecord);
-        }
-        Long workerId = followUpDTO.getFieldHealthCareWorkerId();
-        if(workerId != null) {
-            FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findById(workerId)
-                    .orElseThrow(() -> new NotFoundException("Field Health care Worker not found with id: " + healthRecordId));
-            followUp.setFieldHealthCareWorker(worker);
-        }
-        followUp.setDate(followUpDTO.getScheduledDateTime());
-        followUp.setFrequency(followUpDTO.getFrequency());
-        followUp.setRecurrenceStartTime(new Date());
-        followUp.setRecurrenceEndTime(followUpDTO.getRecurrenceEndTime());
-
-        followUpRepository.save(followUp);
-    }
+    DoctorDTO convertToDTO(Doctor doctor);
 }
 
 
@@ -990,3 +443,253 @@ public class DoctorService {
 //    }
 //    return password.toString();
 //}
+
+//        if (citizen != null) {
+//            return dtoConverter.convertToCitizenForDoctorDTO(citizen);
+//        }
+//        return null;
+
+
+// public FollowUpDTO createFollowUp(FollowUpCreationDTO followUpRequestDTO) {
+//     // Fetch the health record by ID
+//     HealthRecord healthRecord = healthRecordRepository.findById(followUpRequestDTO.getHealthRecordId())
+//             .orElseThrow(() -> new NotFoundException("Health record not found with ID: " + followUpRequestDTO.getHealthRecordId()));
+//
+//     // Fetch the field healthcare worker by ID
+//     FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(followUpRequestDTO.getFieldHealthCareWorkerId())
+//             .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with ID: " + followUpRequestDTO.getFieldHealthCareWorkerId()));
+//
+//     // Create a new follow-up entity
+//     FollowUp followUp = new FollowUp();
+//     followUp.setHealthRecord(healthRecord);
+//     followUp.setFieldHealthCareWorker(fieldHealthCareWorker);
+//     followUp.setDate(followUpRequestDTO.getDate());
+//     followUp.setStatus(followUpRequestDTO.getStatus());
+//     followUp.setInstructions(followUpRequestDTO.getInstructions());
+//     followUp.setMeasureOfVitals(followUpRequestDTO.getMeasureOfVitals());
+//
+//     FollowUp savedFollowUp = followUpRepository.save(followUp);
+//
+//     Citizen citizen = healthRecord.getCitizen();
+//     citizen.setStatus("ongoing");
+//     citizenRepository.save(citizen);
+//
+//     return convertToDTO(savedFollowUp);
+// }
+// private CitizenDTO mapToCitizenDTO(Citizen citizen) {
+//     CitizenDTO citizenDTO = new CitizenDTO();
+//     citizenDTO.setId(citizen.getId());
+//     citizenDTO.setName(citizen.getName());
+//     citizenDTO.setAge(citizen.getAge());
+//     citizenDTO.setGender(citizen.getGender());
+//     citizenDTO.setAddress(citizen.getAddress());
+//     citizenDTO.setConsent(citizen.isConsent());
+//     citizenDTO.setPincode(citizen.getPincode());
+//     citizenDTO.setStatus(citizen.getStatus());
+//     citizenDTO.setState(citizen.getState());
+//     citizenDTO.setDistrict(citizen.getDistrict().getName() );
+//     citizenDTO.setAbhaId(citizen.getAbhaId());
+//
+//     FieldHealthCareWorker fieldHealthCareWorker = citizen.getFieldHealthCareWorker();
+//     if (fieldHealthCareWorker != null) {
+//         FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
+//         workerDTO.setId(fieldHealthCareWorker.getId());
+//         workerDTO.setName(fieldHealthCareWorker.getName());
+//         workerDTO.setAge(fieldHealthCareWorker.getAge());
+//         workerDTO.setGender(fieldHealthCareWorker.getGender());
+//
+//         workerDTO.setUsername(fieldHealthCareWorker.getUsername());
+//
+//         workerDTO.setPassword(fieldHealthCareWorker.getPassword());
+//         workerDTO.setEmail(fieldHealthCareWorker.getEmail());
+//         workerDTO.setPhoneNum(fieldHealthCareWorker.getPhoneNum());
+//         citizenDTO.setFieldHealthCareWorker(workerDTO);
+//         if (fieldHealthCareWorker.getDistrict() != null) {
+//             DistrictDTO districtDTO = new DistrictDTO();
+//             districtDTO.setId(fieldHealthCareWorker.getDistrict().getId());
+//             districtDTO.setName(fieldHealthCareWorker.getDistrict().getName());
+//             workerDTO.setDistrict(districtDTO);
+//         }
+//         if (fieldHealthCareWorker.getLocalArea() != null) {
+//             LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+//             localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
+//             localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
+//             localAreaDTO.setPincode(fieldHealthCareWorker.getLocalArea().getPincode());
+//             workerDTO.setLocalArea(localAreaDTO);
+//         }
+//     }
+//
+//     Doctor doctor = citizen.getDoctor();
+//     if (doctor != null) {
+//         DoctorDTO doctorDTO = new DoctorDTO();
+//         doctorDTO.setId(doctor.getId());
+//         doctorDTO.setName(doctor.getName());
+//         doctorDTO.setAge(doctor.getAge());
+//         doctorDTO.setGender(doctor.getGender());
+//         doctorDTO.setPhoneNum(doctor.getPhoneNum());
+//         doctorDTO.setUsername(doctor.getUsername());
+//         doctorDTO.setSpecialty(doctor.getSpecialty());
+//         doctorDTO.setPassword(doctor.getPassword());
+//         doctorDTO.setEmail(doctor.getEmail());
+//         doctorDTO.setLicenseId(doctor.getLicenseId());
+//         if (doctor.getDistrict() != null) {
+//             DistrictDTO districtDTO = new DistrictDTO();
+//             districtDTO.setId(doctor.getDistrict().getId());
+//             districtDTO.setName(doctor.getDistrict().getName());
+//             doctorDTO.setDistrict(districtDTO);
+//         }
+//         citizenDTO.setDoctorDTO(doctorDTO);
+//     }
+//     HealthRecord healthRecord = citizen.getHealthRecord();
+//     if (healthRecord != null) {
+//         HealthRecordDTO healthRecordDTO = new HealthRecordDTO();
+//         healthRecordDTO.setId(healthRecord.getId());
+//         healthRecordDTO.setPrescriptions(healthRecord.getPrescriptions());
+//         healthRecordDTO.setConclusion(healthRecord.getConclusion());
+//         healthRecordDTO.setDiagnosis(healthRecord.getDiagnosis());
+//         healthRecordDTO.setTimestamp(healthRecord.getTimestamp());
+//         healthRecordDTO.setStatus(healthRecord.getStatus());
+//         citizenDTO.setHealthRecordDTO(healthRecordDTO);
+//
+//     }
+//     if (citizen.getHealthRecord() != null && citizen.getHealthRecord().getFollowUps() != null) {
+//         List<FollowUpDTO> followUpsDTO = citizen.getHealthRecord().getFollowUps().stream()
+//                 .map(this::convertToFollowUpDTO)
+//                 .collect(Collectors.toList());
+//         HealthRecordDTO healthRecordDTO = citizenDTO.getHealthRecordDTO();
+//         healthRecordDTO.setFollowUps(followUpsDTO);
+//     }
+//     if (citizen.getHealthRecord() != null && citizen.getHealthRecord().getIcd10Codes() != null) {
+//         List<ICDCodesDTO> icdCodesDTO = citizen.getHealthRecord().getIcd10Codes().stream()
+//                 .map(this::convertToICD10CodeDTO)
+//                 .collect(Collectors.toList());
+//         HealthRecordDTO healthRecordDTO = citizenDTO.getHealthRecordDTO();
+//         healthRecordDTO.setIcd10codes(icdCodesDTO);
+//     }
+//
+//     return citizenDTO;
+// }
+// private FollowUpDTO convertToFollowUpDTO(FollowUp followUp) {
+//     FollowUpDTO followUpDTO = new FollowUpDTO();
+//     followUpDTO.setId(followUp.getId());
+//     followUpDTO.setDate(followUp.getDate());
+//     followUpDTO.setStatus(followUp.getStatus());
+//     followUpDTO.setInstructions(followUp.getInstructions());
+//     followUpDTO.setMeasureOfVitals(followUp.getMeasureOfVitals());
+//     return followUpDTO;
+// }
+// private HealthRecordDTO convertToDTO(HealthRecord healthRecord) {
+//     HealthRecordDTO dto = new HealthRecordDTO();
+//     dto.setId(healthRecord.getId());
+//     dto.setPrescriptions(healthRecord.getPrescriptions());
+//     dto.setConclusion(healthRecord.getConclusion());
+//     dto.setDiagnosis(healthRecord.getDiagnosis());
+//     dto.setTimestamp(healthRecord.getTimestamp());
+//     dto.setStatus(healthRecord.getStatus());
+//     Doctor doctor = healthRecord.getDoctor();
+//     if (doctor != null) {
+//         DoctorDTO doctorDTO = new DoctorDTO();
+//         doctorDTO.setId(doctor.getId());
+//         doctorDTO.setName(doctor.getName());
+//         doctorDTO.setAge(doctor.getAge());
+//         doctorDTO.setGender(doctor.getGender());
+//         doctorDTO.setPhoneNum(doctor.getPhoneNum());
+//         doctorDTO.setUsername(doctor.getUsername());
+//         doctorDTO.setSpecialty(doctor.getSpecialty());
+//         doctorDTO.setPassword(doctor.getPassword());
+//         doctorDTO.setEmail(doctor.getEmail());
+//         doctorDTO.setLicenseId(doctor.getLicenseId());
+//         if (doctor.getDistrict() != null) {
+//             DistrictDTO districtDTO = new DistrictDTO();
+//             districtDTO.setId(doctor.getDistrict().getId());
+//             districtDTO.setName(doctor.getDistrict().getName());
+//             doctorDTO.setDistrict(districtDTO);
+//         }
+//         dto.setDoctorDTO(doctorDTO);
+//     }
+//     FieldHealthCareWorker fieldHealthCareWorker = healthRecord.getFieldHealthCareWorker();
+//     if (fieldHealthCareWorker != null) {
+//         FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
+//         workerDTO.setId(fieldHealthCareWorker.getId());
+//         workerDTO.setName(fieldHealthCareWorker.getName());
+//         workerDTO.setAge(fieldHealthCareWorker.getAge());
+//         workerDTO.setGender(fieldHealthCareWorker.getGender());
+//
+//         workerDTO.setUsername(fieldHealthCareWorker.getUsername());
+//
+//         workerDTO.setPassword(fieldHealthCareWorker.getPassword());
+//         workerDTO.setEmail(fieldHealthCareWorker.getEmail());
+//         workerDTO.setPhoneNum(fieldHealthCareWorker.getPhoneNum());
+//         dto.setFieldHealthCareWorker(workerDTO);
+//         if (fieldHealthCareWorker.getDistrict() != null) {
+//             DistrictDTO districtDTO = new DistrictDTO();
+//             districtDTO.setId(fieldHealthCareWorker.getDistrict().getId());
+//             districtDTO.setName(fieldHealthCareWorker.getDistrict().getName());
+//             workerDTO.setDistrict(districtDTO);
+//         }
+//         if (fieldHealthCareWorker.getLocalArea() != null) {
+//             LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+//             localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
+//             localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
+//             localAreaDTO.setPincode(fieldHealthCareWorker.getLocalArea().getPincode());
+//             workerDTO.setLocalArea(localAreaDTO);
+//         }
+//     }
+//     Citizen citizen = healthRecord.getCitizen();
+//     CitizenDTO citizenDTO = mapToCitizenDTO(citizen);
+//     dto.setIcd10codes(healthRecord.getIcd10Codes().stream()
+//             .map(this::convertToICD10CodeDTO)
+//             .collect(Collectors.toList()));
+//     dto.setCitizenDTO(citizenDTO);
+//     return dto;
+// }
+// private ICDCodesDTO convertToICD10CodeDTO(ICD10Code icd10Code) {
+//     ICDCodesDTO icd10CodeDTO = new ICDCodesDTO();
+//     icd10CodeDTO.setId(icd10Code.getId());
+//     icd10CodeDTO.setCode(icd10Code.getCode());
+//     icd10CodeDTO.setName(icd10Code.getName());
+//     icd10CodeDTO.setDescription(icd10Code.getDescription());
+//     return icd10CodeDTO;
+// }
+// private FollowUpDTO convertToDTO(FollowUp followUp) {
+//     FollowUpDTO followUpDTO = new FollowUpDTO();
+//     followUpDTO.setId(followUp.getId());
+//     followUpDTO.setDate(followUp.getDate());
+//     followUpDTO.setStatus(followUp.getStatus());
+//     followUpDTO.setInstructions(followUp.getInstructions());
+//     followUpDTO.setMeasureOfVitals(followUp.getMeasureOfVitals());
+//     FieldHealthCareWorker fieldHealthCareWorker = followUp.getFieldHealthCareWorker();
+//     if (fieldHealthCareWorker != null) {
+//         FieldHealthcareWorkerDTO workerDTO = new FieldHealthcareWorkerDTO();
+//         workerDTO.setId(fieldHealthCareWorker.getId());
+//         workerDTO.setName(fieldHealthCareWorker.getName());
+//         workerDTO.setAge(fieldHealthCareWorker.getAge());
+//         workerDTO.setGender(fieldHealthCareWorker.getGender());
+//
+//         workerDTO.setUsername(fieldHealthCareWorker.getUsername());
+//
+//         workerDTO.setPassword(fieldHealthCareWorker.getPassword());
+//         workerDTO.setEmail(fieldHealthCareWorker.getEmail());
+//         workerDTO.setPhoneNum(fieldHealthCareWorker.getPhoneNum());
+//         followUpDTO.setFieldHealthCareWorker(workerDTO);
+//         if (fieldHealthCareWorker.getDistrict() != null) {
+//             DistrictDTO districtDTO = new DistrictDTO();
+//             districtDTO.setId(fieldHealthCareWorker.getDistrict().getId());
+//             districtDTO.setName(fieldHealthCareWorker.getDistrict().getName());
+//             workerDTO.setDistrict(districtDTO);
+//         }
+//         if (fieldHealthCareWorker.getLocalArea() != null) {
+//             LocalAreaDTO localAreaDTO = new LocalAreaDTO();
+//             localAreaDTO.setId(fieldHealthCareWorker.getLocalArea().getId());
+//             localAreaDTO.setName(fieldHealthCareWorker.getLocalArea().getName());
+//             localAreaDTO.setPincode(fieldHealthCareWorker.getLocalArea().getPincode());
+//             workerDTO.setLocalArea(localAreaDTO);
+//         }
+//     }
+//     HealthRecord healthRecord = followUp.getHealthRecord();
+//     if(healthRecord != null) {
+//         HealthRecordDTO healthRecordDTO = convertToDTO(healthRecord);
+//         followUpDTO.setHealthRecord(healthRecordDTO);
+//     }
+//     return followUpDTO;
+// }

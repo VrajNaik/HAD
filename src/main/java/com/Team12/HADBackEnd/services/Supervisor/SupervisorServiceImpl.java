@@ -160,41 +160,6 @@ public class SupervisorServiceImpl implements SupervisorService {
     }
 
 
-    public SupervisorDTO convertToDTO(Supervisor supervisor) {
-        SupervisorDTO supervisorDTO = new SupervisorDTO();
-        supervisorDTO.setId(supervisor.getId());
-
-        if (supervisor.getName() != null) {
-            supervisorDTO.setName(supervisor.getName());
-        }
-        if (supervisor.getAge() != 0) {
-            supervisorDTO.setAge(supervisor.getAge());
-        }
-        if (supervisor.getGender() != null) {
-            supervisorDTO.setGender(supervisor.getGender());
-        }
-        if (supervisor.getEmail() != null) {
-            supervisorDTO.setEmail(supervisor.getEmail());
-        }
-        if (supervisor.getPhoneNum() != null) {
-            supervisorDTO.setPhoneNum(supervisor.getPhoneNum());
-        }
-        if (supervisor.getUsername() != null) {
-            supervisorDTO.setUsername(supervisor.getUsername());
-        }
-        if (supervisor.getPassword() != null) {
-            supervisorDTO.setPassword(supervisor.getPassword());
-        }
-        if (supervisor.getDistrict() != null) {
-            DistrictDTO districtDTO = new DistrictDTO();
-            districtDTO.setId(supervisor.getDistrict().getId());
-            districtDTO.setName(supervisor.getDistrict().getName());
-            supervisorDTO.setDistrict(districtDTO);
-        }
-
-        return supervisorDTO;
-    }
-
     @Override
     public SupervisorDTO getSupervisorByUsername(String username) {
         Supervisor supervisor = supervisorRepository.findByUsername(username)
@@ -250,20 +215,6 @@ public class SupervisorServiceImpl implements SupervisorService {
         return followUps.stream()
                 .map(followUp -> convertFollowUpToDTO(followUp, worker))
                 .collect(Collectors.toList());
-    }
-
-    private FollowUpsDTO convertFollowUpToDTO(FollowUp followUp, FieldHealthCareWorker worker) {
-        FollowUpsDTO followUpDTO = new FollowUpsDTO();
-        followUpDTO.setId(followUp.getId());
-        followUpDTO.setDate(followUp.getDate());
-        followUpDTO.setStatus(followUp.getStatus());
-        followUpDTO.setInstructions(followUp.getInstructions());
-        followUpDTO.setMeasureOfVitals(followUp.getMeasureOfVitals());
-        followUpDTO.setHealthWorkerId(worker.getId());
-        followUpDTO.setHealthWorkerName(worker.getName());
-        followUpDTO.setHealthWorkerEmail(worker.getEmail());
-        followUpDTO.setHealthWorkerPhone(worker.getPhoneNum());
-        return followUpDTO;
     }
 
     @Override
@@ -339,6 +290,55 @@ public class SupervisorServiceImpl implements SupervisorService {
             localAreaDTO.setFieldHealthcareWorkerDTO(fieldHealthcareWorkerDTO);
         }
         return localAreaDTO;
+    }
+
+    public SupervisorDTO convertToDTO(Supervisor supervisor) {
+        SupervisorDTO supervisorDTO = new SupervisorDTO();
+        supervisorDTO.setId(supervisor.getId());
+
+        if (supervisor.getName() != null) {
+            supervisorDTO.setName(supervisor.getName());
+        }
+        if (supervisor.getAge() != 0) {
+            supervisorDTO.setAge(supervisor.getAge());
+        }
+        if (supervisor.getGender() != null) {
+            supervisorDTO.setGender(supervisor.getGender());
+        }
+        if (supervisor.getEmail() != null) {
+            supervisorDTO.setEmail(supervisor.getEmail());
+        }
+        if (supervisor.getPhoneNum() != null) {
+            supervisorDTO.setPhoneNum(supervisor.getPhoneNum());
+        }
+        if (supervisor.getUsername() != null) {
+            supervisorDTO.setUsername(supervisor.getUsername());
+        }
+        if (supervisor.getPassword() != null) {
+            supervisorDTO.setPassword(supervisor.getPassword());
+        }
+        if (supervisor.getDistrict() != null) {
+            DistrictDTO districtDTO = new DistrictDTO();
+            districtDTO.setId(supervisor.getDistrict().getId());
+            districtDTO.setName(supervisor.getDistrict().getName());
+            supervisorDTO.setDistrict(districtDTO);
+        }
+
+        return supervisorDTO;
+    }
+
+    private FollowUpsDTO convertFollowUpToDTO(FollowUp followUp, FieldHealthCareWorker worker) {
+        FollowUpsDTO followUpDTO = new FollowUpsDTO();
+        followUpDTO.setId(followUp.getId());
+        followUpDTO.setDate(followUp.getDate());
+        followUpDTO.setStatus(followUp.getStatus());
+        followUpDTO.setInstructions(followUp.getInstructions());
+        followUpDTO.setMeasureOfVitals(followUp.getMeasureOfVitals());
+        followUpDTO.setHealthWorkerId(worker.getId());
+        followUpDTO.setHealthWorkerName(worker.getName());
+        followUpDTO.setHealthWorkerEmail(worker.getEmail());
+        followUpDTO.setHealthWorkerPhone(worker.getPhoneNum());
+        return followUpDTO;
     }
 }
 

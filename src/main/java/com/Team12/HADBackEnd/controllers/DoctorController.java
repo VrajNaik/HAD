@@ -1,9 +1,11 @@
 package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpCreationByDoctorDTO;
+import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordCreationDTO;
+import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionDTO;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
-import com.Team12.HADBackEnd.repository.UserRepository;
 import com.Team12.HADBackEnd.services.Doctor.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,18 +28,6 @@ public class DoctorController {
         this.doctorService = doctorService;
     }
 
-    @PostMapping("/getPatientById")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public ResponseEntity<CitizenDTO> getCitizenByAbhaId(@RequestBody AbhaIdRequest request) {
-        String abhaId = request.getAbhaId();
-        CitizenDTO citizenDTO = doctorService.getCitizenByAbhaId(abhaId);
-        if (citizenDTO != null) {
-            return ResponseEntity.ok(citizenDTO);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     @GetMapping("/getPatientsbyDocID")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
     public ResponseEntity<List<CitizenForDoctorDTO>> getCitizensByDoctorId(@RequestParam String username) {
@@ -46,71 +36,63 @@ public class DoctorController {
     }
 
 
+    @GetMapping("/getPatientById")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
+    public ResponseEntity<CitizenForDoctorDTO> getPatientByAbhaId(@RequestParam String abhaId) {
+        CitizenForDoctorDTO citizenDTO = doctorService.getCitizenByAbhaId(abhaId);
+        return ResponseEntity.ok(citizenDTO);
+    }
+
+
     @PostMapping("/createHealthRecord")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public HealthRecordDTO createHealthRecord(@RequestBody HealthRecordCreationDTO healthRecordCreationDTO) {
+    public ResponseEntity<?> createHealthRecord(@RequestBody HealthRecordCreationDTO healthRecordCreationDTO) {
         return doctorService.createHealthRecord(healthRecordCreationDTO);
     }
 
     @PostMapping("/addPrescription")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public HealthRecordDTO addPrescriptionToHealthRecord(@RequestBody PrescriptionDTO prescriptionDTO) {
+    public ResponseEntity<?> addPrescriptionToHealthRecord(@RequestBody PrescriptionDTO prescriptionDTO) {
         return doctorService.addPrescriptionToHealthRecord(prescriptionDTO);
     }
+
     @PostMapping("/editPrescription")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public HealthRecordDTO editPrescription(@RequestBody PrescriptionDTO editPrescriptionDTO) {
+    public ResponseEntity<?> editPrescription(@RequestBody PrescriptionDTO editPrescriptionDTO) {
         return doctorService.editLastPrescription(editPrescriptionDTO);
     }
 
     @PostMapping("/addFollowUp")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public ResponseEntity<String> addFollowUp(@RequestBody FollowUpCreationByDoctorDTO followUpDTO) {
-        doctorService.addFollowUp(followUpDTO);
-        return ResponseEntity.ok("Follow-up added successfully");
+    public ResponseEntity<?> addFollowUp(@RequestBody FollowUpCreationByDoctorDTO followUpDTO) {
+        return doctorService.addFollowUp(followUpDTO);
     }
 
     @PostMapping("/getFollowUp")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
     public ResponseEntity<?> getResponse(@RequestBody FollowUpCreationByDoctorDTO followUpDTO) {
         doctorService.addFollowUp(followUpDTO);
-//        return ResponseEntity.ok("Follow-up added successfully");
         String username = "";
         try {
             DoctorDTO doctorDTO = doctorService.getDoctorByUsername(username);
             if (doctorDTO == null) {
-                // Handle the case where no supervisor is found with the provided username
                 String message = "Doctor Not Found with a given username";
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
             }
             return ResponseEntity.ok(doctorDTO);
         } catch (NotFoundException ex) {
-            // Handle the case where supervisor is not found
             String message = "Doctor Not Found with a given username";
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
         } catch (Exception e) {
-            // Handle other exceptions here
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @PostMapping("/getByUsername")
+    @GetMapping("/getByUsername")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public ResponseEntity<?> getDoctorByUsername(@RequestBody UsernameDTO usernameRequest) {
-        String username = usernameRequest.getUsername();
-        try {
-            DoctorDTO doctorDTO = doctorService.getDoctorByUsername(username);
-            if (doctorDTO == null) {
-                String message = "Doctor Not Found with a given username";
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
-            }
-            return ResponseEntity.ok(doctorDTO);
-        } catch (NotFoundException ex) {
-            String message = "Doctor Not Found with a given username";
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<?> getDoctorByUsername(@RequestParam String username) {
+        DoctorDTO doctorDTO = doctorService.getDoctorByUsername(username);
+        return ResponseEntity.ok(doctorDTO);
     }
 }
 
@@ -212,3 +194,25 @@ public class DoctorController {
 //    public FollowUpDTO createFollowUp(@RequestBody FollowUpCreationDTO followUpDTO) {
 //        return doctorService.createFollowUp(followUpDTO);
 //    }
+
+
+
+//        if (citizenDTO != null) {
+//            return ResponseEntity.ok(citizenDTO);
+//        } else {
+//            return ResponseEntity.notFound().build();
+//        }
+
+//        try {
+//            DoctorDTO doctorDTO = doctorService.getDoctorByUsername(username);
+//            if (doctorDTO == null) {
+//                String message = "Doctor Not Found with a given username";
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
+//            }
+//            return ResponseEntity.ok(doctorDTO);
+//        } catch (NotFoundException ex) {
+//            String message = "Doctor Not Found with a given username";
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }

@@ -10,6 +10,8 @@ import com.Team12.HADBackEnd.DTOs.ICD10Code.ICD10CodesForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
 import com.Team12.HADBackEnd.models.*;
+import com.Team12.HADBackEnd.payload.request.DistrictDTO;
+import com.Team12.HADBackEnd.payload.request.DoctorDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -226,5 +228,46 @@ public class DTOConverter {
             citizenDTO.setHealthRecordDTO(convertToHealthRecordForDoctorDTO(healthRecord));
         }
         return citizenDTO;
+    }
+    public DoctorDTO convertToDTO(Doctor doctor) {
+        DoctorDTO doctorDTO = new DoctorDTO();
+
+        doctorDTO.setId(doctor.getId());
+
+        if (doctor.getName() != null) {
+            doctorDTO.setName(doctor.getName());
+        }
+        if (doctor.getLicenseId() != null) {
+            doctorDTO.setLicenseId(doctor.getLicenseId());
+        }
+        if (doctor.getAge() != 0) {
+            doctorDTO.setAge(doctor.getAge());
+        }
+        if (doctor.getEmail() != null) {
+            doctorDTO.setEmail(doctor.getEmail());
+        }
+        if (doctor.getGender() != null) {
+            doctorDTO.setGender(doctor.getGender());
+        }
+        if (doctor.getSpecialty() != null) {
+            doctorDTO.setSpecialty(doctor.getSpecialty());
+        }
+        if (doctor.getUsername() != null) {
+            doctorDTO.setUsername(doctor.getUsername());
+        }
+        if (doctor.getPassword() != null) {
+            doctorDTO.setPassword(doctor.getPassword());
+        }
+        if (doctor.getPhoneNum() != null) {
+            doctorDTO.setPhoneNum(doctor.getPhoneNum());
+        }
+        if (doctor.getDistrict() != null) {
+            DistrictDTO districtDTO = new DistrictDTO();
+            districtDTO.setId(doctor.getDistrict().getId());
+            districtDTO.setName(doctor.getDistrict().getName());
+            doctorDTO.setDistrict(districtDTO);
+        }
+
+        return doctorDTO;
     }
 }
