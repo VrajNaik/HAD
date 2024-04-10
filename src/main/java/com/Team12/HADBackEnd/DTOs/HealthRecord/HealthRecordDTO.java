@@ -1,7 +1,10 @@
 package com.Team12.HADBackEnd.DTOs.HealthRecord;
 
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenDTO;
+import com.Team12.HADBackEnd.DTOs.Doctor.DoctorDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpDTO;
 import com.Team12.HADBackEnd.DTOs.ICD10Code.ICDCodesDTO;
-import com.Team12.HADBackEnd.payload.request.*;
 
 import java.util.Date;
 import java.util.List;
@@ -13,7 +16,7 @@ public class HealthRecordDTO {
     private String diagnosis;
     private Date timestamp;
     private String status;
-    private FieldHealthcareWorkerDTO fieldHealthCareWorker;
+    private FieldHealthCareWorkerWithHealthRecordDTO fieldHealthCareWorker;
     private DoctorDTO doctorDTO;
     private CitizenDTO citizenDTO;
     private List<FollowUpDTO> followUps;
@@ -67,11 +70,11 @@ public class HealthRecordDTO {
         this.status = status;
     }
 
-    public FieldHealthcareWorkerDTO getFieldHealthCareWorker() {
+    public FieldHealthCareWorkerWithHealthRecordDTO getFieldHealthCareWorker() {
         return fieldHealthCareWorker;
     }
 
-    public void setFieldHealthCareWorker(FieldHealthcareWorkerDTO fieldHealthCareWorker) {
+    public void setFieldHealthCareWorker(FieldHealthCareWorkerWithHealthRecordDTO fieldHealthCareWorker) {
         this.fieldHealthCareWorker = fieldHealthCareWorker;
     }
 

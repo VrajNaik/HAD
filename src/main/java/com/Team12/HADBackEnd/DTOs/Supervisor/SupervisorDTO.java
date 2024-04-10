@@ -1,18 +1,18 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.Supervisor;
 
-public class DoctorDTO {
+
+import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
+
+public class SupervisorDTO {
     private Long id;
     private String name;
-    private String licenseId;
     private int age;
     private String gender;
-    private String specialty;
-    private Long phoneNum;
     private String email;
+    private Long phoneNum;
     private String username;
     private String password;
-    private boolean active = true;
-    private DistrictDTO district; // District information
+    private DistrictDTO district;
 
     public Long getId() {
         return id;
@@ -30,14 +30,6 @@ public class DoctorDTO {
         this.name = name;
     }
 
-    public String getLicenseId() {
-        return licenseId;
-    }
-
-    public void setLicenseId(String licenseId) {
-        this.licenseId = licenseId;
-    }
-
     public int getAge() {
         return age;
     }
@@ -52,22 +44,6 @@ public class DoctorDTO {
 
     public void setGender(String gender) {
         this.gender = gender;
-    }
-
-    public String getSpecialty() {
-        return specialty;
-    }
-
-    public void setSpecialty(String specialty) {
-        this.specialty = specialty;
-    }
-
-    public Long getPhoneNum() {
-        return phoneNum;
-    }
-
-    public void setPhoneNum(Long phoneNum) {
-        this.phoneNum = phoneNum;
     }
 
     public String getEmail() {
@@ -94,12 +70,12 @@ public class DoctorDTO {
         this.password = password;
     }
 
-    public boolean isActive() {
-        return active;
+    public Long getPhoneNum() {
+        return phoneNum;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setPhoneNum(Long phoneNum) {
+        this.phoneNum = phoneNum;
     }
 
     public DistrictDTO getDistrict() {

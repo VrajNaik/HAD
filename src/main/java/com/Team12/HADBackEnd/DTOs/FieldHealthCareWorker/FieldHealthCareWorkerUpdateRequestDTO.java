@@ -1,6 +1,6 @@
 package com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker;
 
-import com.Team12.HADBackEnd.payload.request.DistrictDTO;
+import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
 
 public class FieldHealthCareWorkerUpdateRequestDTO {
     private String username;

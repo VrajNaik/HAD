@@ -1,12 +1,12 @@
 package com.Team12.HADBackEnd.DTOs.LocalArea;
 
-import com.Team12.HADBackEnd.payload.request.FieldHealthcareWorkerDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
 
 public class LocalAreaDTO {
     private Long id;
     private String name;
     private String pincode;
-    private FieldHealthcareWorkerDTO fieldHealthcareWorkerDTO;
+    private FieldHealthCareWorkerWithHealthRecordDTO fieldHealthCareWorkerWithHealthRecordDTO;
 
     public Long getId() {
         return id;
@@ -32,12 +32,12 @@ public class LocalAreaDTO {
         this.pincode = pincode;
     }
 
-    public FieldHealthcareWorkerDTO getFieldHealthcareWorkerDTO() {
-        return fieldHealthcareWorkerDTO;
+    public FieldHealthCareWorkerWithHealthRecordDTO getFieldHealthcareWorkerDTO() {
+        return fieldHealthCareWorkerWithHealthRecordDTO;
     }
 
-    public void setFieldHealthcareWorkerDTO(FieldHealthcareWorkerDTO fieldHealthcareWorkerDTO) {
-        this.fieldHealthcareWorkerDTO = fieldHealthcareWorkerDTO;
+    public void setFieldHealthcareWorkerDTO(FieldHealthCareWorkerWithHealthRecordDTO fieldHealthCareWorkerWithHealthRecordDTO) {
+        this.fieldHealthCareWorkerWithHealthRecordDTO = fieldHealthCareWorkerWithHealthRecordDTO;
     }
 }
 

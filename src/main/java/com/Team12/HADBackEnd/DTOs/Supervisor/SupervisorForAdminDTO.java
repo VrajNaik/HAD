@@ -1,7 +1,6 @@
 package com.Team12.HADBackEnd.DTOs.Supervisor;
 
 import com.Team12.HADBackEnd.DTOs.District.DistrictForAdminDTO;
-import com.Team12.HADBackEnd.payload.request.DistrictDTO;
 
 public class SupervisorForAdminDTO {
     private String name;

@@ -14,6 +14,13 @@ public class ResponseMessage {
         );
     }
 
+    public static ResponseEntity<Object> createNotSuccessResponse(HttpStatus status, String message) {
+        String path = generatePath();
+        return ResponseEntity.status(status).body(
+                new ApiResponse(status.value(), path, message)
+        );
+    }
+
     static class ApiResponse {
         private final int status;
         private final String path;

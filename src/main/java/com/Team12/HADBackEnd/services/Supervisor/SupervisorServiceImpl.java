@@ -1,6 +1,10 @@
 package com.Team12.HADBackEnd.services.Supervisor;
 
+import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpsDTO;
 import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
@@ -9,7 +13,6 @@ import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
 import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
 import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
-import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.repository.*;
 import com.Team12.HADBackEnd.util.CredentialGenerator.CredentialService;
 import com.Team12.HADBackEnd.util.DTOConverter.DTOConverter;
@@ -219,13 +222,13 @@ public class SupervisorServiceImpl implements SupervisorService {
     }
 
     @Override
-    public List<FieldHealthcareWorkerDTO> getUnassignedFieldHealthCareWorkerDTOs(String username) {
+    public List<FieldHealthCareWorkerWithHealthRecordDTO> getUnassignedFieldHealthCareWorkerDTOs(String username) {
         Supervisor supervisor = supervisorRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + username));
         District district = supervisor.getDistrict();
         List<FieldHealthCareWorker> unassignedWorkers = workerRepository.findByLocalAreaIsNullAndDistrictId(district.getId());
         return unassignedWorkers.stream()
-                .map(fieldHealthCareWorkerService::convertToDTO2)
+                .map(dtoConverter::convertToFieldHealthCareWorkerWithHealthRecordDTO)
                 .collect(Collectors.toList());
     }
 
@@ -274,21 +277,21 @@ public class SupervisorServiceImpl implements SupervisorService {
         localAreaDTO.setPincode(localArea.getPincode());
         FieldHealthCareWorker fieldHealthcareWorker = localArea.getFieldHealthCareWorker();
         if(fieldHealthcareWorker != null) {
-            FieldHealthcareWorkerDTO fieldHealthcareWorkerDTO = new FieldHealthcareWorkerDTO();
-            fieldHealthcareWorkerDTO.setId(fieldHealthcareWorker.getId());
-            fieldHealthcareWorkerDTO.setName(fieldHealthcareWorker.getName());
-            fieldHealthcareWorkerDTO.setUsername(fieldHealthcareWorker.getUsername());
-            fieldHealthcareWorkerDTO.setEmail(fieldHealthcareWorker.getEmail());
-            fieldHealthcareWorkerDTO.setPhoneNum(fieldHealthcareWorker.getPhoneNum());
-            fieldHealthcareWorkerDTO.setAge(fieldHealthcareWorker.getAge());
+            FieldHealthCareWorkerWithHealthRecordDTO fieldHealthCareWorkerWithHealthRecordDTO = new FieldHealthCareWorkerWithHealthRecordDTO();
+            fieldHealthCareWorkerWithHealthRecordDTO.setId(fieldHealthcareWorker.getId());
+            fieldHealthCareWorkerWithHealthRecordDTO.setName(fieldHealthcareWorker.getName());
+            fieldHealthCareWorkerWithHealthRecordDTO.setUsername(fieldHealthcareWorker.getUsername());
+            fieldHealthCareWorkerWithHealthRecordDTO.setEmail(fieldHealthcareWorker.getEmail());
+            fieldHealthCareWorkerWithHealthRecordDTO.setPhoneNum(fieldHealthcareWorker.getPhoneNum());
+            fieldHealthCareWorkerWithHealthRecordDTO.setAge(fieldHealthcareWorker.getAge());
             District district = fieldHealthcareWorker.getDistrict();
             if(district != null) {
                 DistrictDTO dto = new DistrictDTO();
                 dto.setName(district.getName());
-                fieldHealthcareWorkerDTO.setDistrict(dto);
+                fieldHealthCareWorkerWithHealthRecordDTO.setDistrict(dto);
             }
-            fieldHealthcareWorkerDTO.setGender(fieldHealthcareWorker.getGender());
-            localAreaDTO.setFieldHealthcareWorkerDTO(fieldHealthcareWorkerDTO);
+            fieldHealthCareWorkerWithHealthRecordDTO.setGender(fieldHealthcareWorker.getGender());
+            localAreaDTO.setFieldHealthcareWorkerDTO(fieldHealthCareWorkerWithHealthRecordDTO);
         }
         return localAreaDTO;
     }

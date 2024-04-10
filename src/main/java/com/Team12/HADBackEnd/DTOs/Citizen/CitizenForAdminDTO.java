@@ -1,6 +1,6 @@
 package com.Team12.HADBackEnd.DTOs.Citizen;
 
-import com.Team12.HADBackEnd.payload.request.DistrictDTO;
+import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
 
 public class CitizenForAdminDTO {
     private Long id;

@@ -1,6 +1,10 @@
 package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusRequest;
+import com.Team12.HADBackEnd.DTOs.Questionnaire.AnswersDTO;
+import com.Team12.HADBackEnd.DTOs.Questionnaire.QuestionnaireResponseDTO;
 import com.Team12.HADBackEnd.models.FollowUp;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
@@ -10,9 +14,8 @@ import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.UserRepository;
 
-import com.Team12.HADBackEnd.security.services.FieldHealthCareWorkerService;
-import com.Team12.HADBackEnd.security.services.smsService.SendSmsForFollowUp;
-import com.Team12.HADBackEnd.twilio.TwilioMessageService;
+import com.Team12.HADBackEnd.services.BlackBox.Questionnaire.QuestionnaireService;
+import com.Team12.HADBackEnd.services.BlackBox.smsService.SendSmsForFollowUp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,89 +36,38 @@ import java.util.Optional;
 public class FieldHealthCareWorkerController {
 
 
-
-
-    @Autowired
-    TwilioMessageService twilioMessageService;
-    @Autowired
-    private SendSmsForFollowUp sendSmsForFollowUp;
-
-
-//    @PostMapping("/addFieldHealthCareWorker")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public FieldHealthCareWorker addFieldHealthCareWorker(@RequestBody FieldHealthCareWorker fieldHealthCareWorker) {
-//        try{
-//            return fieldHealthCareWorkerService.addFieldHealthCareWorker(fieldHealthCareWorker);
-//        }
-//        catch (DuplicateEmailIdException e) {
-//            throw new AuthenticationServiceException(e.getMessage(), e);
-//        }
-//    }
-//
-//    @GetMapping("/viewFieldHealthCareWorkers")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getAllFieldHealthCareWorker() {
-//        List<FieldHealthcareWorkerDTO> worker = fieldHealthCareWorkerService.getAllFieldHealthCareWorkersWithDistricts();
-//        return new ResponseEntity<>(worker, HttpStatus.OK);
-//    }
-//
-//    @PutMapping("/updateFieldHealthCareWorker")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<FieldHealthcareWorkerDTO> updateDoctor(@RequestBody SupervisorUpdateRequestDTO request) {
-//        FieldHealthcareWorkerDTO updatedWorkerDTO = fieldHealthCareWorkerService.updateFieldHealthCareWorker(request);
-//        return ResponseEntity.ok(updatedWorkerDTO);
-//    }
-
-    @PutMapping("/deactivate")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deactivateFeildHealthCareWorker(@RequestBody UsernameDTO usernameDTO) {
-        try {
-            User user = userRepository.findByUsername(usernameDTO.getUsername())
-                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
-            fieldHealthCareWorkerService.setActiveStatusByUsername(usernameDTO.getUsername(), false);
-            return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (RoleNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (DoctorAlreadyDeactivatedException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-    @PutMapping("/activate")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> activateFeildHealthCareWorker(@RequestBody UsernameDTO usernameDTO) {
-        try {
-            User user = userRepository.findByUsername(usernameDTO.getUsername())
-                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
-            fieldHealthCareWorkerService.setActiveStatusByUsername(usernameDTO.getUsername(), true);
-            return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (RoleNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (DoctorAlreadyDeactivatedException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
+    private final SendSmsForFollowUp sendSmsForFollowUp;
 
     private final FieldHealthCareWorkerService fieldHealthCareWorkerService;
 
     private final UserRepository userRepository;
 
+    private final QuestionnaireService questionnaireService;
+
     @Autowired
     public FieldHealthCareWorkerController(FieldHealthCareWorkerService fieldHealthCareWorkerService,
-                                           UserRepository userRepository) {
+                                           UserRepository userRepository,
+                                           SendSmsForFollowUp sendSmsForFollowUp,
+                                           QuestionnaireService questionnaireService) {
         this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
         this.userRepository = userRepository;
+        this.sendSmsForFollowUp = sendSmsForFollowUp;
+        this.questionnaireService = questionnaireService;
     }
 
 
     @PostMapping("/registerCitizen")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public ResponseEntity<CitizenDTO> registerCitizen(@RequestBody CitizenRegistrationDTO citizen) {
-        CitizenDTO registeredCitizen = fieldHealthCareWorkerService.registerCitizen(citizen);
-        return new ResponseEntity<>(registeredCitizen, HttpStatus.CREATED);
+    public ResponseEntity<?> registerCitizen(@RequestBody CitizenRegistrationDTO citizen) {
+        return fieldHealthCareWorkerService.registerCitizen(citizen);
+    }
+
+
+    @GetMapping("/getQuestionnaire")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> getQuestionnaireById(@RequestParam Long id) {
+        QuestionnaireResponseDTO questionnaireResponse = questionnaireService.getQuestionnaireById(id);
+        return ResponseEntity.ok(questionnaireResponse);
     }
 
 
@@ -124,26 +76,24 @@ public class FieldHealthCareWorkerController {
     public ResponseEntity<?> calculateScore(@RequestBody AnswersDTO answersDTO) {
         try {
             int score = fieldHealthCareWorkerService.calculateScore(answersDTO.getAnswers());
-            return ResponseEntity.ok("Score: " + score);
+            return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Score for the Citizen is: " + score);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return  ResponseMessage.createNotSuccessResponse(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
 
     @GetMapping("/getDoctorsByDistID")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public ResponseEntity<?> getDoctorsByFHWUsername(@RequestBody UsernameDTO usernameDTO) {
-        String username = usernameDTO.getUsername();
+    public ResponseEntity<?> getDoctorsByFHWUsername(@RequestParam String username) {
         return fieldHealthCareWorkerService.getDoctorsByFHWUsername(username);
     }
 
 
-    @PostMapping("/getFHWByDistrictId")
+    @GetMapping("/getFHWByDistrictId")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
-    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getFieldHealthCareWorkersInDistrict(@RequestBody DistrictIdDTO districtRequestDTO) {
-        Long districtId = districtRequestDTO.getDistrictId();
-        List<FieldHealthcareWorkerDTO> unassignedWorkers = fieldHealthCareWorkerService.getFieldHealthCareWorkerDTOs(districtId);
+    public ResponseEntity<List<FieldHealthCareWorkerWithHealthRecordDTO>> getFieldHealthCareWorkersInDistrict(@RequestParam Long districtId) {
+        List<FieldHealthCareWorkerWithHealthRecordDTO> unassignedWorkers = fieldHealthCareWorkerService.getFieldHealthCareWorkerDTOs(districtId);
         return new ResponseEntity<>(unassignedWorkers, HttpStatus.OK);
     }
 
@@ -157,16 +107,14 @@ public class FieldHealthCareWorkerController {
 
     @PostMapping("/getHealthRecordById")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public ResponseEntity<?> getHealthRecordByCitizenId(@RequestBody CitizenIdRequestDTO requestDTO) {
-        Long citizenId = requestDTO.getCitizenId();
+    public ResponseEntity<?> getHealthRecordByCitizenId(@RequestParam Long citizenId) {
         return fieldHealthCareWorkerService.getHealthRecordByCitizenId(citizenId);
     }
 
 
-    @PostMapping("/getFollowUpsByHealthRecordId")
+    @GetMapping("/getFollowUpsByHealthRecordId")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public ResponseEntity<?> getFollowUpsByHealthRecordId(@RequestBody CitizenIdRequestDTO requestDTO) {
-        Long healthRecordId = requestDTO.getCitizenId();
+    public ResponseEntity<?> getFollowUpsByHealthRecordId(@RequestParam Long healthRecordId) {
         return fieldHealthCareWorkerService.getFollowUpsByHealthRecordId(healthRecordId);
     }
 
@@ -186,21 +134,23 @@ public class FieldHealthCareWorkerController {
     @GetMapping("/getByUsername")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> getFieldHealthcareWorkerByUsername(@RequestParam String username) {
-        FieldHealthcareWorkerDTO fhwDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
+        FieldHealthCareWorkerWithHealthRecordDTO fhwDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
         return ResponseEntity.ok(fhwDTO);
     }
 
 
     private static final Logger logger = LoggerFactory.getLogger(FieldHealthCareWorkerController.class);
-    @GetMapping("/sms")
+
+    @GetMapping("/sendFollowUpSms")
     public void sendMessage(@RequestParam("language") String language) {
         logger.info("Scheduled task started at {}", java.time.LocalTime.now());
         try {
-            // Pass the language preference to the service
             sendSmsForFollowUp.sendMessage(language);
             logger.info("Scheduled task completed successfully at {}", java.time.LocalTime.now());
         } catch (Exception e) {
             logger.error("Scheduled task failed with error: {}", e.getMessage());
+        }
+    }
 
     @GetMapping("/isLastFollowUp")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
@@ -223,7 +173,7 @@ public class FieldHealthCareWorkerController {
             return ResponseEntity.ok().build();
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }  catch (DoctorAlreadyDeactivatedException e) {
+        } catch (DoctorAlreadyDeactivatedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
@@ -243,7 +193,6 @@ public class FieldHealthCareWorkerController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-
 }
 
 
@@ -336,3 +285,47 @@ public class FieldHealthCareWorkerController {
 //        } catch (Exception e) {
 //            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request.");
 //        }
+
+
+
+//    @PostMapping("/addFieldHealthCareWorker")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public FieldHealthCareWorker addFieldHealthCareWorker(@RequestBody FieldHealthCareWorker fieldHealthCareWorker) {
+//        try{
+//            return fieldHealthCareWorkerService.addFieldHealthCareWorker(fieldHealthCareWorker);
+//        }
+//        catch (DuplicateEmailIdException e) {
+//            throw new AuthenticationServiceException(e.getMessage(), e);
+//        }
+//    }
+//
+//    @GetMapping("/viewFieldHealthCareWorkers")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getAllFieldHealthCareWorker() {
+//        List<FieldHealthcareWorkerDTO> worker = fieldHealthCareWorkerService.getAllFieldHealthCareWorkersWithDistricts();
+//        return new ResponseEntity<>(worker, HttpStatus.OK);
+//    }
+//
+//    @PutMapping("/updateFieldHealthCareWorker")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<FieldHealthcareWorkerDTO> updateDoctor(@RequestBody SupervisorUpdateRequestDTO request) {
+//        FieldHealthcareWorkerDTO updatedWorkerDTO = fieldHealthCareWorkerService.updateFieldHealthCareWorker(request);
+//        return ResponseEntity.ok(updatedWorkerDTO);
+//    }
+
+
+// registerCitizen
+
+//        CitizenDTO registeredCitizen = fieldHealthCareWorkerService.registerCitizen(citizen);
+//        return new ResponseEntity<>(registeredCitizen, HttpStatus.CREATED);
+
+
+// getAssessmentScore
+
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+//        return ResponseEntity.ok("Score: " + score);
+
+// getDoctorsByDistID
+
+//        String username = usernameDTO.getUsername();
+

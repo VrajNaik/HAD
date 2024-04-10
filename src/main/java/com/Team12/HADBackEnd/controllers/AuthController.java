@@ -137,7 +137,7 @@ public class AuthController {
           role = "fieldHealthcareWorker";
           FieldHealthCareWorker fieldHealthCareWorker = fieldHealthcareWorkerRepository.findByUsername(userDetails.getUsername())
                   .orElseThrow(() -> new RuntimeException("Error: FIELD HEALTH CARE WORKER role not found."));
-          userRole = fieldHealthCareWorkerService.convertToDTO2(fieldHealthCareWorker);
+          userRole = fieldHealthCareWorkerService.convertToFieldHealthCareWorkerWithHealthRecordDTO(fieldHealthCareWorker);
         }
         return ResponseEntity.ok(new AuthResponseDTO(
                 new JwtResponseDTO(jwt,

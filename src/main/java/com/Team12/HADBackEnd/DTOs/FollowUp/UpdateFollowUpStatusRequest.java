@@ -1,4 +1,4 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.FollowUp;
 
 public class UpdateFollowUpStatusRequest {
     private Long followUpId;

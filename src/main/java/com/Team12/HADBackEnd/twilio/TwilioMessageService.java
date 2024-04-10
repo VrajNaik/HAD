@@ -1,6 +1,6 @@
 package com.Team12.HADBackEnd.twilio;
 
-import com.Team12.HADBackEnd.utils.Constant;
+import com.Team12.HADBackEnd.util.Constant;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import org.springframework.stereotype.Service;

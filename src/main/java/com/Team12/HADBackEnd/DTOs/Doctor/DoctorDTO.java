@@ -1,23 +1,20 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.Doctor;
 
+import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
 
-import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
-import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
-
-import java.util.List;
-
-public class FieldHealthcareWorkerDTO {
+public class DoctorDTO {
     private Long id;
     private String name;
+    private String licenseId;
     private int age;
     private String gender;
-    private String email;
+    private String specialty;
     private Long phoneNum;
+    private String email;
     private String username;
     private String password;
-    private DistrictDTO district;
-    private LocalAreaDTO localArea;
-    private List<HealthRecordDTO> healthRecord;
+    private boolean active = true;
+    private DistrictDTO district; // District information
 
     public Long getId() {
         return id;
@@ -35,6 +32,14 @@ public class FieldHealthcareWorkerDTO {
         this.name = name;
     }
 
+    public String getLicenseId() {
+        return licenseId;
+    }
+
+    public void setLicenseId(String licenseId) {
+        this.licenseId = licenseId;
+    }
+
     public int getAge() {
         return age;
     }
@@ -49,6 +54,22 @@ public class FieldHealthcareWorkerDTO {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public String getSpecialty() {
+        return specialty;
+    }
+
+    public void setSpecialty(String specialty) {
+        this.specialty = specialty;
+    }
+
+    public Long getPhoneNum() {
+        return phoneNum;
+    }
+
+    public void setPhoneNum(Long phoneNum) {
+        this.phoneNum = phoneNum;
     }
 
     public String getEmail() {
@@ -75,6 +96,14 @@ public class FieldHealthcareWorkerDTO {
         this.password = password;
     }
 
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
     public DistrictDTO getDistrict() {
         return district;
     }
@@ -82,30 +111,5 @@ public class FieldHealthcareWorkerDTO {
     public void setDistrict(DistrictDTO district) {
         this.district = district;
     }
-
-    public LocalAreaDTO getLocalArea() {
-        return localArea;
-    }
-
-    public void setLocalArea(LocalAreaDTO localAreaDTO) {
-        this.localArea = localAreaDTO;
-    }
-
-    public Long getPhoneNum() {
-        return phoneNum;
-    }
-
-    public void setPhoneNum(Long phoneNum) {
-        this.phoneNum = phoneNum;
-    }
-
-    public List<HealthRecordDTO> getHealthRecord() {
-        return healthRecord;
-    }
-
-    public void setHealthRecord(List<HealthRecordDTO> healthRecord) {
-        this.healthRecord = healthRecord;
-    }
 }
-
 

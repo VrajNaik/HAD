@@ -1,6 +1,8 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.Citizen;
 
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.Doctor.DoctorDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -16,7 +18,7 @@ public class CitizenDTO {
     private String state;
     private String district;
     private String abhaId;
-    private FieldHealthcareWorkerDTO fieldHealthCareWorker;
+    private FieldHealthCareWorkerWithHealthRecordDTO fieldHealthCareWorker;
     private DoctorDTO doctorDTO;
     private HealthRecordDTO healthRecordDTO;
 
@@ -108,11 +110,11 @@ public class CitizenDTO {
         this.abhaId = abhaId;
     }
 
-    public FieldHealthcareWorkerDTO getFieldHealthCareWorker() {
+    public FieldHealthCareWorkerWithHealthRecordDTO getFieldHealthCareWorker() {
         return fieldHealthCareWorker;
     }
 
-    public void setFieldHealthCareWorker(FieldHealthcareWorkerDTO fieldHealthCareWorker) {
+    public void setFieldHealthCareWorker(FieldHealthCareWorkerWithHealthRecordDTO fieldHealthCareWorker) {
         this.fieldHealthCareWorker = fieldHealthCareWorker;
     }
 

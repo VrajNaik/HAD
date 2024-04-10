@@ -1,7 +1,13 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker;
 
 
-public class SupervisorDTO {
+import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
+import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
+
+import java.util.List;
+
+public class FieldHealthCareWorkerWithHealthRecordDTO {
     private Long id;
     private String name;
     private int age;
@@ -11,6 +17,8 @@ public class SupervisorDTO {
     private String username;
     private String password;
     private DistrictDTO district;
+    private LocalAreaDTO localArea;
+    private List<HealthRecordDTO> healthRecord;
 
     public Long getId() {
         return id;
@@ -68,6 +76,22 @@ public class SupervisorDTO {
         this.password = password;
     }
 
+    public DistrictDTO getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(DistrictDTO district) {
+        this.district = district;
+    }
+
+    public LocalAreaDTO getLocalArea() {
+        return localArea;
+    }
+
+    public void setLocalArea(LocalAreaDTO localAreaDTO) {
+        this.localArea = localAreaDTO;
+    }
+
     public Long getPhoneNum() {
         return phoneNum;
     }
@@ -76,12 +100,13 @@ public class SupervisorDTO {
         this.phoneNum = phoneNum;
     }
 
-    public DistrictDTO getDistrict() {
-        return district;
+    public List<HealthRecordDTO> getHealthRecord() {
+        return healthRecord;
     }
 
-    public void setDistrict(DistrictDTO district) {
-        this.district = district;
+    public void setHealthRecord(List<HealthRecordDTO> healthRecord) {
+        this.healthRecord = healthRecord;
     }
 }
+
 

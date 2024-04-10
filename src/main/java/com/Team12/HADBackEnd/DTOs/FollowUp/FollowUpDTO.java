@@ -1,6 +1,7 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.FollowUp;
 
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
 
 import java.util.Date;
 
@@ -10,7 +11,7 @@ public class FollowUpDTO {
     private String status;
     private String instructions;
     private String measureOfVitals;
-    private FieldHealthcareWorkerDTO fieldHealthCareWorker;
+    private FieldHealthCareWorkerWithHealthRecordDTO fieldHealthCareWorker;
     private HealthRecordDTO healthRecord;
 
     public Long getId() {
@@ -53,11 +54,11 @@ public class FollowUpDTO {
         this.measureOfVitals = measureOfVitals;
     }
 
-    public FieldHealthcareWorkerDTO getFieldHealthCareWorker() {
+    public FieldHealthCareWorkerWithHealthRecordDTO getFieldHealthCareWorker() {
         return fieldHealthCareWorker;
     }
 
-    public void setFieldHealthCareWorker(FieldHealthcareWorkerDTO fieldHealthCareWorker) {
+    public void setFieldHealthCareWorker(FieldHealthCareWorkerWithHealthRecordDTO fieldHealthCareWorker) {
         this.fieldHealthCareWorker = fieldHealthCareWorker;
     }
 

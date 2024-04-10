@@ -1,11 +1,13 @@
 package com.Team12.HADBackEnd.services.Supervisor;
 
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpsDTO;
 import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
-import com.Team12.HADBackEnd.payload.request.*;
 
 import java.util.*;
 
@@ -31,5 +33,5 @@ public interface SupervisorService {
 
     LocalAreaDTO convertToLocalAreaDTO(LocalArea localArea);
 
-    List<FieldHealthcareWorkerDTO> getUnassignedFieldHealthCareWorkerDTOs(String username);
+    List<FieldHealthCareWorkerWithHealthRecordDTO> getUnassignedFieldHealthCareWorkerDTOs(String username);
 }

@@ -1,6 +1,6 @@
 package com.Team12.HADBackEnd.DTOs.Supervisor;
 
-import com.Team12.HADBackEnd.payload.request.DistrictDTO;
+import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
 
 public class SupervisorUpdateRequestDTO {
     private String username;

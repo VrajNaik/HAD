@@ -1,6 +1,10 @@
 package com.Team12.HADBackEnd.controllers;
 
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignmentRequest;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpsDTO;
 import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorDTO;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
@@ -65,8 +69,8 @@ public class SupervisorController {
 
     @GetMapping("/getUnassignedFHW")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
-    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getUnassignedFieldHealthCareWorkers(@RequestParam String username) {
-        List<FieldHealthcareWorkerDTO> unassignedWorkers = supervisorService.getUnassignedFieldHealthCareWorkerDTOs(username);
+    public ResponseEntity<List<FieldHealthCareWorkerWithHealthRecordDTO>> getUnassignedFieldHealthCareWorkers(@RequestParam String username) {
+        List<FieldHealthCareWorkerWithHealthRecordDTO> unassignedWorkers = supervisorService.getUnassignedFieldHealthCareWorkerDTOs(username);
         return new ResponseEntity<>(unassignedWorkers, HttpStatus.OK);
     }
 

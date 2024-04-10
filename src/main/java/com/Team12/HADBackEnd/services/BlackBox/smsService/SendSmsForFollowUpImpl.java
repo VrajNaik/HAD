@@ -1,4 +1,4 @@
-package com.Team12.HADBackEnd.security.services.smsService;
+package com.Team12.HADBackEnd.services.BlackBox.smsService;
 
 import com.Team12.HADBackEnd.twilio.TwilioMessageService;
 import org.springframework.stereotype.Service;

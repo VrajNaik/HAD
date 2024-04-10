@@ -1,12 +1,9 @@
 package com.Team12.HADBackEnd.util;
 
-public class Constant {
-    //-------------------------------------HTTP STATUSES-------------------------------------------//
-    Integer HTTP_OK = 200;
-    Integer HTTP_INTERNAL_SERVER_ERROR = 500;
-    Integer HTTP_UNAUTHORISED = 403;
-    Integer HTTP_UNAUTHENTICATED = 401;
-    Integer HTTP_BAD_REQUEST = 400;
-    Integer HTTP_404 = 404;
-    //---------------------------------------------------------------------------------------------//
+public interface Constant {
+
+    //----------------------Twilio Credentials----------------------------//
+    String ACCOUNT_SID = "AC0518276df4ce7808b4641885bf208809";
+    String AUTH_TOKEN = "8235aa6629a7ce0c5cd75bf58e2193c6";
+    //--------------------------------------------------------------------//
 }
