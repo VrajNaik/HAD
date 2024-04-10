@@ -17,7 +17,6 @@ public class SendSmsForFollowUpImpl implements SendSmsForFollowUp {
 
         String mobileNumber="+919104031220";
         //SmsService.sendSms(mobileNumber,msg);
-
         //String language = "hi"; // Specify the language here (hi for Hindi)
         // Pass the message content without modifying it
         TwilioMessageService.sendSms(mobileNumber, getLocalizedMessage(msg, language));
