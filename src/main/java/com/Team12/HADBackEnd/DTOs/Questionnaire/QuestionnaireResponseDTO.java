@@ -1,4 +1,4 @@
-package com.Team12.HADBackEnd.payload.response;
+package com.Team12.HADBackEnd.DTOs.Questionnaire;
 
 import java.util.List;
 

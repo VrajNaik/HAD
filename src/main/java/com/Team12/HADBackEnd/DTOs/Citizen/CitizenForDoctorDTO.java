@@ -2,7 +2,6 @@ package com.Team12.HADBackEnd.DTOs.Citizen;
 
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordForDoctorDTO;
-import com.Team12.HADBackEnd.payload.request.HealthRecordDTO;
 
 public class CitizenForDoctorDTO {
     private Long id;

@@ -1,12 +1,11 @@
-package com.Team12.HADBackEnd.payload.response;
-
+package com.Team12.HADBackEnd.DTOs.LocalArea;
 
 
 import com.Team12.HADBackEnd.models.LocalArea;
 
 import java.util.List;
 
-public class LocalAreasResponse {
+public class CreateLocalAreasRequest {
     private Long districtId;
     private List<LocalArea> localAreas;
 
@@ -26,4 +25,3 @@ public class LocalAreasResponse {
         this.localAreas = localAreas;
     }
 }
-

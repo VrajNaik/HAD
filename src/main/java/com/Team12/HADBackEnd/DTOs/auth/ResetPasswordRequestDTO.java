@@ -1,14 +1,14 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.auth;
 
-public class ResetPasswordRequest {
+public class ResetPasswordRequestDTO {
     private String token;
     private String newPassword;
 
     // Constructor, getters, and setters
-    public ResetPasswordRequest() {
+    public ResetPasswordRequestDTO() {
     }
 
-    public ResetPasswordRequest(String token, String newPassword) {
+    public ResetPasswordRequestDTO(String token, String newPassword) {
         this.token = token;
         this.newPassword = newPassword;
     }

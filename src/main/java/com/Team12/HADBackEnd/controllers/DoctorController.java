@@ -4,8 +4,12 @@ import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpCreationByDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordCreationDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionDTO;
+import com.Team12.HADBackEnd.models.User;
+import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
+import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
+import com.Team12.HADBackEnd.repository.UserRepository;
 import com.Team12.HADBackEnd.services.Doctor.DoctorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,10 +26,13 @@ import java.util.List;
 public class DoctorController {
 
     private final DoctorService doctorService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public DoctorController(DoctorService doctorService) {
+    public DoctorController(DoctorService doctorService,
+                            UserRepository userRepository) {
         this.doctorService = doctorService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/getPatientsbyDocID")
@@ -94,6 +101,36 @@ public class DoctorController {
         DoctorDTO doctorDTO = doctorService.getDoctorByUsername(username);
         return ResponseEntity.ok(doctorDTO);
     }
+
+    @PutMapping("/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deactivateSupervisor(@RequestBody UsernameDTO usernameDTO) {
+        try {
+            User user = userRepository.findByUsername(usernameDTO.getUsername())
+                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
+            doctorService.setActiveStatusByUsername(usernameDTO.getUsername(), false);
+            return ResponseEntity.ok().build();
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (DoctorAlreadyDeactivatedException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+    @PutMapping("/activate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> activateSupervisor(@RequestBody UsernameDTO usernameDTO) {
+        try {
+            User user = userRepository.findByUsername(usernameDTO.getUsername())
+                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
+            doctorService.setActiveStatusByUsername(usernameDTO.getUsername(), true);
+            return ResponseEntity.ok().build();
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (DoctorAlreadyDeactivatedException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
 }
 
 //    @GetMapping("/viewDoctors")
@@ -152,38 +189,6 @@ public class DoctorController {
 //    }
 //
 //
-//    @PutMapping("/deactivate")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<?> deactivateDoctor(@RequestBody UsernameDTO usernameDTO) {
-//        try {
-//            User user = userRepository.findByUsername(usernameDTO.getUsername())
-//                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
-//            doctorService.setActiveStatusByUsername(usernameDTO.getUsername(), false);
-//            return ResponseEntity.ok().build();
-//        } catch (UserNotFoundException e) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-//        } catch (DoctorNotFoundException e) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-//        } catch (DoctorAlreadyDeactivatedException e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-//        }
-//    }
-//    @PutMapping("/activate")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<?> activateDoctor(@RequestBody UsernameDTO usernameDTO) {
-//        try {
-//            User user = userRepository.findByUsername(usernameDTO.getUsername())
-//                    .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
-//            doctorService.setActiveStatusByUsername(usernameDTO.getUsername(), true);
-//            return ResponseEntity.ok().build();
-//        } catch (UserNotFoundException e) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-//        } catch (DoctorNotFoundException e) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-//        } catch (DoctorAlreadyDeactivatedException e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-//        }
-//    }
 
 
 

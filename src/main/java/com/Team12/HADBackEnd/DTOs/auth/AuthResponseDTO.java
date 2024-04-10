@@ -1,4 +1,4 @@
-package com.Team12.HADBackEnd.payload.response;
+package com.Team12.HADBackEnd.DTOs.auth;
 
 //
 //import java.util.Map;
@@ -33,24 +33,22 @@ package com.Team12.HADBackEnd.payload.response;
 //
 //}
 
-import java.util.Map;
-
-public class AuthResponse {
-    private JwtResponse jwtResponse;
+public class AuthResponseDTO {
+    private JwtResponseDTO jwtResponseDTO;
     private Object userRole;
 
 
-    public AuthResponse(JwtResponse jwtResponse, Object userRole) {
-        this.jwtResponse = jwtResponse;
+    public AuthResponseDTO(JwtResponseDTO jwtResponseDTO, Object userRole) {
+        this.jwtResponseDTO = jwtResponseDTO;
         this.userRole = userRole;
     }
 
-    public JwtResponse getJwtResponse() {
-        return jwtResponse;
+    public JwtResponseDTO getJwtResponse() {
+        return jwtResponseDTO;
     }
 
-    public void setJwtResponse(JwtResponse jwtResponse) {
-        this.jwtResponse = jwtResponse;
+    public void setJwtResponse(JwtResponseDTO jwtResponseDTO) {
+        this.jwtResponseDTO = jwtResponseDTO;
     }
 
     public Object getUserRole() {

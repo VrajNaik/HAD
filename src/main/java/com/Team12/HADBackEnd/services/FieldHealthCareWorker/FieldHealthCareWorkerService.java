@@ -1,8 +1,12 @@
 package com.Team12.HADBackEnd.services.FieldHealthCareWorker;
 
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
-import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.ICD10Code.ICDCodesDTO;
+import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.payload.request.*;
@@ -655,17 +659,17 @@ public class FieldHealthCareWorkerService {
                 .collect(Collectors.toList()));
     }
 
-    public List<CitizensDTO> getAllCitizens() {
+    public List<CitizenForAdminDTO> getAllCitizens() {
         List<Citizen> citizens = citizenRepository.findByStatus("ongoing");
-        List<CitizensDTO> citizenDTOs = new ArrayList<>();
+        List<CitizenForAdminDTO> citizenDTOs = new ArrayList<>();
         for (Citizen citizen : citizens) {
             citizenDTOs.add(toDTO(citizen));
         }
         return citizenDTOs;
     }
 
-    public static CitizensDTO toDTO(Citizen citizen) {
-        CitizensDTO dto = new CitizensDTO();
+    public static CitizenForAdminDTO toDTO(Citizen citizen) {
+        CitizenForAdminDTO dto = new CitizenForAdminDTO();
         dto.setId(citizen.getId());
         dto.setName(citizen.getName());
         dto.setAge(citizen.getAge());

@@ -1,4 +1,7 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.HealthRecord;
+
+import com.Team12.HADBackEnd.DTOs.ICD10Code.ICDCodesDTO;
+import com.Team12.HADBackEnd.payload.request.*;
 
 import java.util.Date;
 import java.util.List;

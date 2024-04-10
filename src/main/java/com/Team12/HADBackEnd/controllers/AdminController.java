@@ -1,5 +1,6 @@
 package com.Team12.HADBackEnd.controllers;
 
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
@@ -164,7 +165,7 @@ public class AdminController {
 
     @GetMapping("/viewCitizens")
     @PreAuthorize("hasRole('ADMIN')")
-    public List<CitizensDTO> getAllCitizens() {
+    public List<CitizenForAdminDTO> getAllCitizens() {
         return fieldHealthCareWorkerService.getAllCitizens();
     }
 

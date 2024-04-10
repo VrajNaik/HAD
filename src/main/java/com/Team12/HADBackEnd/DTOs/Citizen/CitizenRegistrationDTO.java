@@ -1,7 +1,6 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.Citizen;
 
-public class CitizensDTO {
-    private Long id;
+public class CitizenRegistrationDTO {
     private String name;
     private int age;
     private String gender;
@@ -10,16 +9,10 @@ public class CitizensDTO {
     private String pincode;
     private String status;
     private String state;
-    private DistrictDTO district;
+    private String district;
     private String abhaId;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private Long fieldHealthCareWorkerId;
+    private Long doctorId;
 
     public String getName() {
         return name;
@@ -69,6 +62,7 @@ public class CitizensDTO {
         this.pincode = pincode;
     }
 
+
     public String getStatus() {
         return status;
     }
@@ -85,11 +79,11 @@ public class CitizensDTO {
         this.state = state;
     }
 
-    public DistrictDTO getDistrict() {
+    public String getDistrict() {
         return district;
     }
 
-    public void setDistrict(DistrictDTO district) {
+    public void setDistrict(String district) {
         this.district = district;
     }
 
@@ -100,5 +94,20 @@ public class CitizensDTO {
     public void setAbhaId(String abhaId) {
         this.abhaId = abhaId;
     }
-}
 
+    public Long getFieldHealthCareWorkerId() {
+        return fieldHealthCareWorkerId;
+    }
+
+    public void setFieldHealthCareWorkerId(Long fieldHealthCareWorkerId) {
+        this.fieldHealthCareWorkerId = fieldHealthCareWorkerId;
+    }
+
+    public Long getDoctorId() {
+        return doctorId;
+    }
+
+    public void setDoctorId(Long doctorId) {
+        this.doctorId = doctorId;
+    }
+}

@@ -2,7 +2,7 @@ package com.Team12.HADBackEnd.services.BlackBox.LocalArea;
 
 import com.Team12.HADBackEnd.models.District;
 import com.Team12.HADBackEnd.models.LocalArea;
-import com.Team12.HADBackEnd.payload.request.CreateLocalAreasRequest;
+import com.Team12.HADBackEnd.DTOs.LocalArea.CreateLocalAreasRequest;
 import com.Team12.HADBackEnd.repository.DistrictRepository;
 import com.Team12.HADBackEnd.repository.LocalAreaRepository;
 import org.springframework.beans.factory.annotation.Autowired;

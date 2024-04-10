@@ -1,5 +1,6 @@
 package com.Team12.HADBackEnd.controllers;
 
+import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
@@ -71,7 +72,7 @@ public class SupervisorController {
 
 
     @GetMapping("/getByUsername")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole ('SUPERVISOR')")
     public ResponseEntity<SupervisorDTO> getSupervisorByUsername(@RequestParam String username) {
         SupervisorDTO supervisorDTO = supervisorService.getSupervisorByUsername(username);
         return ResponseEntity.ok(supervisorDTO);
@@ -86,8 +87,6 @@ public class SupervisorController {
                     .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
             supervisorService.setActiveStatusByUsername(usernameDTO.getUsername(), false);
             return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (DoctorAlreadyDeactivatedException e) {
@@ -102,8 +101,6 @@ public class SupervisorController {
                     .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
             supervisorService.setActiveStatusByUsername(usernameDTO.getUsername(), true);
             return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (DoctorAlreadyDeactivatedException e) {

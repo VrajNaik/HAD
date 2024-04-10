@@ -1,8 +1,8 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.auth;
 
 import jakarta.validation.constraints.NotBlank;
 
-public class LoginRequest {
+public class LoginRequestDTO {
 	@NotBlank
   private String username;
 

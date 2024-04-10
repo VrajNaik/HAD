@@ -1,10 +1,10 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.auth;
 
 import java.util.Set;
 
 import jakarta.validation.constraints.*;
 
-public class SignupRequest {
+public class SignupRequestDTO {
   @NotBlank
   @Size(min = 3, max = 20)
   private String username;

@@ -3,17 +3,14 @@ package com.Team12.HADBackEnd.controllers;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.Team12.HADBackEnd.DTOs.auth.*;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.CustomErrorResponse;
 import com.Team12.HADBackEnd.payload.exception.UserDeactivatedException;
-import com.Team12.HADBackEnd.payload.request.ForgotPasswordRequest;
-import com.Team12.HADBackEnd.payload.request.LoginRequest;
-import com.Team12.HADBackEnd.payload.request.ResetPasswordRequest;
-import com.Team12.HADBackEnd.payload.request.SignupRequest;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.*;
 import com.Team12.HADBackEnd.security.services.*;
-import com.Team12.HADBackEnd.services.*;
+import com.Team12.HADBackEnd.services.Common.ForgotPasswordService;
 import com.Team12.HADBackEnd.services.Doctor.DoctorService;
 import com.Team12.HADBackEnd.services.FieldHealthCareWorker.FieldHealthCareWorkerService;
 import com.Team12.HADBackEnd.services.Supervisor.SupervisorService;
@@ -94,10 +91,10 @@ public class AuthController {
 
 
   @PostMapping("/signin")
-  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
     try {
       Authentication authentication = authenticationManager.authenticate(
-              new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+              new UsernamePasswordAuthenticationToken(loginRequestDTO.getUsername(), loginRequestDTO.getPassword()));
 
       UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
@@ -113,8 +110,8 @@ public class AuthController {
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(new AuthResponse(
-                new JwtResponse(jwt,
+        return ResponseEntity.ok(new AuthResponseDTO(
+                new JwtResponseDTO(jwt,
                         userDetails.getId(),
                         userDetails.getUsername(),
                         userDetails.getEmail(),
@@ -142,8 +139,8 @@ public class AuthController {
                   .orElseThrow(() -> new RuntimeException("Error: FIELD HEALTH CARE WORKER role not found."));
           userRole = fieldHealthCareWorkerService.convertToDTO2(fieldHealthCareWorker);
         }
-        return ResponseEntity.ok(new AuthResponse(
-                new JwtResponse(jwt,
+        return ResponseEntity.ok(new AuthResponseDTO(
+                new JwtResponseDTO(jwt,
                         userDetails.getId(),
                         userDetails.getUsername(),
                         userDetails.getEmail(),
@@ -159,24 +156,24 @@ public class AuthController {
   }
 
   @PostMapping("/signup")
-  public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-    if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+  public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequestDTO signUpRequestDTO) {
+    if (userRepository.existsByUsername(signUpRequestDTO.getUsername())) {
       return ResponseEntity
           .badRequest()
           .body(new MessageResponse("Error: Username is already taken!"));
     }
 
-    if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+    if (userRepository.existsByEmail(signUpRequestDTO.getEmail())) {
       return ResponseEntity
           .badRequest()
           .body(new MessageResponse("Error: Email is already in use!"));
     }
 
-    User user = new User(signUpRequest.getUsername(),
-               signUpRequest.getEmail(),
-               encoder.encode(signUpRequest.getPassword()));
+    User user = new User(signUpRequestDTO.getUsername(),
+               signUpRequestDTO.getEmail(),
+               encoder.encode(signUpRequestDTO.getPassword()));
 
-    Set<String> strRoles = signUpRequest.getRole();
+    Set<String> strRoles = signUpRequestDTO.getRole();
     Set<Role> roles = new HashSet<>();
 
     if (strRoles == null) {
@@ -225,8 +222,8 @@ public class AuthController {
   }
 
   @PostMapping("/forgotPassword")
-  public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
-    String email = forgotPasswordRequest.getEmail();
+  public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequestDTO forgotPasswordRequestDTO) {
+    String email = forgotPasswordRequestDTO.getEmail();
     User user = userRepository.findByEmail(email);
     if (user == null) {
       CustomErrorResponse errorResponse = new CustomErrorResponse("/api/forgot-password", "User Not Found", "User with email " + email + " not found.", 404);
@@ -237,9 +234,9 @@ public class AuthController {
   }
 
   @PostMapping("/resetPassword")
-  public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
-    String token = resetPasswordRequest.getToken();
-    String newPassword = resetPasswordRequest.getNewPassword();
+  public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequestDTO resetPasswordRequestDTO) {
+    String token = resetPasswordRequestDTO.getToken();
+    String newPassword = resetPasswordRequestDTO.getNewPassword();
     boolean success = forgotPasswordService.resetPassword(token, newPassword);
     if (success) {
       return ResponseEntity.ok("Password reset successfully.");
@@ -250,9 +247,9 @@ public class AuthController {
   }
 
   @PostMapping("/changePassword")
-  public ResponseEntity<?> changePassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
-    String username = resetPasswordRequest.getToken();
-    String newPassword = resetPasswordRequest.getNewPassword();
+  public ResponseEntity<?> changePassword(@RequestBody ResetPasswordRequestDTO resetPasswordRequestDTO) {
+    String username = resetPasswordRequestDTO.getToken();
+    String newPassword = resetPasswordRequestDTO.getNewPassword();
     boolean success = forgotPasswordService.changePassword(username, newPassword);
     if (success) {
       return ResponseEntity.ok("Password reset successfully.");

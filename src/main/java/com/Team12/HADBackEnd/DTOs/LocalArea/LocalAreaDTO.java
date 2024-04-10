@@ -1,4 +1,6 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.LocalArea;
+
+import com.Team12.HADBackEnd.payload.request.FieldHealthcareWorkerDTO;
 
 public class LocalAreaDTO {
     private Long id;

@@ -1,11 +1,14 @@
-package com.Team12.HADBackEnd.services;
+package com.Team12.HADBackEnd.services.Common;
 
 import com.Team12.HADBackEnd.models.Doctor;
 import com.Team12.HADBackEnd.models.FieldHealthCareWorker;
 import com.Team12.HADBackEnd.models.Supervisor;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
-import com.Team12.HADBackEnd.repository.*;
+import com.Team12.HADBackEnd.repository.DoctorRepository;
+import com.Team12.HADBackEnd.repository.FieldHealthCareWorkerRepository;
+import com.Team12.HADBackEnd.repository.SupervisorRepository;
+import com.Team12.HADBackEnd.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -16,23 +19,31 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
-public class ForgotPasswordService {
+public class ForgotPasswordServiceImpl implements ForgotPasswordService {
+
+    private final UserRepository userRepository;
+    private final FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository;
+    private final SupervisorRepository supervisorRepository;
+    private final DoctorRepository doctorRepository;
+    private final PasswordEncoder encoder;
+    private final JavaMailSender javaMailSender;
 
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository;
-    @Autowired
-    private SupervisorRepository supervisorRepository;
-    @Autowired
-    private DoctorRepository doctorRepository;
+    public ForgotPasswordServiceImpl(UserRepository userRepository,
+                                 FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository,
+                                 SupervisorRepository supervisorRepository,
+                                 DoctorRepository doctorRepository,
+                                 PasswordEncoder passwordEncoder,
+                                 JavaMailSender javaMailSender) {
+        this.userRepository = userRepository;
+        this.fieldHealthCareWorkerRepository = fieldHealthCareWorkerRepository;
+        this.supervisorRepository = supervisorRepository;
+        this.doctorRepository = doctorRepository;
+        this.encoder = passwordEncoder;
+        this.javaMailSender = javaMailSender;
+    }
 
-    @Autowired
-    PasswordEncoder encoder;
-
-    @Autowired
-    private JavaMailSender javaMailSender;
-
+    @Override
     public void initiatePasswordReset(String email) {
         User user = userRepository.findByEmail(email);
         if (user != null) {
@@ -45,14 +56,16 @@ public class ForgotPasswordService {
         }
     }
 
-    private void sendResetPasswordEmail(User user) {
+    @Override
+    public void sendResetPasswordEmail(User user) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(user.getEmail());
         message.setSubject("Password Reset");
-        message.setText("To reset your password, please click the following link: http://yourapp.com/reset-password?token=" + user.getResetToken());
+        message.setText("To reset your password, please click the following link: https://yourapp.com/reset-password?token=" + user.getResetToken());
         javaMailSender.send(message);
     }
 
+    @Override
     public boolean resetPassword(String token, String newPassword) {
         User user = userRepository.findByResetToken(token);
         if (user != null && user.getResetTokenExpiry().isAfter(LocalDateTime.now())) {
@@ -64,29 +77,28 @@ public class ForgotPasswordService {
         }
         return false;
     }
+
+    @Override
     public boolean changePassword(String username, String newPassword) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+        user.setLogInFirst(false);
         String userTypePrefix = username.substring(0, 2);
 
-        if (user != null && user.isLogInFirst() == false) {
+        if (user != null && !user.isLogInFirst()) {
             String password = encoder.encode(newPassword);
             switch (userTypePrefix) {
                 case "FH":
-                    // Fetch user from FieldHealthCareWorker repository
                     FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findByUsername(username)
                             .orElseThrow(() -> new NotFoundException("Field Health Care Worker not found with username: " + username));
                     fieldHealthCareWorker.setPassword(password);
                     break;
-                // Add cases for other user types if needed
                 case "SV":
-                    // Fetch user from FieldHealthCareWorker repository
                     Supervisor supervisor = supervisorRepository.findByUsername(username)
                             .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + username));
                     supervisor.setPassword(password);
                     break;
                 case "DR":
-                    // Fetch user from FieldHealthCareWorker repository
                     Doctor doctor = doctorRepository.findByUsername(username)
                             .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + username));
                     doctor.setPassword(password);
@@ -102,4 +114,3 @@ public class ForgotPasswordService {
         return false;
     }
 }
-

@@ -1,8 +1,8 @@
-package com.Team12.HADBackEnd.payload.response;
+package com.Team12.HADBackEnd.DTOs.auth;
 
 import java.util.List;
 
-public class JwtResponse {
+public class JwtResponseDTO {
   private String token;
   private String type = "Bearer";
   private Long id;
@@ -12,7 +12,7 @@ public class JwtResponse {
   private boolean logInFirst;
 
 
-  public JwtResponse(String accessToken, Long id, String username, String email, List<String> roles, boolean logInFirst) {
+  public JwtResponseDTO(String accessToken, Long id, String username, String email, List<String> roles, boolean logInFirst) {
     this.token = accessToken;
     this.id = id;
     this.username = username;

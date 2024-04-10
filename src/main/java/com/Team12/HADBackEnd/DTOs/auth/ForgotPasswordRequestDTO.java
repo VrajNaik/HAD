@@ -1,13 +1,13 @@
-package com.Team12.HADBackEnd.payload.request;
+package com.Team12.HADBackEnd.DTOs.auth;
 
-public class ForgotPasswordRequest {
+public class ForgotPasswordRequestDTO {
     private String email;
 
     // Constructor, getters, and setters
-    public ForgotPasswordRequest() {
+    public ForgotPasswordRequestDTO() {
     }
 
-    public ForgotPasswordRequest(String email) {
+    public ForgotPasswordRequestDTO(String email) {
         this.email = email;
     }
 

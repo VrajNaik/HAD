@@ -1,5 +1,6 @@
 package com.Team12.HADBackEnd.services.Supervisor;
 
+import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;

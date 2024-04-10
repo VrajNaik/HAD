@@ -1,6 +1,6 @@
 package com.Team12.HADBackEnd.controllers;
 
-import com.Team12.HADBackEnd.models.Citizen;
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
 import com.Team12.HADBackEnd.models.FollowUp;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
@@ -8,7 +8,6 @@ import com.Team12.HADBackEnd.payload.exception.NotFoundException;
 import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.*;
-import com.Team12.HADBackEnd.repository.CitizenRepository;
 import com.Team12.HADBackEnd.repository.UserRepository;
 import com.Team12.HADBackEnd.services.FieldHealthCareWorker.FieldHealthCareWorkerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,31 +25,25 @@ import java.util.Optional;
 @RequestMapping("/FieldHealthCareWorker")
 public class FieldHealthCareWorkerController {
 
+
+    private final FieldHealthCareWorkerService fieldHealthCareWorkerService;
+
+    private final UserRepository userRepository;
+
     @Autowired
-    private FieldHealthCareWorkerService fieldHealthCareWorkerService;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private CitizenRepository citizenRepository;
+    public FieldHealthCareWorkerController(FieldHealthCareWorkerService fieldHealthCareWorkerService,
+                                           UserRepository userRepository) {
+        this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
+        this.userRepository = userRepository;
+    }
+
 
 
     @GetMapping("/getByUsername")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> getFieldHealthcareWorkerByUsername(@RequestParam String username) {
-        System.out.println(username);
-        try {
-            FieldHealthcareWorkerDTO workerDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
-            if (workerDTO == null) {
-                String message = "Field Health Care Worker Not Found with a given username";
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
-            }
-            return ResponseEntity.ok(workerDTO);
-        } catch (NotFoundException ex) {
-            String message = "Field Health Care Worker Not Found with a given username";
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.singletonMap("message", message));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        FieldHealthcareWorkerDTO fhwDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
+        return ResponseEntity.ok(fhwDTO);
     }
 
 
@@ -139,9 +132,7 @@ public class FieldHealthCareWorkerController {
             return ResponseEntity.ok().build();
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (DoctorAlreadyDeactivatedException e) {
+        }  catch (DoctorAlreadyDeactivatedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
@@ -155,8 +146,6 @@ public class FieldHealthCareWorkerController {
                     .orElseThrow(() -> new UserNotFoundException("User not found with username: " + usernameDTO.getUsername()));
             fieldHealthCareWorkerService.setActiveStatusByUsername(usernameDTO.getUsername(), true);
             return ResponseEntity.ok().build();
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (DoctorAlreadyDeactivatedException e) {
@@ -165,6 +154,8 @@ public class FieldHealthCareWorkerController {
     }
 
 }
+
+
 //@RestController
 //@CrossOrigin(origins = "*", maxAge = 3600)
 //@RequestMapping("/FieldHealthCareWorker")

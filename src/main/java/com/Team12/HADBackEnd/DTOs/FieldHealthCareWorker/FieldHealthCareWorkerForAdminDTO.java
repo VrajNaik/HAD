@@ -2,7 +2,6 @@ package com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker;
 
 import com.Team12.HADBackEnd.DTOs.District.DistrictForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaForAdminDTO;
-import com.Team12.HADBackEnd.payload.request.LocalAreaDTO;
 
 public class FieldHealthCareWorkerForAdminDTO {
     private String name;

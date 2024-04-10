@@ -1,6 +1,6 @@
 package com.Team12.HADBackEnd.services.BlackBox.LocalArea;
 
-import com.Team12.HADBackEnd.payload.request.CreateLocalAreasRequest;
+import com.Team12.HADBackEnd.DTOs.LocalArea.CreateLocalAreasRequest;
 
 
 

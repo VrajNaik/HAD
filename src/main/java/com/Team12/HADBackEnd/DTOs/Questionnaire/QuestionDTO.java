@@ -1,19 +1,10 @@
-package com.Team12.HADBackEnd.payload.response;
+package com.Team12.HADBackEnd.DTOs.Questionnaire;
 
 import java.util.List;
 
-public class QuestionResponseDTO {
-    private Long id;
+public class QuestionDTO {
     private String questionText;
     private List<String> options;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getQuestionText() {
         return questionText;
