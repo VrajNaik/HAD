@@ -364,21 +364,35 @@ public class FieldHealthCareWorkerService {
 
     public CitizenDTO registerCitizen(CitizenRegistrationDTO citizenDTO) {
 
-        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(citizenDTO.getFieldHealthCareWorkerId())
-                .orElseThrow(() -> new RuntimeException("Field healthcare worker not found with ID: " + citizenDTO.getFieldHealthCareWorkerId()));
+        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findByUsername(citizenDTO.getFieldHealthCareWorkerUsername())
+                .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with username: " + citizenDTO.getFieldHealthCareWorkerUsername()));
 
-        Doctor doctor = doctorRepository.findById(citizenDTO.getDoctorId())
-                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorId()));
+        Doctor doctor = doctorRepository.findByUsername(citizenDTO.getDoctorUsername())
+                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorUsername()));
 
         Citizen citizen = new Citizen();
-        citizen.setName(citizenDTO.getName());
+        if(citizenDTO.getName() != null && !citizenDTO.getName().isEmpty()) {
+            citizen.setName(citizenDTO.getName());
+        }
         citizen.setAge(citizenDTO.getAge());
-        citizen.setGender(citizenDTO.getGender());
-        citizen.setAddress(citizenDTO.getAddress());
+        if(citizenDTO.getGender() != null && !citizenDTO.getGender().isEmpty()) {
+            citizen.setGender(citizenDTO.getGender());
+        }
+        if (citizenDTO.getPincode() != null && !citizenDTO.getPincode().isEmpty()) {
+            citizen.setPincode(citizenDTO.getPincode());
+        }
+
+        if (citizenDTO.getAddress() != null && !citizenDTO.getAddress().isEmpty()) {
+            citizen.setAddress(citizenDTO.getAddress());
+        }
         citizen.setConsent(citizenDTO.isConsent());
         citizen.setStatus(citizenDTO.getStatus());
-        citizen.setState(citizenDTO.getState());
-        citizen.setAbhaId(citizenDTO.getAbhaId());
+        if (citizenDTO.getState() != null && !citizenDTO.getState().isEmpty()) {
+            citizen.setState(citizenDTO.getState());
+        }
+        if (citizenDTO.getAbhaId() != null && !citizenDTO.getAbhaId().isEmpty()) {
+            citizen.setAbhaId(citizenDTO.getAbhaId());
+        }
         citizen.setFieldHealthCareWorker(fieldHealthCareWorker);
         citizen.setDoctor(doctor);
 

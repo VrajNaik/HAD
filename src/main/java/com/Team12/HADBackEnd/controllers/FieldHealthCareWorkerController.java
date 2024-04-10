@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,12 +37,31 @@ public class FieldHealthCareWorkerController {
     }
 
 
-
-    @GetMapping("/getByUsername")
+    @PostMapping("/registerCitizen")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public ResponseEntity<?> getFieldHealthcareWorkerByUsername(@RequestParam String username) {
-        FieldHealthcareWorkerDTO fhwDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
-        return ResponseEntity.ok(fhwDTO);
+    public ResponseEntity<CitizenDTO> registerCitizen(@RequestBody CitizenRegistrationDTO citizen) {
+        CitizenDTO registeredCitizen = fieldHealthCareWorkerService.registerCitizen(citizen);
+        return new ResponseEntity<>(registeredCitizen, HttpStatus.CREATED);
+    }
+
+
+    @PostMapping("/getAssessmentScore")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> calculateScore(@RequestBody AnswersDTO answersDTO) {
+        try {
+            int score = fieldHealthCareWorkerService.calculateScore(answersDTO.getAnswers());
+            return ResponseEntity.ok("Score: " + score);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/getDoctorsByDistID")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> getDoctorsByFHWUsername(@RequestBody UsernameDTO usernameDTO) {
+        String username = usernameDTO.getUsername();
+        return fieldHealthCareWorkerService.getDoctorsByFHWUsername(username);
     }
 
 
@@ -56,31 +74,28 @@ public class FieldHealthCareWorkerController {
     }
 
 
-    @PostMapping("/register")
+    @GetMapping("/getFollowUpsForToday")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public ResponseEntity<CitizenDTO> registerCitizen(@RequestBody CitizenRegistrationDTO citizen) {
-        CitizenDTO registeredCitizen = fieldHealthCareWorkerService.registerCitizen(citizen);
-        return new ResponseEntity<>(registeredCitizen, HttpStatus.CREATED);
+    public List<FollowUpReturnDTO> getFollowUpsForToday(@RequestParam String username) {
+        return fieldHealthCareWorkerService.getFollowUpsForToday(username);
     }
 
 
-    @PostMapping("/calculateScore")
+    @PostMapping("/getHealthRecordById")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public ResponseEntity<?> calculateScore(@RequestBody AnswersDTO answersDTO) {
-        try {
-            int score = fieldHealthCareWorkerService.calculateScore(answersDTO.getAnswers());
-            return ResponseEntity.ok("Score: " + score);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<?> getHealthRecordByCitizenId(@RequestBody CitizenIdRequestDTO requestDTO) {
+        Long citizenId = requestDTO.getCitizenId();
+        return fieldHealthCareWorkerService.getHealthRecordByCitizenId(citizenId);
     }
 
-    @GetMapping("/getDoctorsByDistID")
+
+    @PostMapping("/getFollowUpsByHealthRecordId")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public ResponseEntity<?> getDoctorsByFHWUsername(@RequestBody UsernameDTO usernameDTO) {
-        String username = usernameDTO.getUsername();
-        return fieldHealthCareWorkerService.getDoctorsByFHWUsername(username);
+    public ResponseEntity<?> getFollowUpsByHealthRecordId(@RequestBody CitizenIdRequestDTO requestDTO) {
+        Long healthRecordId = requestDTO.getCitizenId();
+        return fieldHealthCareWorkerService.getFollowUpsByHealthRecordId(healthRecordId);
     }
+
 
     @PostMapping("/updateFollowUpStatus")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
@@ -92,24 +107,15 @@ public class FieldHealthCareWorkerController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(e.getMessage()));
         }
     }
-    @PostMapping("/getHealthRecordById")
+
+
+    @GetMapping("/getByUsername")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public ResponseEntity<?> getHealthRecordByCitizenId(@RequestBody CitizenIdRequestDTO requestDTO) {
-        Long citizenId = requestDTO.getCitizenId();
-        return fieldHealthCareWorkerService.getHealthRecordByCitizenId(citizenId);
-    }
-    @PostMapping("/getFollowUpsByHealthRecordId")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public ResponseEntity<?> getFollowUpsByHealthRecordId(@RequestBody CitizenIdRequestDTO requestDTO) {
-        Long healthRecordId = requestDTO.getCitizenId();
-        return fieldHealthCareWorkerService.getFollowUpsByHealthRecordId(healthRecordId);
+    public ResponseEntity<?> getFieldHealthcareWorkerByUsername(@RequestParam String username) {
+        FieldHealthcareWorkerDTO fhwDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
+        return ResponseEntity.ok(fhwDTO);
     }
 
-    @GetMapping("/getFollowUpsByUsername")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public List<FollowUpReturnDTO> getFollowUpsForToday(@RequestParam String username) {
-        return fieldHealthCareWorkerService.getFollowUpsForToday(username);
-    }
 
     @GetMapping("/isLastFollowUp")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")

@@ -11,8 +11,8 @@ public class CitizenRegistrationDTO {
     private String state;
     private String district;
     private String abhaId;
-    private Long fieldHealthCareWorkerId;
-    private Long doctorId;
+    private String fieldHealthCareWorkerUsername;
+    private String doctorUsername;
 
     public String getName() {
         return name;
@@ -95,19 +95,19 @@ public class CitizenRegistrationDTO {
         this.abhaId = abhaId;
     }
 
-    public Long getFieldHealthCareWorkerId() {
-        return fieldHealthCareWorkerId;
+    public String getFieldHealthCareWorkerUsername() {
+        return fieldHealthCareWorkerUsername;
     }
 
-    public void setFieldHealthCareWorkerId(Long fieldHealthCareWorkerId) {
-        this.fieldHealthCareWorkerId = fieldHealthCareWorkerId;
+    public void setFieldHealthCareWorkerUsername(String fieldHealthCareWorkerUsername) {
+        this.fieldHealthCareWorkerUsername = fieldHealthCareWorkerUsername;
     }
 
-    public Long getDoctorId() {
-        return doctorId;
+    public String getDoctorUsername() {
+        return doctorUsername;
     }
 
-    public void setDoctorId(Long doctorId) {
-        this.doctorId = doctorId;
+    public void setDoctorUsername(String doctorUsername) {
+        this.doctorUsername = doctorUsername;
     }
 }
