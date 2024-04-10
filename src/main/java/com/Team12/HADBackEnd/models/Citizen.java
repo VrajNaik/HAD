@@ -2,6 +2,9 @@ package com.Team12.HADBackEnd.models;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 public class Citizen {
     @Id
@@ -32,6 +35,9 @@ public class Citizen {
     @ManyToOne
     @JoinColumn(name = "district_id")
     private District district;
+
+    @OneToMany(mappedBy = "citizen")
+    private List<Response> responses = new ArrayList<>();
     public Citizen() {
     }
 
@@ -145,6 +151,14 @@ public class Citizen {
 
     public void setHealthRecord(HealthRecord healthRecord) {
         this.healthRecord = healthRecord;
+    }
+
+    public List<Response> getResponses() {
+        return responses;
+    }
+
+    public void setResponses(List<Response> responses) {
+        this.responses = responses;
     }
 }
 

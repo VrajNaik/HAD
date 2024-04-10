@@ -18,6 +18,12 @@ public class FollowUp {
     @JoinColumn(name = "healthcare_worker_id")
     private FieldHealthCareWorker fieldHealthCareWorker;
 
+    @Enumerated(EnumType.STRING)
+    private Frequency frequency;
+
+    private Date recurrenceStartTime;
+    private Date recurrenceEndTime;
+
     private Date date;
     private String status;
     private String instructions;
@@ -79,5 +85,28 @@ public class FollowUp {
         this.measureOfVitals = measureOfVitals;
     }
 
+    public Frequency getFrequency() {
+        return frequency;
+    }
+
+    public void setFrequency(Frequency frequency) {
+        this.frequency = frequency;
+    }
+
+    public Date getRecurrenceStartTime() {
+        return recurrenceStartTime;
+    }
+
+    public void setRecurrenceStartTime(Date recurrenceStartTime) {
+        this.recurrenceStartTime = recurrenceStartTime;
+    }
+
+    public Date getRecurrenceEndTime() {
+        return recurrenceEndTime;
+    }
+
+    public void setRecurrenceEndTime(Date recurrenceEndTime) {
+        this.recurrenceEndTime = recurrenceEndTime;
+    }
 }
 
