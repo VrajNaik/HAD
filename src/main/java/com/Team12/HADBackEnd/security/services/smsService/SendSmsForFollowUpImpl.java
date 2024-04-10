@@ -1,7 +1,10 @@
 package com.Team12.HADBackEnd.security.services.smsService;
 
 import com.Team12.HADBackEnd.twilio.TwilioMessageService;
+import org.springframework.stereotype.Service;
 
+
+@Service
 public class SendSmsForFollowUpImpl implements SendSmsForFollowUp {
 
     @Override

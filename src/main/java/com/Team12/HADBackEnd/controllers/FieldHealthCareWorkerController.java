@@ -8,6 +8,10 @@ import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.UserRepository;
 import com.Team12.HADBackEnd.security.services.FieldHealthCareWorkerService;
+import com.Team12.HADBackEnd.security.services.smsService.SendSmsForFollowUp;
+import com.Team12.HADBackEnd.twilio.TwilioMessageService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +30,12 @@ public class FieldHealthCareWorkerController {
     private FieldHealthCareWorkerService fieldHealthCareWorkerService;
     @Autowired
     private UserRepository userRepository;
+
+
+    @Autowired
+    TwilioMessageService twilioMessageService;
+    @Autowired
+    private SendSmsForFollowUp sendSmsForFollowUp;
 
 
 //    @PostMapping("/addFieldHealthCareWorker")
@@ -184,6 +194,19 @@ public class FieldHealthCareWorkerController {
 //        }
         Long healthRecordId = requestDTO.getCitizenId();
         return fieldHealthCareWorkerService.getFollowUpsByHealthRecordId(healthRecordId);
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(FieldHealthCareWorkerController.class);
+    @GetMapping("/sms")
+    public void sendMessage(@RequestParam("language") String language) {
+        logger.info("Scheduled task started at {}", java.time.LocalTime.now());
+        try {
+            // Pass the language preference to the service
+            sendSmsForFollowUp.sendMessage(language);
+            logger.info("Scheduled task completed successfully at {}", java.time.LocalTime.now());
+        } catch (Exception e) {
+            logger.error("Scheduled task failed with error: {}", e.getMessage());
+        }
     }
 
 }
