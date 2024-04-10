@@ -1,5 +1,6 @@
 package com.Team12.HADBackEnd.payload.request;
 
+import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

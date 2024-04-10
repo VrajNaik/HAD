@@ -1,6 +1,9 @@
 package com.Team12.HADBackEnd.payload.request;
 
 
+import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
+
 import java.util.List;
 
 public class FieldHealthcareWorkerDTO {

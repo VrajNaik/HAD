@@ -1,5 +1,12 @@
 package com.Team12.HADBackEnd.controllers;
 
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Doctor.DoctorUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.Doctor;
 import com.Team12.HADBackEnd.models.FieldHealthCareWorker;
 import com.Team12.HADBackEnd.models.Supervisor;
@@ -9,9 +16,9 @@ import com.Team12.HADBackEnd.payload.exception.DuplicateLicenseIdException;
 import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.repository.*;
-import com.Team12.HADBackEnd.security.services.DoctorService;
-import com.Team12.HADBackEnd.security.services.FieldHealthCareWorkerService;
-import com.Team12.HADBackEnd.security.services.SupervisorService;
+import com.Team12.HADBackEnd.services.Doctor.DoctorService;
+import com.Team12.HADBackEnd.services.FieldHealthCareWorker.FieldHealthCareWorkerService;
+import com.Team12.HADBackEnd.services.Supervisor.SupervisorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,22 +34,34 @@ import java.util.Map;
 @CrossOrigin(originPatterns = "*", exposedHeaders = "*", origins = "*")
 @RequestMapping("/admin")
 public class AdminController {
+
+    private final DoctorService doctorService;
+    private final DoctorRepository doctorRepository;
+    private final SupervisorRepository supervisorRepository;
+    private final FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository;
+    private final CitizenRepository citizenRepository;
+    private final UserRepository userRepository;
+    private final SupervisorService supervisorService;
+    private final FieldHealthCareWorkerService fieldHealthCareWorkerService;
+
     @Autowired
-    private DoctorService doctorService;
-    @Autowired
-    private DoctorRepository doctorRepository;
-    @Autowired
-    private SupervisorRepository supervisorRepository;
-    @Autowired
-    private FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository;
-    @Autowired
-    private CitizenRepository citizenRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private SupervisorService supervisorService;
-    @Autowired
-    private FieldHealthCareWorkerService fieldHealthCareWorkerService;
+    public AdminController(DoctorService doctorService,
+                           DoctorRepository doctorRepository,
+                           SupervisorRepository supervisorRepository,
+                           FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository,
+                           CitizenRepository citizenRepository,
+                           UserRepository userRepository,
+                           SupervisorService supervisorService,
+                           FieldHealthCareWorkerService fieldHealthCareWorkerService) {
+        this.doctorService = doctorService;
+        this.doctorRepository = doctorRepository;
+        this.supervisorRepository = supervisorRepository;
+        this.fieldHealthCareWorkerRepository = fieldHealthCareWorkerRepository;
+        this.citizenRepository = citizenRepository;
+        this.userRepository = userRepository;
+        this.supervisorService = supervisorService;
+        this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
+    }
 
 
     @PostMapping("/addDoctor")
@@ -56,10 +75,11 @@ public class AdminController {
         }
     }
 
+
     @GetMapping("/getDoctors")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<DoctorDTO>> viewDoctors() {
-        List<DoctorDTO> doctorDTOs = doctorService.getAllDoctorsWithDistricts();
+    public ResponseEntity<List<DoctorForAdminDTO>> viewDoctors() {
+        List<DoctorForAdminDTO> doctorDTOs = doctorService.getAllDoctorsWithDistricts();
         return new ResponseEntity<>(doctorDTOs, HttpStatus.OK);
     }
 
@@ -88,16 +108,18 @@ public class AdminController {
         }
     }
 
+
     @GetMapping("/getFieldHealthCareWorkers")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<FieldHealthcareWorkerDTO>> getAllFieldHealthCareWorker() {
-        List<FieldHealthcareWorkerDTO> worker = fieldHealthCareWorkerService.getAllFieldHealthCareWorkersWithDistricts();
+    public ResponseEntity<List<FieldHealthCareWorkerForAdminDTO>> getAllFieldHealthCareWorker() {
+        List<FieldHealthCareWorkerForAdminDTO> worker = fieldHealthCareWorkerService.getAllFieldHealthCareWorkersWithDistricts();
         return new ResponseEntity<>(worker, HttpStatus.OK);
     }
 
+
     @PostMapping("/updateFieldHealthCareWorker")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateFieldHealthCareWorker(@RequestBody SupervisorUpdateRequestDTO request) {
+    public ResponseEntity<?> updateFieldHealthCareWorker(@RequestBody FieldHealthCareWorkerUpdateRequestDTO request) {
         try {
             FieldHealthcareWorkerDTO updatedWorkerDTO = fieldHealthCareWorkerService.updateFieldHealthCareWorker(request);
             return ResponseEntity.ok(updatedWorkerDTO);
@@ -106,6 +128,7 @@ public class AdminController {
             throw new AuthenticationServiceException(e.getMessage(), e);
         }
     }
+
 
     @PostMapping("/addSupervisor")
     @PreAuthorize("hasRole('ADMIN')")
@@ -117,12 +140,15 @@ public class AdminController {
             throw new AuthenticationServiceException(e.getMessage(), e);
         }
     }
+
+
     @GetMapping("/getSupervisors")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<SupervisorDTO>> getAllSupervisor() {
-        List<SupervisorDTO> supervisor = supervisorService.getAllSupervisorsWithDistricts();
+    public ResponseEntity<List<SupervisorForAdminDTO>> getAllSupervisor() {
+        List<SupervisorForAdminDTO> supervisor = supervisorService.getAllSupervisorsWithDistricts();
         return new ResponseEntity<>(supervisor, HttpStatus.OK);
     }
+
 
     @PostMapping("/updateSupervisor")
     @PreAuthorize("hasRole('ADMIN')")
@@ -135,6 +161,33 @@ public class AdminController {
             throw new AuthenticationServiceException(e.getMessage(), e);
         }
     }
+
+
+    @GetMapping("/viewCitizens")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<CitizenForAdminDTO> getAllCitizens() {
+        return fieldHealthCareWorkerService.getAllCitizens();
+    }
+
+
+    @GetMapping("/getRoleCounts")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Map<String, Object> getRoleCounts() {
+        long doctorCount = doctorRepository.countByActiveTrue();
+        long supervisorCount = supervisorRepository.countByActiveTrue();
+        long fieldWorkerCount = fieldHealthCareWorkerRepository.countByActiveTrue();
+        long citizen = citizenRepository.count();
+        Map<String, Object> response = new HashMap<>();
+        Map<String, Long> counts = new HashMap<>();
+        counts.put("doctors", doctorCount);
+        counts.put("supervisors", supervisorCount);
+        counts.put("fieldHealthcareWorkers", fieldWorkerCount);
+        counts.put("citizens", citizen);
+        response.put("counts", counts);
+        return response;
+    }
+
+
     @PutMapping("/activate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> activateUser(@RequestBody UsernameDTO usernameDTO) {
@@ -159,6 +212,8 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid username prefix");
         }
     }
+
+
     @PutMapping("/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deactivateUser(@RequestBody UsernameDTO usernameDTO) {
@@ -183,30 +238,6 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid username prefix");
         }
     }
-
-    @GetMapping("/viewCitizens")
-    @PreAuthorize("hasRole('ADMIN')")
-    public List<CitizensDTO> getAllCitizens() {
-        return fieldHealthCareWorkerService.getAllCitizens();
-    }
-
-    @GetMapping("/getRoleCounts")
-    @PreAuthorize("hasRole('ADMIN')")
-    public Map<String, Object> getRoleCounts() {
-        long doctorCount = doctorRepository.countByActiveTrue();
-        long supervisorCount = supervisorRepository.countByActiveTrue();
-        long fieldWorkerCount = fieldHealthCareWorkerRepository.countByActiveTrue();
-        long citizen = citizenRepository.count();
-        Map<String, Object> response = new HashMap<>();
-        Map<String, Long> counts = new HashMap<>();
-        counts.put("doctors", doctorCount);
-        counts.put("supervisors", supervisorCount);
-        counts.put("fieldHealthcareWorkers", fieldWorkerCount);
-        counts.put("citizens", citizen);
-        response.put("counts", counts);
-        return response;
-    }
-
 }
 
 //@PutMapping("/updateDoctor")

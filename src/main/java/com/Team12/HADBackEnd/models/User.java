@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -41,7 +40,7 @@ public class User {
           inverseJoinColumns = @JoinColumn(name = "role_id"))
   private Set<Role> roles = new HashSet<>();
 
-  private boolean active = true; // Default to active
+  private boolean active = true;
   private boolean logInFirst = true;
 
   public User() {

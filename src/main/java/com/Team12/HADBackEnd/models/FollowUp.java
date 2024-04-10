@@ -24,6 +24,7 @@ public class FollowUp {
     private Date recurrenceStartTime;
     private Date recurrenceEndTime;
 
+    @Column(name = "followup_date")
     private Date date;
     private String status;
     private String instructions;

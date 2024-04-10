@@ -1,5 +1,7 @@
 package com.Team12.HADBackEnd.payload.request;
 
+import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
+
 import java.util.Date;
 
 public class FollowUpDTO {
