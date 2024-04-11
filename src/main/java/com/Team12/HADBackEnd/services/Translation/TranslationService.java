@@ -45,7 +45,7 @@ public class TranslationService {
     private String translateNameToEnglish(String name, String language) {
         try {
             // Load credentials from the JSON file
-//            File credentialsPath = new File("E:\\IIIT BANGALORE\\Sem-2\\HAD\\Project\\HADBackEnd\\liquid-layout-420008-cf93cc74807e.json");
+            File credentialsPath = new File("E:\\IIIT BANGALORE\\Sem-2\\HAD\\Project\\HADBackEnd\\liquid-layout-420008-cf93cc74807e.json");
             GoogleCredentials credentials = GoogleCredentials.fromStream(new FileInputStream(credentialsPath));
 
             // Create a Translate instance with the loaded credentials
