@@ -17,9 +17,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
 @EnableMethodSecurity
+@EnableWebMvc
 // (securedEnabled = true,
 // jsr250Enabled = true,
 // prePostEnabled = true) // by default
@@ -70,6 +72,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
                             .requestMatchers("/doctor/deactivate").permitAll()
                             .requestMatchers("/district/all").permitAll()
                             .requestMatchers("/district/create").permitAll()
+                            .requestMatchers("/swagger-ui/index.html").permitAll()
                             .requestMatchers("/district/unallocated").permitAll()
                             .requestMatchers("/api/forgot-password").permitAll()
                             .requestMatchers("/api/reset-password").permitAll()
