@@ -21,7 +21,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
 @EnableMethodSecurity
-@EnableWebMvc
 // (securedEnabled = true,
 // jsr250Enabled = true,
 // prePostEnabled = true) // by default
@@ -64,6 +63,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth ->
                     auth.requestMatchers("/auth/**").permitAll()
+                            .requestMatchers("/**").permitAll()
                             .requestMatchers("/test/**").permitAll()
                             .requestMatchers("/admin/**").permitAll()
                             .requestMatchers("/doctor/viewDoctors").permitAll()
@@ -73,6 +73,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
                             .requestMatchers("/district/all").permitAll()
                             .requestMatchers("/district/create").permitAll()
                             .requestMatchers("/swagger-ui/index.html").permitAll()
+                            .requestMatchers("/v3/api-docs").permitAll()
                             .requestMatchers("/district/unallocated").permitAll()
                             .requestMatchers("/api/forgot-password").permitAll()
                             .requestMatchers("/api/reset-password").permitAll()
