@@ -20,10 +20,12 @@ public interface FieldHealthCareWorkerService {
     List<FieldHealthCareWorkerForAdminDTO> getAllFieldHealthCareWorkersWithDistricts();
     FieldHealthCareWorkerWithHealthRecordDTO updateFieldHealthCareWorker(FieldHealthCareWorkerUpdateRequestDTO request);
     ResponseEntity<?> registerCitizen(CitizenRegistrationDTO citizenDTO);
+    ResponseEntity<?> registerCitizens(List<CitizenRegistrationDTO> citizenDTOList);
     ResponseEntity<?> getDoctorsByFHWUsername(String username);
     void setActiveStatusByUsername(String username, boolean active);
     FieldHealthCareWorkerWithHealthRecordDTO getFieldHealthcareWorkerByUsername(String username);
     List<FieldHealthCareWorkerWithHealthRecordDTO> getFieldHealthCareWorkerDTOs(Long districtId);
+
     List<FollowUpReturnDTO> getFollowUpsForToday(String username);
     List<FollowUp> filterFollowUpsForToday(List<FollowUp> followUps, Date today);
     int calculateScore(List<String> answers);

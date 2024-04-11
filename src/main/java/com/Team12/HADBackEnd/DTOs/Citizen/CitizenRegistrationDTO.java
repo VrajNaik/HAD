@@ -13,6 +13,7 @@ public class CitizenRegistrationDTO {
     private String abhaId;
     private String fieldHealthCareWorkerUsername;
     private String doctorUsername;
+    private String language;
 
     public String getName() {
         return name;
@@ -109,5 +110,13 @@ public class CitizenRegistrationDTO {
 
     public void setDoctorUsername(String doctorUsername) {
         this.doctorUsername = doctorUsername;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
     }
 }

@@ -214,6 +214,55 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
         return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizen Registration Done successfully!");
     }
 
+    @Override
+    public ResponseEntity<?> registerCitizens(List<CitizenRegistrationDTO> citizenDTOList) {
+        List<Citizen> registeredCitizens = new ArrayList<>();
+
+        for (CitizenRegistrationDTO citizenDTO : citizenDTOList) {
+            FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findByUsername(citizenDTO.getFieldHealthCareWorkerUsername())
+                    .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with username: " + citizenDTO.getFieldHealthCareWorkerUsername()));
+
+            Doctor doctor = doctorRepository.findByUsername(citizenDTO.getDoctorUsername())
+                    .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorUsername()));
+
+            Citizen citizen = new Citizen();
+            if(citizenDTO.getName() != null && !citizenDTO.getName().isEmpty()) {
+                citizen.setName(citizenDTO.getName());
+            }
+            citizen.setAge(citizenDTO.getAge());
+            if(citizenDTO.getGender() != null && !citizenDTO.getGender().isEmpty()) {
+                citizen.setGender(citizenDTO.getGender());
+            }
+            if (citizenDTO.getPincode() != null && !citizenDTO.getPincode().isEmpty()) {
+                citizen.setPincode(citizenDTO.getPincode());
+            }
+
+            if (citizenDTO.getAddress() != null && !citizenDTO.getAddress().isEmpty()) {
+                citizen.setAddress(citizenDTO.getAddress());
+            }
+            citizen.setConsent(citizenDTO.isConsent());
+            citizen.setStatus(citizenDTO.getStatus());
+            if (citizenDTO.getState() != null && !citizenDTO.getState().isEmpty()) {
+                citizen.setState(citizenDTO.getState());
+            }
+            if (citizenDTO.getAbhaId() != null && !citizenDTO.getAbhaId().isEmpty()) {
+                citizen.setAbhaId(citizenDTO.getAbhaId());
+            }
+            citizen.setFieldHealthCareWorker(fieldHealthCareWorker);
+            citizen.setDoctor(doctor);
+
+            LocalArea localArea = fieldHealthCareWorker.getLocalArea();
+            String pincode = localArea.getPincode();
+            citizen.setPincode(pincode);
+            District district = localArea.getDistrict();
+            citizen.setDistrict(district);
+
+            citizenRepository.save(citizen);
+            registeredCitizens.add(citizen);
+        }
+
+        return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizens Registration Done successfully!");
+    }
 
     @Override
     public ResponseEntity<?> getDoctorsByFHWUsername(String username) {

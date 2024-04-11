@@ -16,6 +16,7 @@ import com.Team12.HADBackEnd.repository.UserRepository;
 
 import com.Team12.HADBackEnd.services.BlackBox.Questionnaire.QuestionnaireService;
 import com.Team12.HADBackEnd.services.BlackBox.smsService.SendSmsForFollowUp;
+import com.Team12.HADBackEnd.services.Translation.TranslationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,15 +45,19 @@ public class FieldHealthCareWorkerController {
 
     private final QuestionnaireService questionnaireService;
 
+    private final TranslationService translationService;
+
     @Autowired
     public FieldHealthCareWorkerController(FieldHealthCareWorkerService fieldHealthCareWorkerService,
                                            UserRepository userRepository,
                                            SendSmsForFollowUp sendSmsForFollowUp,
-                                           QuestionnaireService questionnaireService) {
+                                           QuestionnaireService questionnaireService,
+                                           TranslationService translationService) {
         this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
         this.userRepository = userRepository;
         this.sendSmsForFollowUp = sendSmsForFollowUp;
         this.questionnaireService = questionnaireService;
+        this.translationService = translationService;
     }
 
 
@@ -62,6 +67,22 @@ public class FieldHealthCareWorkerController {
         return fieldHealthCareWorkerService.registerCitizen(citizen);
     }
 
+    @PostMapping("/registerCitizens")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> registerCitizens(@RequestBody List<CitizenRegistrationDTO> citizens) {
+        return fieldHealthCareWorkerService.registerCitizens(citizens);
+    }
+
+//    @PostMapping("/registerCitizenNew")
+//    public ResponseEntity<?> registerCitizenNew(@RequestBody CitizenRegistrationDTO citizen) {
+//        // Translate data to English based on the provided language
+//        CitizenRegistrationDTO englishCitizen = translationService.translateToEnglish(citizen);
+//
+//        // Save the translated data to the database
+//        fieldHealthCareWorkerService.registerCitizen(englishCitizen);
+//
+//        return ResponseEntity.ok("Citizen registration data saved successfully!");
+//    }
 
     @GetMapping("/getQuestionnaire")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
