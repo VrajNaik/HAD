@@ -2,10 +2,12 @@ package com.Team12.HADBackEnd.services.FieldHealthCareWorker;
 
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizensRegistrationDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
 import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
+import com.Team12.HADBackEnd.DTOs.Response.ResponseDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
@@ -43,6 +45,7 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
     private final CitizenRepository citizenRepository;
     private final FollowUpRepository followUpRepository;
     private final HealthRecordRepository healthRecordRepository;
+    private final ResponseRepository responseRepository;
     private final PasswordEncoder encoder;
     private final EmailService emailService;
     private final CredentialService credentialService;
@@ -58,6 +61,7 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
                                         CitizenRepository citizenRepository,
                                         FollowUpRepository followUpRepository,
                                         HealthRecordRepository healthRecordRepository,
+                                        ResponseRepository responseRepository,
                                         PasswordEncoder passwordEncoder,
                                         EmailService emailService,
                                         CredentialService credentialService,
@@ -71,6 +75,7 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
         this.citizenRepository = citizenRepository;
         this.followUpRepository = followUpRepository;
         this.healthRecordRepository = healthRecordRepository;
+        this.responseRepository = responseRepository;
         this.encoder = passwordEncoder;
         this.emailService = emailService;
         this.credentialService = credentialService;
@@ -175,8 +180,8 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
         FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findByUsername(citizenDTO.getFieldHealthCareWorkerUsername())
                 .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with username: " + citizenDTO.getFieldHealthCareWorkerUsername()));
 
-        Doctor doctor = doctorRepository.findByUsername(citizenDTO.getDoctorUsername())
-                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorUsername()));
+//        Doctor doctor = doctorRepository.findByUsername(citizenDTO.getDoctorUsername())
+//                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorUsername()));
 
         Citizen citizen = new Citizen();
         if(citizenDTO.getName() != null && !citizenDTO.getName().isEmpty()) {
@@ -202,7 +207,7 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
             citizen.setAbhaId(citizenDTO.getAbhaId());
         }
         citizen.setFieldHealthCareWorker(fieldHealthCareWorker);
-        citizen.setDoctor(doctor);
+//        citizen.setDoctor(doctor);
 
         LocalArea localArea = fieldHealthCareWorker.getLocalArea();
         String pincode = localArea.getPincode();
@@ -211,19 +216,18 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
         citizen.setDistrict(district);
 
         citizenRepository.save(citizen);
-        return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizen Registration Done successfully!");
+        return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizen Registration Done successfully!");
     }
 
     @Override
-    public ResponseEntity<?> registerCitizens(List<CitizenRegistrationDTO> citizenDTOList) {
-        List<Citizen> registeredCitizens = new ArrayList<>();
-
+    public ResponseEntity<?> registerCitizens(CitizensRegistrationDTO citizensDTO) {
+        List<CitizenRegistrationDTO> citizenDTOList = citizensDTO.getCitizens();
         for (CitizenRegistrationDTO citizenDTO : citizenDTOList) {
             FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findByUsername(citizenDTO.getFieldHealthCareWorkerUsername())
                     .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with username: " + citizenDTO.getFieldHealthCareWorkerUsername()));
 
-            Doctor doctor = doctorRepository.findByUsername(citizenDTO.getDoctorUsername())
-                    .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorUsername()));
+//            Doctor doctor = doctorRepository.findByUsername(citizenDTO.getDoctorUsername())
+//                    .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorUsername()));
 
             Citizen citizen = new Citizen();
             if(citizenDTO.getName() != null && !citizenDTO.getName().isEmpty()) {
@@ -240,8 +244,9 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
             if (citizenDTO.getAddress() != null && !citizenDTO.getAddress().isEmpty()) {
                 citizen.setAddress(citizenDTO.getAddress());
             }
-            citizen.setConsent(citizenDTO.isConsent());
-            citizen.setStatus(citizenDTO.getStatus());
+            citizen.setConsent(true);
+
+            citizen.setStatus("new");
             if (citizenDTO.getState() != null && !citizenDTO.getState().isEmpty()) {
                 citizen.setState(citizenDTO.getState());
             }
@@ -249,7 +254,7 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
                 citizen.setAbhaId(citizenDTO.getAbhaId());
             }
             citizen.setFieldHealthCareWorker(fieldHealthCareWorker);
-            citizen.setDoctor(doctor);
+//            citizen.setDoctor(doctor);
 
             LocalArea localArea = fieldHealthCareWorker.getLocalArea();
             String pincode = localArea.getPincode();
@@ -257,8 +262,8 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
             District district = localArea.getDistrict();
             citizen.setDistrict(district);
 
+
             citizenRepository.save(citizen);
-            registeredCitizens.add(citizen);
         }
 
         return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizens Registration Done successfully!");
@@ -277,6 +282,26 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
                 .map(doctorServiceImpl::convertToDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(doctorDTOs);
+    }
+
+    @Override
+    public ResponseEntity<?> addResponse(ResponseDTO responseDTO) {
+        Citizen citizen = citizenRepository.findByAbhaId(responseDTO.getAbhaId())
+                .orElseThrow(() -> new NotFoundException("No Citizen Found with provided ABHA ID:" + responseDTO.getAbhaId()));
+
+        Long maxFollowUpNo = responseRepository.findTopByCitizenOrderByFollowUpNoDesc(citizen)
+                .orElse(0L);
+
+        Long newFollowUpNo = maxFollowUpNo + 1;
+
+        Response response = new Response();
+        response.setScore(responseDTO.getScore());
+        response.setCitizen(citizen);
+        response.setFollowUpNo(newFollowUpNo);
+        response.setAnswers(responseDTO.getAnswers());
+
+        responseRepository.save(response);
+        return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizen Registration Done successfully!");
     }
 
 

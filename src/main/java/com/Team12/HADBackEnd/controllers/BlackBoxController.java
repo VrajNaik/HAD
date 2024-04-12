@@ -106,7 +106,7 @@ public class BlackBoxController {
     }
 
     @GetMapping("/getQuestionnaire")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> getQuestionnaireById(@RequestParam Long id) {
         QuestionnaireResponseDTO questionnaireResponse = questionnaireService.getQuestionnaireById(id);
         return ResponseEntity.ok(questionnaireResponse);

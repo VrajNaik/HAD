@@ -2,9 +2,11 @@ package com.Team12.HADBackEnd.services.FieldHealthCareWorker;
 
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizensRegistrationDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.Response.ResponseDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.response.FollowUpReturnDTO;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +22,12 @@ public interface FieldHealthCareWorkerService {
     List<FieldHealthCareWorkerForAdminDTO> getAllFieldHealthCareWorkersWithDistricts();
     FieldHealthCareWorkerWithHealthRecordDTO updateFieldHealthCareWorker(FieldHealthCareWorkerUpdateRequestDTO request);
     ResponseEntity<?> registerCitizen(CitizenRegistrationDTO citizenDTO);
-    ResponseEntity<?> registerCitizens(List<CitizenRegistrationDTO> citizenDTOList);
+    ResponseEntity<?> registerCitizens(CitizensRegistrationDTO citizenDTOList);
     ResponseEntity<?> getDoctorsByFHWUsername(String username);
     void setActiveStatusByUsername(String username, boolean active);
     FieldHealthCareWorkerWithHealthRecordDTO getFieldHealthcareWorkerByUsername(String username);
     List<FieldHealthCareWorkerWithHealthRecordDTO> getFieldHealthCareWorkerDTOs(Long districtId);
-
+    ResponseEntity<?> addResponse(ResponseDTO responseDTO);
     List<FollowUpReturnDTO> getFollowUpsForToday(String username);
     List<FollowUp> filterFollowUpsForToday(List<FollowUp> followUps, Date today);
     int calculateScore(List<String> answers);

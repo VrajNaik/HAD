@@ -1,11 +1,14 @@
 package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizensRegistrationDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
 import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusRequest;
 import com.Team12.HADBackEnd.DTOs.Questionnaire.AnswersDTO;
 import com.Team12.HADBackEnd.DTOs.Questionnaire.QuestionnaireResponseDTO;
+import com.Team12.HADBackEnd.DTOs.Response.ResponseDTO;
 import com.Team12.HADBackEnd.models.FollowUp;
+import com.Team12.HADBackEnd.models.Response;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
@@ -68,8 +71,8 @@ public class FieldHealthCareWorkerController {
     }
 
     @PostMapping("/registerCitizens")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public ResponseEntity<?> registerCitizens(@RequestBody List<CitizenRegistrationDTO> citizens) {
+//
+    public ResponseEntity<?> registerCitizens(@RequestBody CitizensRegistrationDTO citizens) {
         return fieldHealthCareWorkerService.registerCitizens(citizens);
     }
 
@@ -173,6 +176,7 @@ public class FieldHealthCareWorkerController {
         }
     }
 
+
     @GetMapping("/isLastFollowUp")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> isLastFollowUp(@RequestParam String abhaId) {
@@ -183,6 +187,18 @@ public class FieldHealthCareWorkerController {
             return ResponseEntity.notFound().build();
         }
     }
+
+
+//    @PostMapping("/addResponse")
+//    public ResponseEntity<?> addResponse(@RequestBody ResponseDTO responseDTO) {
+//        Response savedResponse = fieldHealthCareWorkerService.addResponse(responseDTO);
+//        return new ResponseEntity<>(savedResponse, HttpStatus.CREATED);
+//    }
+    @PostMapping("/addResponse")
+    public ResponseEntity<?> addResponse(@RequestBody ResponseDTO responseDTO) {
+        return fieldHealthCareWorkerService.addResponse(responseDTO);
+    }
+
 
     @PutMapping("/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
