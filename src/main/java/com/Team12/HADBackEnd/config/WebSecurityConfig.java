@@ -83,6 +83,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
                             .requestMatchers("/supervisor/**").permitAll()
                             .requestMatchers("/FieldHealthCareWorker/**").permitAll()
                             .requestMatchers("/api/**").permitAll()
+                            .requestMatchers("/api/translate/**").permitAll()
 
                             .anyRequest().authenticated()
             );
