@@ -3,7 +3,10 @@ package com.Team12.HADBackEnd.controllers;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.Team12.HADBackEnd.DTOs.Token.TokenRefreshRequest;
+import com.Team12.HADBackEnd.DTOs.Token.TokenRefreshResponse;
 import com.Team12.HADBackEnd.DTOs.auth.*;
+import com.Team12.HADBackEnd.exception.TokenRefreshException;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.CustomErrorResponse;
 import com.Team12.HADBackEnd.payload.exception.UserDeactivatedException;
@@ -58,6 +61,8 @@ public class AuthController {
 
   private final ForgotPasswordService forgotPasswordService;
 
+  private final RefreshTokenService refreshTokenService;
+
   private final PasswordEncoder encoder;
 
   private final JwtUtils jwtUtils;
@@ -73,6 +78,7 @@ public class AuthController {
                         SupervisorService supervisorService,
                         FieldHealthCareWorkerService fieldHealthCareWorkerService,
                         ForgotPasswordService forgotPasswordService,
+                        RefreshTokenService refreshTokenService,
                         PasswordEncoder encoder,
                         JwtUtils jwtUtils) {
     this.authenticationManager = authenticationManager;
@@ -85,6 +91,7 @@ public class AuthController {
     this.doctorService = doctorService;
     this.supervisorService = supervisorService;
     this.forgotPasswordService = forgotPasswordService;
+    this.refreshTokenService = refreshTokenService;
     this.encoder = encoder;
     this.jwtUtils = jwtUtils;
   }
@@ -153,6 +160,21 @@ public class AuthController {
     } catch (UserDeactivatedException e) {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
     }
+  }
+
+  @PostMapping("/refreshtoken")
+  public ResponseEntity<?> refreshtoken(@Valid @RequestBody TokenRefreshRequest request) {
+    String requestRefreshToken = request.getRefreshToken();
+
+    return refreshTokenService.findByToken(requestRefreshToken)
+            .map(refreshTokenService::verifyExpiration)
+            .map(RefreshToken::getUser)
+            .map(user -> {
+              String token = jwtUtils.generateTokenFromUsername(user.getUsername());
+              return ResponseEntity.ok(new TokenRefreshResponse(token, requestRefreshToken));
+            })
+            .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
+                    "Refresh token is not in database!"));
   }
 
   @PostMapping("/signup")

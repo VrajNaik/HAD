@@ -15,6 +15,8 @@ public class Option {
 
     private String optionText;
 
+    private Long optionValue;
+
     public Long getId() {
         return id;
     }
@@ -37,5 +39,13 @@ public class Option {
 
     public void setOptionText(String optionText) {
         this.optionText = optionText;
+    }
+
+    public Long getOptionValue() {
+        return optionValue;
+    }
+
+    public void setOptionValue(Long optionValue) {
+        this.optionValue = optionValue;
     }
 }

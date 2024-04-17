@@ -1,12 +1,9 @@
 package com.Team12.HADBackEnd.services.BlackBox.Questionnaire;
 
+import com.Team12.HADBackEnd.DTOs.Questionnaire.*;
 import com.Team12.HADBackEnd.models.Option;
 import com.Team12.HADBackEnd.models.Question;
 import com.Team12.HADBackEnd.models.Questionnaire;
-import com.Team12.HADBackEnd.DTOs.Questionnaire.QuestionDTO;
-import com.Team12.HADBackEnd.DTOs.Questionnaire.QuestionnaireDTO;
-import com.Team12.HADBackEnd.DTOs.Questionnaire.QuestionResponseDTO;
-import com.Team12.HADBackEnd.DTOs.Questionnaire.QuestionnaireResponseDTO;
 import com.Team12.HADBackEnd.repository.OptionRepository;
 import com.Team12.HADBackEnd.repository.QuestionRepository;
 import com.Team12.HADBackEnd.repository.QuestionnaireRepository;
@@ -46,10 +43,11 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
             question.setQuestionText(questionDto.getQuestionText());
             question = questionRepository.save(question);
 
-            for (String optionText : questionDto.getOptions()) {
+            for (OptionDTO optionDTO : questionDto.getOptions()) {
                 Option option = new Option();
                 option.setQuestion(question);
-                option.setOptionText(optionText);
+                option.setOptionText(optionDTO.getOptionText());
+                option.setOptionValue(optionDTO.getOptionValue());
                 optionRepository.save(option);
             }
         }
@@ -72,8 +70,14 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
             for (Option option : question.getOptions()) {
                 options.add(option.getOptionText());
             }
-            questionDTO.setOptions(options);
+            questionDTO.setOptionText(options);
 
+            List<Long> optionValues = new ArrayList<>();
+
+            for (Option option : question.getOptions()) {
+                optionValues.add(option.getOptionValue());
+            }
+            questionDTO.setOptionValue(optionValues);
             questionDTOList.add(questionDTO);
         }
 

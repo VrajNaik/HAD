@@ -10,4 +10,5 @@ import java.util.Optional;
 @Repository
 public interface ResponseRepository extends JpaRepository<Response, Long> {
     Optional<Long> findTopByCitizenOrderByFollowUpNoDesc(Citizen citizen);
+    Optional<Response> findFirstByCitizenOrderByFollowUpNoDesc(Citizen citizen);
 }

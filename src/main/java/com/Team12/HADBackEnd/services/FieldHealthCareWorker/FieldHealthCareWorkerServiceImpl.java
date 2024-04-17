@@ -3,6 +3,7 @@ package com.Team12.HADBackEnd.services.FieldHealthCareWorker;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizensRegistrationDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
@@ -187,6 +188,10 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
         if(citizenDTO.getName() != null && !citizenDTO.getName().isEmpty()) {
             citizen.setName(citizenDTO.getName());
         }
+        if(citizenDTO.getAbhaId() != null) {
+            citizen.setAbhaId(citizenDTO.getAbhaId());
+        }
+
         citizen.setAge(citizenDTO.getAge());
         if(citizenDTO.getGender() != null && !citizenDTO.getGender().isEmpty()) {
             citizen.setGender(citizenDTO.getGender());
@@ -289,19 +294,87 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
         Citizen citizen = citizenRepository.findByAbhaId(responseDTO.getAbhaId())
                 .orElseThrow(() -> new NotFoundException("No Citizen Found with provided ABHA ID:" + responseDTO.getAbhaId()));
 
-        Long maxFollowUpNo = responseRepository.findTopByCitizenOrderByFollowUpNoDesc(citizen)
-                .orElse(0L);
-
-        Long newFollowUpNo = maxFollowUpNo + 1;
+//        Long maxFollowUpNo = responseRepository.findTopByCitizenOrderByFollowUpNoDesc(citizen)
+//                .orElse(0L);
+//
+//        Long newFollowUpNo = maxFollowUpNo + 1;
 
         Response response = new Response();
         response.setScore(responseDTO.getScore());
         response.setCitizen(citizen);
-        response.setFollowUpNo(newFollowUpNo);
+//        response.setFollowUpNo(newFollowUpNo);
         response.setAnswers(responseDTO.getAnswers());
 
         responseRepository.save(response);
-        return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizen Registration Done successfully!");
+        return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizen Response added successfully!");
+    }
+
+
+    @Override
+    public ResponseEntity<?> addResponses(List<ResponseDTO> responseDTOs) {
+        for (ResponseDTO responseDTO : responseDTOs) {
+            Citizen citizen = citizenRepository.findByAbhaId(responseDTO.getAbhaId())
+                    .orElseThrow(() -> new NotFoundException("No Citizen Found with provided ABHA ID:" + responseDTO.getAbhaId()));
+
+            Response response = new Response();
+            response.setScore(responseDTO.getScore());
+            response.setCitizen(citizen);
+            response.setAnswers(responseDTO.getAnswers());
+
+            responseRepository.save(response);
+        }
+
+        return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizen Responses added successfully!");
+    }
+
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> assignDoctorToCitizen(String abhaId, String doctorUsername) {
+        Citizen citizen = citizenRepository.findByAbhaId(abhaId)
+                .orElseThrow(() -> new NotFoundException("No Citizen Found with provided ABHA ID:" + abhaId));
+
+        Doctor doctor = doctorRepository.findByUsername(doctorUsername)
+                .orElseThrow(() -> new NotFoundException("No Doctor Found with provided Username:" + doctorUsername));
+
+
+        // Check if citizen and doctor belong to the same district
+        if (!citizen.getDistrict().equals(doctor.getDistrict())) {
+            throw new NotFoundException("Doctor and Field Health Care Worker Districts are not same");
+        }
+
+        // Assign the doctor to the citizen
+        citizen.setDoctor(doctor);
+        citizenRepository.save(citizen);
+        return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizen Assigned to the Doctor Successfully!");
+    }
+
+
+    @Override
+    @Transactional
+    public ResponseEntity<?> assignDoctorsToCitizens(List<AssignDoctorRequest> doctorAssignments) {
+        for (AssignDoctorRequest assignment : doctorAssignments) {
+            String abhaId = assignment.getAbhaId();
+            String doctorUsername = assignment.getDoctorUsername();
+
+            Citizen citizen = citizenRepository.findByAbhaId(abhaId)
+                    .orElseThrow(() -> new NotFoundException("No Citizen Found with provided ABHA ID:" + abhaId));
+
+            Doctor doctor = doctorRepository.findByUsername(doctorUsername)
+                    .orElseThrow(() -> new NotFoundException("No Doctor Found with provided Username:" + doctorUsername));
+
+
+
+            // Check if citizen and doctor belong to the same district
+            if (!citizen.getDistrict().equals(doctor.getDistrict())) {
+                throw new NotFoundException("Doctor and Field Health Care Worker Districts are not same");
+            }
+
+            // Assign the doctor to the citizen
+            citizen.setDoctor(doctor);
+            citizenRepository.save(citizen);
+        }
+        return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizens Assigned to the Doctors Successfully!");
     }
 
 

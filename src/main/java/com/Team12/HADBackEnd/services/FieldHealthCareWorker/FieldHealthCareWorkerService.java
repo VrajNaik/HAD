@@ -3,6 +3,7 @@ package com.Team12.HADBackEnd.services.FieldHealthCareWorker;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizensRegistrationDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
@@ -28,6 +29,7 @@ public interface FieldHealthCareWorkerService {
     FieldHealthCareWorkerWithHealthRecordDTO getFieldHealthcareWorkerByUsername(String username);
     List<FieldHealthCareWorkerWithHealthRecordDTO> getFieldHealthCareWorkerDTOs(Long districtId);
     ResponseEntity<?> addResponse(ResponseDTO responseDTO);
+    ResponseEntity<?> addResponses(List<ResponseDTO> responseDTO);
     List<FollowUpReturnDTO> getFollowUpsForToday(String username);
     List<FollowUp> filterFollowUpsForToday(List<FollowUp> followUps, Date today);
     int calculateScore(List<String> answers);
@@ -37,6 +39,8 @@ public interface FieldHealthCareWorkerService {
     List<CitizenForAdminDTO> getAllCitizens();
     boolean isLastFollowUp(Long followUpId);
     Optional<FollowUp> findAssignedFollowUpByAbhaId(String abhaId);
+    ResponseEntity<?> assignDoctorToCitizen(String abhaId, String doctorUsername);
+    ResponseEntity<?> assignDoctorsToCitizens(List<AssignDoctorRequest> doctorAssignments);
     FieldHealthCareWorkerWithHealthRecordDTO convertToFieldHealthCareWorkerWithHealthRecordDTO(FieldHealthCareWorker worker);
 }
 

@@ -5,7 +5,9 @@ import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpCreationByDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordCreationDTO;
+import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordUpdateDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionDTO;
+import com.Team12.HADBackEnd.DTOs.Response.ResponseDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
@@ -42,21 +44,22 @@ public class DoctorServiceImpl implements DoctorService{
     private final EmailService emailService;
     private final PasswordEncoder encoder;
     private final DTOConverter dtoConverter;
+    private final ResponseRepository responseRepository;
 
     @Autowired
     public DoctorServiceImpl(DoctorRepository doctorRepository,
-                         DistrictRepository districtRepository,
-                         RoleRepository roleRepository,
-                         UserRepository userRepository,
-                         FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository,
-                         CitizenRepository citizenRepository,
-                         HealthRecordRepository healthRecordRepository,
-                         FollowUpRepository followUpRepository,
-                         ICD10CodeRepository icd10CodeRepository,
-                         CredentialService credentialService,
-                         EmailService emailService,
-                         PasswordEncoder passwordEncoder,
-                         DTOConverter dtoConverter) {
+                             DistrictRepository districtRepository,
+                             RoleRepository roleRepository,
+                             UserRepository userRepository,
+                             FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository,
+                             CitizenRepository citizenRepository,
+                             HealthRecordRepository healthRecordRepository,
+                             FollowUpRepository followUpRepository,
+                             ICD10CodeRepository icd10CodeRepository,
+                             CredentialService credentialService,
+                             EmailService emailService,
+                             PasswordEncoder passwordEncoder,
+                             DTOConverter dtoConverter, ResponseRepository responseRepository) {
         this.doctorRepository = doctorRepository;
         this.districtRepository = districtRepository;
         this.roleRepository = roleRepository;
@@ -70,8 +73,10 @@ public class DoctorServiceImpl implements DoctorService{
         this.emailService = emailService;
         this.encoder = passwordEncoder;
         this.dtoConverter = dtoConverter;
+        this.responseRepository = responseRepository;
     }
 
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public DoctorDTO updateDoctor(DoctorUpdateRequestDTO request) {
         Doctor doctor = doctorRepository.findByUsername(request.getUsername())
@@ -116,6 +121,8 @@ public class DoctorServiceImpl implements DoctorService{
         Doctor updatedDoctor = doctorRepository.save(doctor);
         return dtoConverter.convertToDTO(updatedDoctor);
     }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Doctor addDoctor(Doctor doctor) throws DuplicateLicenseIdException, DuplicateEmailIdException {
         String generatedUsername = credentialService.generateUniqueUsername("doctor");
@@ -164,6 +171,7 @@ public class DoctorServiceImpl implements DoctorService{
         return savedDoctor;
     }
 
+    @Override
     public List<DoctorForAdminDTO> getAllDoctorsWithDistricts() {
         List<Doctor> doctors = doctorRepository.findAll();
         return doctors.stream()
@@ -171,18 +179,21 @@ public class DoctorServiceImpl implements DoctorService{
                 .collect(Collectors.toList());
     }
 
+    @Override
     public DoctorDTO getDoctorByUsername(String username) {
         Doctor doctor = doctorRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("Doctor not found with username: " + username));
         return dtoConverter.convertToDTO(doctor);
     }
 
+    @Override
     public CitizenForDoctorDTO getCitizenByAbhaId(String abhaId) {
         Citizen citizen = citizenRepository.findByAbhaId(abhaId)
                 .orElseThrow(() -> new NotFoundException("Citizen not found with ID: " + abhaId));
         return dtoConverter.convertToCitizenForDoctorDTO(citizen);
     }
 
+    @Override
     public List<CitizenForDoctorDTO> getCitizensByDoctorId(String username) {
         Doctor doctor = doctorRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Doctor not found with Username: " + username));
@@ -195,19 +206,20 @@ public class DoctorServiceImpl implements DoctorService{
     }
 
 
+    @Override
     public ResponseEntity<?> createHealthRecord(HealthRecordCreationDTO healthRecordCreationDTO) {
 
-        Citizen citizen = citizenRepository.findById(healthRecordCreationDTO.getCitizenId())
-                .orElseThrow(() -> new NotFoundException("Citizen not found with ID: " + healthRecordCreationDTO.getCitizenId()));
+        Citizen citizen = citizenRepository.findByAbhaId(healthRecordCreationDTO.getAbhaId())
+                .orElseThrow(() -> new NotFoundException("Citizen not found with ID: " + healthRecordCreationDTO.getAbhaId()));
 
         if (citizen.getHealthRecord() != null) {
-            throw new NotFoundException("Health record already exists for citizen with ID: " + healthRecordCreationDTO.getCitizenId());
+            throw new NotFoundException("Health record already exists for citizen with ID: " + healthRecordCreationDTO.getAbhaId());
         }
-        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(healthRecordCreationDTO.getWorkerId())
-                .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with ID: " + healthRecordCreationDTO.getWorkerId()));
+        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findByUsername(healthRecordCreationDTO.getWorkerUsername())
+                .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with ID: " + healthRecordCreationDTO.getWorkerUsername()));
 
-        Doctor doctor = doctorRepository.findById(healthRecordCreationDTO.getDoctorId())
-                .orElseThrow(() -> new NotFoundException("Doctor not found with ID: " + healthRecordCreationDTO.getDoctorId()));
+        Doctor doctor = doctorRepository.findByUsername(healthRecordCreationDTO.getDoctorUsername())
+                .orElseThrow(() -> new NotFoundException("Doctor not found with ID: " + healthRecordCreationDTO.getDoctorUsername()));
 
 
         List<ICD10Code> icd10Codes = icd10CodeRepository.findAllById(healthRecordCreationDTO.getIcd10CodeId());
@@ -225,15 +237,65 @@ public class DoctorServiceImpl implements DoctorService{
         if(healthRecordCreationDTO.getDiagnosis() != null) {
             healthRecord.setDiagnosis(healthRecordCreationDTO.getDiagnosis());
         }
-        if(healthRecordCreationDTO.getTimestamp() != null) {
-            healthRecord.setTimestamp(healthRecordCreationDTO.getTimestamp());
-        }
+//        if(healthRecordCreationDTO.getTimestamp() != null) {
+//            healthRecord.setTimestamp(healthRecordCreationDTO.getTimestamp());
+//        }
+        healthRecord.setTimestamp(new Date());
 
         healthRecordRepository.save(healthRecord);
 
         return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Health record created successfully!");
     }
 
+
+    @Override
+    public ResponseEntity<?> updateHealthRecord(HealthRecordUpdateDTO healthRecordUpdateDTO) {
+        Citizen citizen = citizenRepository.findByAbhaId(healthRecordUpdateDTO.getAbhaId())
+                .orElseThrow(() -> new NotFoundException("Citizen not found with ID: " + healthRecordUpdateDTO.getAbhaId()));
+
+        HealthRecord healthRecord = healthRecordRepository.findByCitizen_Id(citizen.getId())
+                .orElseThrow(() -> new NotFoundException("Health record not found with ID: " + citizen.getId()));
+
+        // Update fields that can be changed
+        List<String> prescriptions = Collections.singletonList(healthRecordUpdateDTO.getPrescription());
+
+        if (healthRecordUpdateDTO.getPrescription() != null) {
+            healthRecord.setPrescriptions(prescriptions);
+        }
+        if (healthRecordUpdateDTO.getConclusion() != null) {
+            healthRecord.setConclusion(healthRecordUpdateDTO.getConclusion());
+        }
+        if (healthRecordUpdateDTO.getDiagnosis() != null) {
+            healthRecord.setDiagnosis(healthRecordUpdateDTO.getDiagnosis());
+        }
+        if (healthRecordUpdateDTO.getIcd10CodeIds() != null) {
+            // Fetch new ICD10 codes by ID
+            List<ICD10Code> newIcd10Codes = icd10CodeRepository.findAllById(healthRecordUpdateDTO.getIcd10CodeIds());
+
+            // Set the new list of ICD10 codes to the health record, replacing the existing ones
+            healthRecord.setIcd10Codes(new ArrayList<>(newIcd10Codes));
+        }
+
+        healthRecordRepository.save(healthRecord);
+        return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Health record created successfully!");
+    }
+
+    @Override
+    public ResponseEntity<?> getResponseByABHAId(String abhaId) {
+        Citizen citizen = citizenRepository.findByAbhaId(abhaId)
+                .orElseThrow(() -> new NotFoundException("Citizen not found with ID: " + abhaId));
+
+        Response response = responseRepository.findFirstByCitizenOrderByFollowUpNoDesc(citizen)
+                .orElseThrow(() -> new NotFoundException("Response not found with ID: " + abhaId));
+
+        ResponseDTO responseDTO = new ResponseDTO();
+        responseDTO.setAbhaId(response.getCitizen().getAbhaId());
+        responseDTO.setAnswers(response.getAnswers());
+        responseDTO.setScore(response.getScore());
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    @Override
     public ResponseEntity<?> addPrescriptionToHealthRecord(PrescriptionDTO prescriptionDTO) {
         HealthRecord healthRecord = healthRecordRepository.findById(prescriptionDTO.getHealthRecordId())
                 .orElseThrow(() -> new NotFoundException("Health record not found with ID: " + prescriptionDTO.getHealthRecordId()));
@@ -250,6 +312,7 @@ public class DoctorServiceImpl implements DoctorService{
         return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Prescription added successfully!");
     }
 
+    @Override
     public ResponseEntity<?> editLastPrescription(PrescriptionDTO editPrescriptionDTO) {
         HealthRecord healthRecord = healthRecordRepository.findById(editPrescriptionDTO.getHealthRecordId())
                 .orElseThrow(() -> new NotFoundException("Health record not found with ID: " + editPrescriptionDTO.getHealthRecordId()));
@@ -269,6 +332,7 @@ public class DoctorServiceImpl implements DoctorService{
         return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Prescription Edited successfully!");
     }
 
+    @Override
     public ResponseEntity<?> addFollowUp(FollowUpCreationByDoctorDTO followUpDTO) {
         FollowUp followUp = new FollowUp();
         Long healthRecordId = followUpDTO.getHealthRecordId();
@@ -281,9 +345,9 @@ public class DoctorServiceImpl implements DoctorService{
             }
             followUp.setHealthRecord(healthRecord);
         }
-        Long workerId = followUpDTO.getFieldHealthCareWorkerId();
-        if(workerId != null) {
-            FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findById(workerId)
+        String workerUsername = followUpDTO.getWorkerUsername();
+        if(workerUsername != null) {
+            FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(workerUsername)
                     .orElseThrow(() -> new NotFoundException("Field Health care Worker not found with id: " + healthRecordId));
             followUp.setFieldHealthCareWorker(worker);
         }

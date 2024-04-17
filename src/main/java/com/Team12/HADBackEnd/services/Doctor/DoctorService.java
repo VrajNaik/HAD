@@ -6,6 +6,7 @@ import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpCreationByDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordCreationDTO;
+import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordUpdateDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionDTO;
 import com.Team12.HADBackEnd.models.*;
 
@@ -30,11 +31,15 @@ public interface DoctorService {
 
     ResponseEntity<?> createHealthRecord(HealthRecordCreationDTO healthRecordCreationDTO);
 
+    ResponseEntity<?> updateHealthRecord(HealthRecordUpdateDTO healthRecordUpdateDTO);
+
     ResponseEntity<?> addPrescriptionToHealthRecord(PrescriptionDTO prescriptionDTO);
 
     ResponseEntity<?> editLastPrescription(PrescriptionDTO editPrescriptionDTO);
 
     ResponseEntity<?> addFollowUp(FollowUpCreationByDoctorDTO followUpDTO);
+
+    ResponseEntity<?> getResponseByABHAId(String abhaId);
 
     void setActiveStatusByUsername(String username, boolean active);
 

@@ -5,7 +5,8 @@ import java.util.List;
 public class QuestionResponseDTO {
     private Long id;
     private String questionText;
-    private List<String> options;
+    private List<String> optionText;
+    private List<Long> optionValue;
 
     public Long getId() {
         return id;
@@ -23,11 +24,19 @@ public class QuestionResponseDTO {
         this.questionText = questionText;
     }
 
-    public List<String> getOptions() {
-        return options;
+    public List<String> getOptionText() {
+        return optionText;
     }
 
-    public void setOptions(List<String> options) {
-        this.options = options;
+    public void setOptionText(List<String> optionText) {
+        this.optionText = optionText;
+    }
+
+    public List<Long> getOptionValue() {
+        return optionValue;
+    }
+
+    public void setOptionValue(List<Long> optionValue) {
+        this.optionValue = optionValue;
     }
 }

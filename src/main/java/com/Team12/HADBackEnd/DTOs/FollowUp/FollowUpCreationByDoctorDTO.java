@@ -6,7 +6,7 @@ import java.util.Date;
 
 public class FollowUpCreationByDoctorDTO {
     private Long healthRecordId;
-    private Long fieldHealthCareWorkerId;
+    private String workerUsername;
     private Date scheduledDateTime;
     private Frequency frequency;
     private String instructions;
@@ -20,12 +20,12 @@ public class FollowUpCreationByDoctorDTO {
         this.healthRecordId = healthRecordId;
     }
 
-    public Long getFieldHealthCareWorkerId() {
-        return fieldHealthCareWorkerId;
+    public String getWorkerUsername() {
+        return workerUsername;
     }
 
-    public void setFieldHealthCareWorkerId(Long fieldHealthCareWorkerId) {
-        this.fieldHealthCareWorkerId = fieldHealthCareWorkerId;
+    public void setWorkerUsername(String workerUsername) {
+        this.workerUsername = workerUsername;
     }
 
     public Date getScheduledDateTime() {

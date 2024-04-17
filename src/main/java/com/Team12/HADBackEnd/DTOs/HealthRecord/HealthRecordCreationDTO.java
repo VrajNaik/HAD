@@ -5,9 +5,9 @@ import java.util.List;
 
 public class HealthRecordCreationDTO {
     private Long id;
-    private Long citizenId;
-    private Long workerId;
-    private Long doctorId;
+    private String abhaId;
+    private String workerUsername;
+    private String doctorUsername;
     private List<Long> icd10CodeId;
     private String prescription;
     private String conclusion;
@@ -21,28 +21,28 @@ public class HealthRecordCreationDTO {
         this.id = id;
     }
 
-    public Long getCitizenId() {
-        return citizenId;
+    public String getAbhaId() {
+        return abhaId;
     }
 
-    public void setCitizenId(Long citizenId) {
-        this.citizenId = citizenId;
+    public void setAbhaId(String abhaId) {
+        this.abhaId = abhaId;
     }
 
-    public Long getWorkerId() {
-        return workerId;
+    public String getWorkerUsername() {
+        return workerUsername;
     }
 
-    public void setWorkerId(Long workerId) {
-        this.workerId = workerId;
+    public void setWorkerUsername(String workerUsername) {
+        this.workerUsername = workerUsername;
     }
 
-    public Long getDoctorId() {
-        return doctorId;
+    public String getDoctorUsername() {
+        return doctorUsername;
     }
 
-    public void setDoctorId(Long doctorId) {
-        this.doctorId = doctorId;
+    public void setDoctorUsername(String doctorUsername) {
+        this.doctorUsername = doctorUsername;
     }
 
     public String getPrescription() {

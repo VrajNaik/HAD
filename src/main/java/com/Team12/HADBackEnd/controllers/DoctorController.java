@@ -4,6 +4,7 @@ import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorDTO;
 import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpCreationByDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordCreationDTO;
+import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordUpdateDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionDTO;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
@@ -70,11 +71,26 @@ public class DoctorController {
         return doctorService.editLastPrescription(editPrescriptionDTO);
     }
 
+    @PostMapping("/editHealthRecord")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
+    public ResponseEntity<?> updateHealthRecord(@RequestBody HealthRecordUpdateDTO healthRecordUpdateDTO) {
+        return doctorService.updateHealthRecord(healthRecordUpdateDTO);
+//        return ResponseEntity.ok().body("Health record updated successfully!");
+    }
+
     @PostMapping("/addFollowUp")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
     public ResponseEntity<?> addFollowUp(@RequestBody FollowUpCreationByDoctorDTO followUpDTO) {
         return doctorService.addFollowUp(followUpDTO);
     }
+
+
+    @GetMapping("/getResponseByABHAId")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
+    public ResponseEntity<?> getResponseByABHAId(@RequestParam String abhaId) {
+        return doctorService.getResponseByABHAId(abhaId);
+    }
+
 
     @PostMapping("/getFollowUp")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")

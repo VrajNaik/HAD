@@ -193,7 +193,7 @@ public class DTOConverter {
         return dtos;
     }
     public ICD10CodesForDoctorDTO convertToICD10CodesForDoctorDTO(ICD10Code icd10Code) {
-        return new ICD10CodesForDoctorDTO(icd10Code.getCode(), icd10Code.getName(), icd10Code.getDescription());
+        return new ICD10CodesForDoctorDTO(icd10Code.getId(), icd10Code.getCode(), icd10Code.getName(), icd10Code.getDescription());
     }
 
     public CitizenForDoctorDTO convertToCitizenForDoctorDTO(Citizen citizen) {

@@ -2,11 +2,14 @@ package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizensRegistrationDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorListRequest;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
 import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusRequest;
 import com.Team12.HADBackEnd.DTOs.Questionnaire.AnswersDTO;
 import com.Team12.HADBackEnd.DTOs.Questionnaire.QuestionnaireResponseDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ResponseDTO;
+import com.Team12.HADBackEnd.DTOs.Response.ResponseListDTO;
 import com.Team12.HADBackEnd.models.FollowUp;
 import com.Team12.HADBackEnd.models.Response;
 import com.Team12.HADBackEnd.models.User;
@@ -195,8 +198,42 @@ public class FieldHealthCareWorkerController {
 //        return new ResponseEntity<>(savedResponse, HttpStatus.CREATED);
 //    }
     @PostMapping("/addResponse")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> addResponse(@RequestBody ResponseDTO responseDTO) {
         return fieldHealthCareWorkerService.addResponse(responseDTO);
+    }
+
+
+    @PostMapping("/addResponses")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> addResponses(@RequestBody ResponseListDTO response) {
+        return fieldHealthCareWorkerService.addResponses(response.getResponses());
+    }
+
+    @PostMapping("/assignDoctorToCitizen")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> assignDoctorToCitizen(@RequestBody AssignDoctorRequest request) {
+//        boolean success = fieldHealthCareWorkerService.assignDoctorToCitizen(request.getAbhaId(), request.getDoctorUsername());
+//
+//        if (success) {
+//            return ResponseEntity.ok("Doctor assigned to Citizen successfully");
+//        } else {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to assign Doctor to Citizen");
+//        }
+        return fieldHealthCareWorkerService.assignDoctorToCitizen(request.getAbhaId(), request.getDoctorUsername());
+    }
+
+    @PostMapping("/assignDoctorsToCitizens")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> assignDoctorsToCitizens(@RequestBody AssignDoctorListRequest request) {
+//        boolean success = fieldHealthCareWorkerService.assignDoctorsToCitizens(request.getDoctorAssignments());
+//
+//        if (success) {
+//            return ResponseEntity.ok("Doctors assigned to citizens successfully");
+//        } else {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to assign doctors to citizens");
+//        }
+        return fieldHealthCareWorkerService.assignDoctorsToCitizens(request.getDoctorAssignments());
     }
 
 
