@@ -17,6 +17,7 @@ import com.Team12.HADBackEnd.payload.response.FollowUpReturnDTO;
 import com.Team12.HADBackEnd.payload.response.ResponseMessage;
 import com.Team12.HADBackEnd.repository.*;
 import com.Team12.HADBackEnd.services.Doctor.DoctorServiceImpl;
+import com.Team12.HADBackEnd.util.Constant;
 import com.Team12.HADBackEnd.util.CredentialGenerator.CredentialService;
 import com.Team12.HADBackEnd.util.DTOConverter.DTOConverter;
 import com.Team12.HADBackEnd.util.MailService.EmailService;
@@ -177,46 +178,55 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
     @Override
     public ResponseEntity<?> registerCitizen(CitizenRegistrationDTO citizenDTO) {
 
-        FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findByUsername(citizenDTO.getFieldHealthCareWorkerUsername())
-                .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with username: " + citizenDTO.getFieldHealthCareWorkerUsername()));
+        try {
+            FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findByUsername(citizenDTO.getFieldHealthCareWorkerUsername())
+                    .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with username: " + citizenDTO.getFieldHealthCareWorkerUsername()));
 
 //        Doctor doctor = doctorRepository.findByUsername(citizenDTO.getDoctorUsername())
 //                .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorUsername()));
 
-        Citizen citizen = new Citizen();
-        if(citizenDTO.getName() != null && !citizenDTO.getName().isEmpty()) {
-            citizen.setName(citizenDTO.getName());
-        }
-        citizen.setAge(citizenDTO.getAge());
-        if(citizenDTO.getGender() != null && !citizenDTO.getGender().isEmpty()) {
-            citizen.setGender(citizenDTO.getGender());
-        }
-        if (citizenDTO.getPincode() != null && !citizenDTO.getPincode().isEmpty()) {
-            citizen.setPincode(citizenDTO.getPincode());
-        }
+            Citizen citizen = new Citizen();
+            if (citizenDTO.getName() != null && !citizenDTO.getName().isEmpty()) {
+                citizen.setName(citizenDTO.getName());
+            }
+            citizen.setAge(citizenDTO.getAge());
+            if (citizenDTO.getGender() != null && !citizenDTO.getGender().isEmpty()) {
+                citizen.setGender(citizenDTO.getGender());
+            }
+            if (citizenDTO.getPincode() != null && !citizenDTO.getPincode().isEmpty()) {
+                citizen.setPincode(citizenDTO.getPincode());
+            }
 
-        if (citizenDTO.getAddress() != null && !citizenDTO.getAddress().isEmpty()) {
-            citizen.setAddress(citizenDTO.getAddress());
-        }
-        citizen.setConsent(citizenDTO.isConsent());
-        citizen.setStatus(citizenDTO.getStatus());
-        if (citizenDTO.getState() != null && !citizenDTO.getState().isEmpty()) {
-            citizen.setState(citizenDTO.getState());
-        }
-        if (citizenDTO.getAbhaId() != null && !citizenDTO.getAbhaId().isEmpty()) {
-            citizen.setAbhaId(citizenDTO.getAbhaId());
-        }
-        citizen.setFieldHealthCareWorker(fieldHealthCareWorker);
+            if (citizenDTO.getAddress() != null && !citizenDTO.getAddress().isEmpty()) {
+                citizen.setAddress(citizenDTO.getAddress());
+            }
+            citizen.setConsent(citizenDTO.isConsent());
+            citizen.setStatus(citizenDTO.getStatus());
+            if (citizenDTO.getState() != null && !citizenDTO.getState().isEmpty()) {
+                citizen.setState(citizenDTO.getState());
+            }
+            if (citizenDTO.getAbhaId() != null && !citizenDTO.getAbhaId().isEmpty()) {
+                citizen.setAbhaId(citizenDTO.getAbhaId());
+            }
+            citizen.setFieldHealthCareWorker(fieldHealthCareWorker);
 //        citizen.setDoctor(doctor);
 
-        LocalArea localArea = fieldHealthCareWorker.getLocalArea();
-        String pincode = localArea.getPincode();
-        citizen.setPincode(pincode);
-        District district = localArea.getDistrict();
-        citizen.setDistrict(district);
+            LocalArea localArea = fieldHealthCareWorker.getLocalArea();
+            String pincode = localArea.getPincode();
+            citizen.setPincode(pincode);
+            District district = localArea.getDistrict();
+            citizen.setDistrict(district);
 
-        citizenRepository.save(citizen);
-        return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizen Registration Done successfully!");
+            Constant.encryptPII(citizen);
+            citizenRepository.save(citizen);
+            return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizen Registration Done successfully!");
+        }
+        catch (Exception e){
+            System.out.println("exception = " + e);
+            String currentPath = "/registerCitizen";  // Example path, should be the actual API endpoint
+            CustomErrorResponse errorResponse = new CustomErrorResponse(currentPath, "Internal Server Error", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
