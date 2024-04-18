@@ -231,49 +231,61 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
 
     @Override
     public ResponseEntity<?> registerCitizens(CitizensRegistrationDTO citizensDTO) {
-        List<CitizenRegistrationDTO> citizenDTOList = citizensDTO.getCitizens();
-        for (CitizenRegistrationDTO citizenDTO : citizenDTOList) {
-            FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findByUsername(citizenDTO.getFieldHealthCareWorkerUsername())
-                    .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with username: " + citizenDTO.getFieldHealthCareWorkerUsername()));
+            List<CitizenRegistrationDTO> citizenDTOList = citizensDTO.getCitizens();
+            List<String> errors = new ArrayList<>();
+            int successCount = 0;
+            for (CitizenRegistrationDTO citizenDTO : citizenDTOList) {
+
+                try {
+                    FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findByUsername(citizenDTO.getFieldHealthCareWorkerUsername())
+                            .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with username: " + citizenDTO.getFieldHealthCareWorkerUsername()));
 
 //            Doctor doctor = doctorRepository.findByUsername(citizenDTO.getDoctorUsername())
 //                    .orElseThrow(() -> new RuntimeException("Doctor not found with ID: " + citizenDTO.getDoctorUsername()));
 
-            Citizen citizen = new Citizen();
-            if(citizenDTO.getName() != null && !citizenDTO.getName().isEmpty()) {
-                citizen.setName(citizenDTO.getName());
-            }
-            citizen.setAge(citizenDTO.getAge());
-            if(citizenDTO.getGender() != null && !citizenDTO.getGender().isEmpty()) {
-                citizen.setGender(citizenDTO.getGender());
-            }
-            if (citizenDTO.getPincode() != null && !citizenDTO.getPincode().isEmpty()) {
-                citizen.setPincode(citizenDTO.getPincode());
-            }
+                    Citizen citizen = new Citizen();
+                    if (citizenDTO.getName() != null && !citizenDTO.getName().isEmpty()) {
+                        citizen.setName(citizenDTO.getName());
+                    }
+                    citizen.setAge(citizenDTO.getAge());
+                    if (citizenDTO.getGender() != null && !citizenDTO.getGender().isEmpty()) {
+                        citizen.setGender(citizenDTO.getGender());
+                    }
+                    if (citizenDTO.getPincode() != null && !citizenDTO.getPincode().isEmpty()) {
+                        citizen.setPincode(citizenDTO.getPincode());
+                    }
 
-            if (citizenDTO.getAddress() != null && !citizenDTO.getAddress().isEmpty()) {
-                citizen.setAddress(citizenDTO.getAddress());
-            }
-            citizen.setConsent(true);
+                    if (citizenDTO.getAddress() != null && !citizenDTO.getAddress().isEmpty()) {
+                        citizen.setAddress(citizenDTO.getAddress());
+                    }
+                    citizen.setConsent(true);
 
-            citizen.setStatus("new");
-            if (citizenDTO.getState() != null && !citizenDTO.getState().isEmpty()) {
-                citizen.setState(citizenDTO.getState());
-            }
-            if (citizenDTO.getAbhaId() != null && !citizenDTO.getAbhaId().isEmpty()) {
-                citizen.setAbhaId(citizenDTO.getAbhaId());
-            }
-            citizen.setFieldHealthCareWorker(fieldHealthCareWorker);
+                    citizen.setStatus("new");
+                    if (citizenDTO.getState() != null && !citizenDTO.getState().isEmpty()) {
+                        citizen.setState(citizenDTO.getState());
+                    }
+                    if (citizenDTO.getAbhaId() != null && !citizenDTO.getAbhaId().isEmpty()) {
+                        citizen.setAbhaId(citizenDTO.getAbhaId());
+                    }
+                    citizen.setFieldHealthCareWorker(fieldHealthCareWorker);
 //            citizen.setDoctor(doctor);
 
-            LocalArea localArea = fieldHealthCareWorker.getLocalArea();
-            String pincode = localArea.getPincode();
-            citizen.setPincode(pincode);
-            District district = localArea.getDistrict();
-            citizen.setDistrict(district);
+                    LocalArea localArea = fieldHealthCareWorker.getLocalArea();
+                    String pincode = localArea.getPincode();
+                    citizen.setPincode(pincode);
+                    District district = localArea.getDistrict();
+                    citizen.setDistrict(district);
 
+                    Constant.encryptPII(citizen);
+                    citizenRepository.save(citizen);
+                }catch (Exception e){
+                    errors.add("Error registering citizen with name " + citizenDTO.getName() + ": " + e.getMessage());
+                }
+            }
 
-            citizenRepository.save(citizen);
+        String summary = "Successfully registered " + successCount + " citizens. ";
+        if (!errors.isEmpty()) {
+            summary += "Errors occurred in registering some citizens: " + errors;
         }
 
         return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizens Registration Done successfully!");

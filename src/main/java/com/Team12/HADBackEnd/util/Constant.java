@@ -1,6 +1,7 @@
 package com.Team12.HADBackEnd.util;
 
 import com.Team12.HADBackEnd.models.*;
+import org.apache.tomcat.util.bcel.Const;
 
 public interface Constant {
 
@@ -22,6 +23,25 @@ public interface Constant {
         }
         if(citizen.getName()!=null){
             citizen.setName(EncryptDecrypt.encrypt(citizen.getName(),Constant.SECRET_KEY));
+        }
+//        if(citizen.getAge()!=0){
+//              citizen.setAge(EncryptDecrypt.encrypt(citizen.getAge(),Constant.SECRET_KEY));
+//        }
+        if(citizen.getGender()!=null){
+            citizen.setGender(EncryptDecrypt.encrypt(citizen.getGender(),Constant.SECRET_KEY));
+        }
+        if(citizen.getAddress()!=null)
+        {
+            citizen.setAddress(EncryptDecrypt.encrypt(citizen.getAddress(), Constant.SECRET_KEY));
+        }
+        if(citizen.getPincode()!=null){
+            citizen.setPincode(EncryptDecrypt.encrypt(citizen.getPincode(),Constant.SECRET_KEY));
+        }
+        if(citizen.getState()!=null){
+            citizen.setState(EncryptDecrypt.encrypt(citizen.getState(),Constant.SECRET_KEY));
+        }
+        if(citizen.getAbhaId()!=null){
+            citizen.setAbhaId(EncryptDecrypt.encrypt(citizen.getAbhaId(),Constant.SECRET_KEY));
         }
     }
 }

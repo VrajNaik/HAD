@@ -82,6 +82,7 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
     public boolean changePassword(String username, String newPassword) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+        System.out.println("setting false for user;");
         user.setLogInFirst(false);
         String userTypePrefix = username.substring(0, 2);
 
@@ -107,7 +108,7 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
                     throw new IllegalArgumentException("Invalid user type prefix in username: " + userTypePrefix);
             }
             user.setPassword(password);
-            user.setLogInFirst(true);
+            user.setLogInFirst(false);
             userRepository.save(user);
             return true;
         }

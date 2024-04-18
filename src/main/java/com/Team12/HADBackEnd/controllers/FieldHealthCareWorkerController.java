@@ -156,7 +156,7 @@ public class FieldHealthCareWorkerController {
 
 
     @GetMapping("/getByUsername")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER') or hasRole('SUPERVISOR')")
     public ResponseEntity<?> getFieldHealthcareWorkerByUsername(@RequestParam String username) {
         FieldHealthCareWorkerWithHealthRecordDTO fhwDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
         return ResponseEntity.ok(fhwDTO);

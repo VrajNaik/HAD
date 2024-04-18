@@ -53,6 +53,7 @@ public class SupervisorController {
         if (result.equals("Worker assigned successfully")) {
             return ResponseEntity.status(HttpStatus.OK).body(result);
         } else {
+
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
         }
     }
