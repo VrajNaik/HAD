@@ -7,15 +7,11 @@ import java.util.List;
 
 public interface DistrictService {
 
-
     void createDistrict(District district);
-
 
     void createDistricts(List<District> districts);
 
-
     List<DistrictForAdminDTO> getAllDistrictsWithoutSupervisors();
-
 
     List<DistrictForAdminDTO> getAllDistricts();
 

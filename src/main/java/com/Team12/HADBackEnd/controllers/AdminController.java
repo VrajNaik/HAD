@@ -7,13 +7,11 @@ import com.Team12.HADBackEnd.DTOs.Doctor.DoctorUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
-import com.Team12.HADBackEnd.models.Doctor;
-import com.Team12.HADBackEnd.models.FieldHealthCareWorker;
-import com.Team12.HADBackEnd.models.Supervisor;
-import com.Team12.HADBackEnd.models.User;
+import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
 import com.Team12.HADBackEnd.payload.exception.DuplicateLicenseIdException;
 import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
@@ -21,6 +19,7 @@ import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.repository.*;
 import com.Team12.HADBackEnd.services.Doctor.DoctorService;
 import com.Team12.HADBackEnd.services.FieldHealthCareWorker.FieldHealthCareWorkerService;
+import com.Team12.HADBackEnd.services.Receptionist.ReceptionistService;
 import com.Team12.HADBackEnd.services.Supervisor.SupervisorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -46,6 +45,8 @@ public class AdminController {
     private final UserRepository userRepository;
     private final SupervisorService supervisorService;
     private final FieldHealthCareWorkerService fieldHealthCareWorkerService;
+    private final ReceptionistService receptionistService;
+    private final ReceptionistRepository receptionistRepository;
 
     @Autowired
     public AdminController(DoctorService doctorService,
@@ -55,7 +56,8 @@ public class AdminController {
                            CitizenRepository citizenRepository,
                            UserRepository userRepository,
                            SupervisorService supervisorService,
-                           FieldHealthCareWorkerService fieldHealthCareWorkerService) {
+                           FieldHealthCareWorkerService fieldHealthCareWorkerService,
+                           ReceptionistService receptionistService, ReceptionistRepository receptionistRepository) {
         this.doctorService = doctorService;
         this.doctorRepository = doctorRepository;
         this.supervisorRepository = supervisorRepository;
@@ -64,6 +66,8 @@ public class AdminController {
         this.userRepository = userRepository;
         this.supervisorService = supervisorService;
         this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
+        this.receptionistService = receptionistService;
+        this.receptionistRepository = receptionistRepository;
     }
 
 
@@ -173,12 +177,32 @@ public class AdminController {
     }
 
 
+    @PostMapping("/addReceptionist")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Receptionist addReceptionist(@RequestBody Receptionist receptionist) {
+        try{
+            return receptionistService.addReceptionist(receptionist);
+        }
+        catch (DuplicateEmailIdException e) {
+            throw new AuthenticationServiceException(e.getMessage(), e);
+        }
+    }
+
+
+    @GetMapping("/getReceptionist")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getAllRecptionist() {
+        return receptionistService.getAllRecptionist();
+    }
+
+
     @GetMapping("/getRoleCounts")
     @PreAuthorize("hasRole('ADMIN')")
     public Map<String, Object> getRoleCounts() {
         long doctorCount = doctorRepository.countByActiveTrue();
         long supervisorCount = supervisorRepository.countByActiveTrue();
         long fieldWorkerCount = fieldHealthCareWorkerRepository.countByActiveTrue();
+        long receptionistCount = receptionistRepository.countByActiveTrue();
         long citizen = citizenRepository.count();
         Map<String, Object> response = new HashMap<>();
         Map<String, Long> counts = new HashMap<>();
@@ -186,6 +210,7 @@ public class AdminController {
         counts.put("supervisors", supervisorCount);
         counts.put("fieldHealthcareWorkers", fieldWorkerCount);
         counts.put("citizens", citizen);
+        counts.put("receptionist", receptionistCount);
         response.put("counts", counts);
         return response;
     }

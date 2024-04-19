@@ -11,7 +11,6 @@ import com.Team12.HADBackEnd.DTOs.Questionnaire.QuestionnaireResponseDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ResponseDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ResponseListDTO;
 import com.Team12.HADBackEnd.models.FollowUp;
-import com.Team12.HADBackEnd.models.Response;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
@@ -91,7 +90,7 @@ public class FieldHealthCareWorkerController {
 //    }
 
     @GetMapping("/getQuestionnaire")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> getQuestionnaireById(@RequestParam Long id) {
         QuestionnaireResponseDTO questionnaireResponse = questionnaireService.getQuestionnaireById(id);
         return ResponseEntity.ok(questionnaireResponse);
@@ -111,7 +110,7 @@ public class FieldHealthCareWorkerController {
 
 
     @GetMapping("/getDoctorsByDistID")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> getDoctorsByFHWUsername(@RequestParam String username) {
         return fieldHealthCareWorkerService.getDoctorsByFHWUsername(username);
     }
@@ -210,7 +209,7 @@ public class FieldHealthCareWorkerController {
     }
 
     @PostMapping("/addResponses")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> addResponses(@RequestBody ResponseListDTO response) {
         return fieldHealthCareWorkerService.addResponses(response.getResponses());
     }
@@ -229,7 +228,7 @@ public class FieldHealthCareWorkerController {
     }
 
     @PostMapping("/assignDoctorsToCitizens")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> assignDoctorsToCitizens(@RequestBody AssignDoctorListRequest request) {
 //        boolean success = fieldHealthCareWorkerService.assignDoctorsToCitizens(request.getDoctorAssignments());
 //

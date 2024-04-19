@@ -20,28 +20,51 @@ import java.util.Date;
 public interface FieldHealthCareWorkerService {
 
     FieldHealthCareWorker addFieldHealthCareWorker(@RequestBody FieldHealthCareWorker worker);
+
     List<FieldHealthCareWorkerForAdminDTO> getAllFieldHealthCareWorkersWithDistricts();
+
     FieldHealthCareWorkerWithHealthRecordDTO updateFieldHealthCareWorker(FieldHealthCareWorkerUpdateRequestDTO request);
+
     ResponseEntity<?> registerCitizen(CitizenRegistrationDTO citizenDTO);
+
     ResponseEntity<?> registerCitizens(CitizensRegistrationDTO citizenDTOList);
+
     ResponseEntity<?> getDoctorsByFHWUsername(String username);
+
     void setActiveStatusByUsername(String username, boolean active);
+
     FieldHealthCareWorkerWithHealthRecordDTO getFieldHealthcareWorkerByUsername(String username);
+
     List<FieldHealthCareWorkerWithHealthRecordDTO> getFieldHealthCareWorkerDTOs(Long districtId);
+
     ResponseEntity<?> addResponse(ResponseDTO responseDTO);
+
     ResponseEntity<?> addResponses(List<ResponseDTO> responseDTO);
+
     List<FollowUpReturnDTO> getFollowUpsForToday(String username);
+
     List<FollowUp> filterFollowUpsForToday(List<FollowUp> followUps, Date today);
+
     int calculateScore(List<String> answers);
+
     void updateFollowUpStatus(Long followUpId, String status);
+
     ResponseEntity<?> getHealthRecordByCitizenId(Long citizenId);
+
     ResponseEntity<?> getFollowUpsByHealthRecordId(Long healthRecordId);
+
     List<CitizenForAdminDTO> getAllCitizens();
+
     boolean isLastFollowUp(Long followUpId);
+
     Optional<FollowUp> findAssignedFollowUpByAbhaId(String abhaId);
+
     ResponseEntity<?> assignDoctorToCitizen(String abhaId, String doctorUsername);
+
     ResponseEntity<?> assignDoctorsToCitizens(List<AssignDoctorRequest> doctorAssignments);
+
     FieldHealthCareWorkerWithHealthRecordDTO convertToFieldHealthCareWorkerWithHealthRecordDTO(FieldHealthCareWorker worker);
+
     ResponseEntity<?> getHospitalsInDistrict(String username);
 }
 

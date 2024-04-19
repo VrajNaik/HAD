@@ -2,6 +2,7 @@ package com.Team12.HADBackEnd.util.CredentialGenerator;
 
 import com.Team12.HADBackEnd.repository.DoctorRepository;
 import com.Team12.HADBackEnd.repository.FieldHealthCareWorkerRepository;
+import com.Team12.HADBackEnd.repository.ReceptionistRepository;
 import com.Team12.HADBackEnd.repository.SupervisorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ public class CredentialServiceImpl implements CredentialService {
     private final AtomicInteger supervisorCounter = new AtomicInteger(1);
     private final AtomicInteger fieldHealthcareWorkerCounter = new AtomicInteger(1);
     private final AtomicInteger doctorCounter = new AtomicInteger(1);
+    private final AtomicInteger receptionistCounter = new AtomicInteger(1);
 
     private final SupervisorRepository supervisorRepository;
 
@@ -22,13 +24,17 @@ public class CredentialServiceImpl implements CredentialService {
 
     private final DoctorRepository doctorRepository;
 
+    private final ReceptionistRepository receptionistRepository;
+
     @Autowired
     public CredentialServiceImpl(SupervisorRepository supervisorRepository,
                                  FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository,
-                                 DoctorRepository doctorRepository) {
+                                 DoctorRepository doctorRepository,
+                                 ReceptionistRepository receptionistRepository) {
         this.supervisorRepository = supervisorRepository;
         this.fieldHealthcareWorkerRepository = fieldHealthCareWorkerRepository;
         this.doctorRepository = doctorRepository;
+        this.receptionistRepository = receptionistRepository;
     }
 
     @Override
@@ -57,6 +63,13 @@ public class CredentialServiceImpl implements CredentialService {
                     sequenceNumber = doctorCounter.getAndIncrement();
                     generatedUsername = "DR" + String.format("%05d", sequenceNumber);
                     isUnique = !doctorRepository.existsByUsername(generatedUsername);
+                }
+                break;
+            case "receptionist":
+                while (!isUnique) {
+                    sequenceNumber = receptionistCounter.getAndIncrement();
+                    generatedUsername = "RECP" + String.format("%05d", sequenceNumber);
+                    isUnique = !receptionistRepository.existsByUsername(generatedUsername);
                 }
                 break;
             default:

@@ -111,4 +111,11 @@ public class BlackBoxController {
         QuestionnaireResponseDTO questionnaireResponse = questionnaireService.getQuestionnaireById(id);
         return ResponseEntity.ok(questionnaireResponse);
     }
+
+    @GetMapping("/getQuestionnaires")
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> getAllQuestionnaires() {
+        List<QuestionnaireResponseDTO> questionnaireResponse = questionnaireService.getAllQuestionnaire();
+        return ResponseEntity.ok(questionnaireResponse);
+    }
 }

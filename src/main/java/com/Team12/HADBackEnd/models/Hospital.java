@@ -25,6 +25,9 @@ public class Hospital {
     @OneToOne(mappedBy = "hospital")
     private Receptionist receptionist;
 
+    @OneToMany(mappedBy = "hospital")
+    private List<Citizen> citizens;
+
     private String ownershipType;
 
     public Long getId() {
@@ -105,6 +108,14 @@ public class Hospital {
 
     public void setDistrict(District district) {
         this.district = district;
+    }
+
+    public List<Citizen> getCitizens() {
+        return citizens;
+    }
+
+    public void setCitizens(List<Citizen> citizens) {
+        this.citizens = citizens;
     }
 }
 

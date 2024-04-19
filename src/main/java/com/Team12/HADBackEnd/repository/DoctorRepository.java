@@ -16,4 +16,5 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     Optional<Doctor> findByUsername(String username);
     List<Doctor> findAllByDistrictId(Long districtId);
     long countByActiveTrue();
+    Optional<List<Doctor>> findByHospitalId(Long hospitalId);
 }

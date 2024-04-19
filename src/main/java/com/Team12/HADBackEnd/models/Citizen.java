@@ -25,6 +25,10 @@ public class Citizen {
     private Doctor doctor;
 
     @ManyToOne
+    @JoinColumn(name = "hospital_id")
+    private Hospital hospital;
+
+    @ManyToOne
     @JoinColumn(name = "worker_id")
     private FieldHealthCareWorker fieldHealthCareWorker;
 
@@ -159,6 +163,14 @@ public class Citizen {
 
     public void setResponses(List<Response> responses) {
         this.responses = responses;
+    }
+
+    public Hospital getHospital() {
+        return hospital;
+    }
+
+    public void setHospital(Hospital hospital) {
+        this.hospital = hospital;
     }
 }
 

@@ -88,4 +88,32 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
 
         return questionnaireDTO;
     }
+
+    public List<QuestionnaireResponseDTO> getAllQuestionnaire() {
+        List<Questionnaire> questionnaireList = questionnaireRepository.findAll();
+        List<QuestionnaireResponseDTO> questionnaireDTOList = new ArrayList<>();
+        for (Questionnaire questionnaire : questionnaireList) {
+            QuestionnaireResponseDTO questionnaireDTO = new QuestionnaireResponseDTO();
+            questionnaireDTO.setId(questionnaire.getId());
+            questionnaireDTO.setName(questionnaire.getName());
+            questionnaireDTO.setQuestions(new ArrayList<>());
+            for (Question question : questionnaire.getQuestions()) {
+                QuestionResponseDTO questionDTO = new QuestionResponseDTO();
+                questionDTO.setId(question.getId());
+                questionDTO.setQuestionText(question.getQuestionText());
+                List<String> options = new ArrayList<>();
+                for (Option option : question.getOptions()) {
+                    options.add(option.getOptionText());
+                }
+                questionDTO.setOptionText(options);
+                List<Long> optionValues = new ArrayList<>();
+                for (Option option : question.getOptions()) {
+                    optionValues.add(option.getOptionValue());
+                }
+                questionDTO.setOptionValue(optionValues);
+            }
+            questionnaireDTOList.add(questionnaireDTO);
+        }
+        return questionnaireDTOList;
+    }
 }
