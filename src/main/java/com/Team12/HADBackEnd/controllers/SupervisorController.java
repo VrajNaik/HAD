@@ -5,8 +5,10 @@ import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWit
 import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpsDTO;
 import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
+import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
 import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -83,6 +86,19 @@ public class SupervisorController {
     }
 
 
+    @PostMapping("/updateSupervisor")
+    @PreAuthorize("hasRole('ADMIN') or hasRole ('SUPERVISOR')")
+    public ResponseEntity<?> updateSupervisor(@RequestBody SupervisorUpdateRequestDTO request) {
+        try {
+            SupervisorDTO updatedSupervisorDTO = supervisorService.updateSupervisor(request);
+            return ResponseEntity.ok(updatedSupervisorDTO);
+        }
+        catch (DuplicateEmailIdException e) {
+            throw new AuthenticationServiceException(e.getMessage(), e);
+        }
+    }
+
+
     @PutMapping("/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deactivateSupervisor(@RequestBody UsernameDTO usernameDTO) {
@@ -97,6 +113,8 @@ public class SupervisorController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+
     @PutMapping("/activate")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> activateSupervisor(@RequestBody UsernameDTO usernameDTO) {

@@ -107,7 +107,7 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
                     throw new IllegalArgumentException("Invalid user type prefix in username: " + userTypePrefix);
             }
             user.setPassword(password);
-            user.setLogInFirst(true);
+            user.setLogInFirst(false);
             userRepository.save(user);
             return true;
         }

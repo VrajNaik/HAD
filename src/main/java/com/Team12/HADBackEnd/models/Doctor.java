@@ -30,6 +30,10 @@ public class Doctor {
     @OneToMany(mappedBy = "doctor")
     private List<HealthRecord> healthRecords;
 
+    @ManyToOne
+    @JoinColumn(name = "hospital_id")
+    private Hospital hospital;
+
 
     public Long getId() {
         return id;

@@ -7,6 +7,7 @@ import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.Hospital.HospitalDTO;
 import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ResponseDTO;
 import com.Team12.HADBackEnd.models.*;
@@ -47,6 +48,7 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
     private final FollowUpRepository followUpRepository;
     private final HealthRecordRepository healthRecordRepository;
     private final ResponseRepository responseRepository;
+    private final HospitalRepository hospitalRepository;
     private final PasswordEncoder encoder;
     private final EmailService emailService;
     private final CredentialService credentialService;
@@ -63,6 +65,7 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
                                         FollowUpRepository followUpRepository,
                                         HealthRecordRepository healthRecordRepository,
                                         ResponseRepository responseRepository,
+                                        HospitalRepository hospitalRepository,
                                         PasswordEncoder passwordEncoder,
                                         EmailService emailService,
                                         CredentialService credentialService,
@@ -77,6 +80,7 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
         this.followUpRepository = followUpRepository;
         this.healthRecordRepository = healthRecordRepository;
         this.responseRepository = responseRepository;
+        this.hospitalRepository = hospitalRepository;
         this.encoder = passwordEncoder;
         this.emailService = emailService;
         this.credentialService = credentialService;
@@ -375,6 +379,21 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
             citizenRepository.save(citizen);
         }
         return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizens Assigned to the Doctors Successfully!");
+    }
+
+
+    @Override
+    public ResponseEntity<?> getHospitalsInDistrict(String username) {
+        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("No Field Health Care Worker found with the given username: " + username));
+        Long districtId = worker.getDistrict().getId();
+        List<Hospital> hospitals = hospitalRepository.findByDistrictId(districtId)
+                .orElseThrow(() -> new NotFoundException("No Hospital Found in the given District:" + districtId));
+
+        List<HospitalDTO> hospitalDTOS = hospitals.stream()
+                .map(dtoConverter::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(hospitalDTOS);
     }
 
 

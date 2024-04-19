@@ -159,7 +159,7 @@ public class FieldHealthCareWorkerController {
 
 
     @GetMapping("/getByUsername")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER') or hasRole('SUPERVISOR')")
     public ResponseEntity<?> getFieldHealthcareWorkerByUsername(@RequestParam String username) {
         FieldHealthCareWorkerWithHealthRecordDTO fhwDTO = fieldHealthCareWorkerService.getFieldHealthcareWorkerByUsername(username);
         return ResponseEntity.ok(fhwDTO);
@@ -203,6 +203,11 @@ public class FieldHealthCareWorkerController {
         return fieldHealthCareWorkerService.addResponse(responseDTO);
     }
 
+    @GetMapping("/getHospitals")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> getHospitals(@RequestParam String username) {
+        return fieldHealthCareWorkerService.getHospitalsInDistrict(username);
+    }
 
     @PostMapping("/addResponses")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")

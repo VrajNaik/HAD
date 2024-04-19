@@ -42,6 +42,7 @@ public interface FieldHealthCareWorkerService {
     ResponseEntity<?> assignDoctorToCitizen(String abhaId, String doctorUsername);
     ResponseEntity<?> assignDoctorsToCitizens(List<AssignDoctorRequest> doctorAssignments);
     FieldHealthCareWorkerWithHealthRecordDTO convertToFieldHealthCareWorkerWithHealthRecordDTO(FieldHealthCareWorker worker);
+    ResponseEntity<?> getHospitalsInDistrict(String username);
 }
 
 

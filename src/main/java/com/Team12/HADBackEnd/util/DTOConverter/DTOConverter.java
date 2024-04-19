@@ -13,10 +13,12 @@ import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpDTO;
 import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordForDoctorDTO;
+import com.Team12.HADBackEnd.DTOs.Hospital.HospitalDTO;
 import com.Team12.HADBackEnd.DTOs.ICD10Code.ICD10CodesForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.ICD10Code.ICDCodesDTO;
 import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
 import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.response.FollowUpReturnDTO;
@@ -485,5 +487,36 @@ public class DTOConverter {
                 followUp.getStatus(),
                 followUp.getInstructions()
         );
+    }
+
+    public HospitalDTO toDTO(Hospital hospital) {
+        HospitalDTO hospitalDTO = new HospitalDTO();
+        hospitalDTO.setId(hospital.getId());
+        hospitalDTO.setName(hospital.getName());
+        hospitalDTO.setAddress(hospital.getAddress());
+        hospitalDTO.setPhoneNumber(hospital.getPhoneNumber());
+        hospitalDTO.setEmail(hospital.getEmail());
+        hospitalDTO.setNumberOfBeds(hospital.getNumberOfBeds());
+        hospitalDTO.setDistrict(convertToDistrictDTO(hospital.getDistrict()));
+        hospitalDTO.setDoctors(toDoctorDTOList(hospital.getDoctors()));
+        hospitalDTO.setReceptionist(convertToReceptionistDTO(hospital.getReceptionist()));
+        return hospitalDTO;
+    }
+
+    private List<DoctorForAdminDTO> toDoctorDTOList(List<Doctor> doctors) {
+        return doctors.stream()
+                .map(this::convertToDoctorForAdminDTO)
+                .collect(Collectors.toList());
+    }
+
+    public ReceptionistDTO convertToReceptionistDTO(Receptionist receptionist) {
+        if (receptionist == null) {
+            return null;
+        }
+        ReceptionistDTO receptionistDTO = new ReceptionistDTO();
+        receptionistDTO.setName(receptionist.getName());
+        receptionistDTO.setPhoneNumber(receptionist.getPhoneNumber());
+        receptionistDTO.setEmail(receptionist.getEmail());
+        return receptionistDTO;
     }
 }
