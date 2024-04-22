@@ -3,6 +3,7 @@ package com.Team12.HADBackEnd.util.DTOConverter;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForFHWDTO;
 import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
 import com.Team12.HADBackEnd.DTOs.District.DistrictForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorDTO;
@@ -483,9 +484,11 @@ public class DTOConverter {
     public FollowUpReturnDTO mapToDTO(FollowUp followUp) {
         return new FollowUpReturnDTO(
                 followUp.getId(),
+                followUp.getHealthRecord().getCitizen().getId(),
                 followUp.getDate(),
                 followUp.getStatus(),
-                followUp.getInstructions()
+                followUp.getInstructions(),
+                convertToCitizenForDoctorDTO(followUp.getHealthRecord().getCitizen())
         );
     }
 
@@ -518,5 +521,42 @@ public class DTOConverter {
         receptionistDTO.setPhoneNumber(receptionist.getPhoneNumber());
         receptionistDTO.setEmail(receptionist.getEmail());
         return receptionistDTO;
+    }
+
+    public HospitalDTO convertToHospitalDTO(Hospital hospital) {
+        HospitalDTO dto = new HospitalDTO();
+        dto.setId(hospital.getId());
+        dto.setName(hospital.getName());
+        dto.setAddress(hospital.getAddress());
+        dto.setPhoneNumber(hospital.getPhoneNumber());
+        dto.setEmail(hospital.getEmail());
+        dto.setNumberOfBeds(hospital.getNumberOfBeds());
+        dto.setOwnershipType(hospital.getOwnershipType());
+        dto.setDistrict(convertToDistrictDTO(hospital.getDistrict()));
+        dto.setDoctors(hospital.getDoctors().stream().map(this::convertToDoctorForAdminDTO).collect(Collectors.toList()));
+        return dto;
+    }
+
+    public CitizenForFHWDTO convertToCitizenForFHWDTO(Citizen citizen, List<FollowUpReturnDTO> followUps) {
+        CitizenForFHWDTO dto = new CitizenForFHWDTO();
+        dto.setId(citizen.getId());
+        dto.setName(citizen.getName());
+        dto.setAge(citizen.getAge());
+        dto.setGender(citizen.getGender());
+        dto.setAddress(citizen.getAddress());
+        dto.setConsent(citizen.isConsent());
+        dto.setPincode(citizen.getPincode());
+        dto.setStatus(citizen.getStatus());
+        dto.setState(citizen.getState());
+        dto.setDistrict(citizen.getDistrict().getName());
+        dto.setAbhaId(citizen.getAbhaId());
+
+        dto.setFollowUpReturn(followUps);
+
+        HealthRecord healthRecord = citizen.getHealthRecord();
+        if (healthRecord != null) {
+            dto.setHealthRecordForDoctor(convertToHealthRecordForDoctorDTO(healthRecord));
+        }
+        return dto;
     }
 }

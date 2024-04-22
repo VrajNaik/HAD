@@ -39,6 +39,8 @@ public interface DoctorService {
 
     ResponseEntity<?> addFollowUp(FollowUpCreationByDoctorDTO followUpDTO);
 
+    ResponseEntity<?> addFollowUpNew(FollowUpCreationByDoctorDTO followUpDTO);
+
     ResponseEntity<?> getResponseByABHAId(String abhaId);
 
     void setActiveStatusByUsername(String username, boolean active);

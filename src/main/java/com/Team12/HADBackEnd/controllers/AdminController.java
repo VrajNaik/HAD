@@ -7,7 +7,11 @@ import com.Team12.HADBackEnd.DTOs.Doctor.DoctorUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.Hospital.HospitalCreationDTO;
+import com.Team12.HADBackEnd.DTOs.Hospital.HospitalDTO;
+import com.Team12.HADBackEnd.DTOs.Hospital.HospitalUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
+import com.Team12.HADBackEnd.DTOs.Response.ReceptionistUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
@@ -17,6 +21,7 @@ import com.Team12.HADBackEnd.payload.exception.DuplicateLicenseIdException;
 import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.payload.request.*;
 import com.Team12.HADBackEnd.repository.*;
+import com.Team12.HADBackEnd.services.BlackBox.Hospital.HospitalService;
 import com.Team12.HADBackEnd.services.Doctor.DoctorService;
 import com.Team12.HADBackEnd.services.FieldHealthCareWorker.FieldHealthCareWorkerService;
 import com.Team12.HADBackEnd.services.Receptionist.ReceptionistService;
@@ -46,6 +51,7 @@ public class AdminController {
     private final SupervisorService supervisorService;
     private final FieldHealthCareWorkerService fieldHealthCareWorkerService;
     private final ReceptionistService receptionistService;
+    private final HospitalService hospitalService;
     private final ReceptionistRepository receptionistRepository;
 
     @Autowired
@@ -57,6 +63,7 @@ public class AdminController {
                            UserRepository userRepository,
                            SupervisorService supervisorService,
                            FieldHealthCareWorkerService fieldHealthCareWorkerService,
+                           HospitalService hospitalService,
                            ReceptionistService receptionistService, ReceptionistRepository receptionistRepository) {
         this.doctorService = doctorService;
         this.doctorRepository = doctorRepository;
@@ -67,6 +74,7 @@ public class AdminController {
         this.supervisorService = supervisorService;
         this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
         this.receptionistService = receptionistService;
+        this.hospitalService = hospitalService;
         this.receptionistRepository = receptionistRepository;
     }
 
@@ -189,10 +197,51 @@ public class AdminController {
     }
 
 
-    @GetMapping("/getReceptionist")
+    @GetMapping("/getReceptionists")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllRecptionist() {
         return receptionistService.getAllRecptionist();
+    }
+
+
+    @PostMapping("/updateReceptionist")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateReceptionist(@RequestBody ReceptionistUpdateRequestDTO request) {
+        try {
+            ReceptionistDTO updatedReceptionistDTO = receptionistService.updateReceptionist(request);
+            return ResponseEntity.ok(updatedReceptionistDTO);
+        }
+        catch (DuplicateEmailIdException e) {
+            throw new AuthenticationServiceException(e.getMessage(), e);
+        }
+    }
+
+
+    @PostMapping("/addHospital")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> addHospital(@RequestBody HospitalCreationDTO hospital) {
+        return hospitalService.addHospital(hospital);
+    }
+
+
+    @GetMapping("/getHospitals")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getAllHospitals() {
+        return hospitalService.getAllHospitals();
+    }
+
+
+    @PostMapping("/updateHospital")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateHospital(@RequestBody HospitalUpdateRequestDTO request) {
+//        try {
+//            HospitalDTO updatedHospitalDTO = hospitalService.updateHospital(request);
+//            return ResponseEntity.ok(updatedHospitalDTO);
+//        }
+//        catch (DuplicateLicenseIdException | DuplicateEmailIdException e) {
+//            throw new AuthenticationServiceException(e.getMessage(), e);
+//        }
+        return hospitalService.updateHospital(request);
     }
 
 

@@ -1,13 +1,6 @@
 package com.Team12.HADBackEnd.DTOs.Hospital;
 
-import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
-import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
-import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
-
-import java.util.List;
-
-public class HospitalDTO {
-    private Long id;
+public class HospitalCreationDTO {
     private String UHID;
     private String name;
     private String address;
@@ -15,17 +8,7 @@ public class HospitalDTO {
     private String email;
     private int numberOfBeds;
     private String ownershipType;
-    private DistrictDTO district;
-    private List<DoctorForAdminDTO> doctors;
-    private ReceptionistDTO receptionist;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private Long receptionistId;
 
     public String getUHID() {
         return UHID;
@@ -75,7 +58,6 @@ public class HospitalDTO {
         this.numberOfBeds = numberOfBeds;
     }
 
-
     public String getOwnershipType() {
         return ownershipType;
     }
@@ -84,28 +66,12 @@ public class HospitalDTO {
         this.ownershipType = ownershipType;
     }
 
-    public DistrictDTO getDistrict() {
-        return district;
+    public Long getReceptionistId() {
+        return receptionistId;
     }
 
-    public void setDistrict(DistrictDTO district) {
-        this.district = district;
-    }
-
-    public List<DoctorForAdminDTO> getDoctors() {
-        return doctors;
-    }
-
-    public void setDoctors(List<DoctorForAdminDTO> doctors) {
-        this.doctors = doctors;
-    }
-
-    public ReceptionistDTO getReceptionist() {
-        return receptionist;
-    }
-
-    public void setReceptionist(ReceptionistDTO receptionist) {
-        this.receptionist = receptionist;
+    public void setReceptionistId(Long receptionistId) {
+        this.receptionistId = receptionistId;
     }
 }
 

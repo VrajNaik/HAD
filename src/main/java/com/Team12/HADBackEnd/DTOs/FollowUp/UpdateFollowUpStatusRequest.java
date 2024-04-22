@@ -3,6 +3,7 @@ package com.Team12.HADBackEnd.DTOs.FollowUp;
 public class UpdateFollowUpStatusRequest {
     private Long followUpId;
     private String status;
+    private String measureOfVitals;
 
     public Long getFollowUpId() {
         return followUpId;
@@ -18,5 +19,13 @@ public class UpdateFollowUpStatusRequest {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getMeasureOfVitals() {
+        return measureOfVitals;
+    }
+
+    public void setMeasureOfVitals(String measureOfVitals) {
+        this.measureOfVitals = measureOfVitals;
     }
 }

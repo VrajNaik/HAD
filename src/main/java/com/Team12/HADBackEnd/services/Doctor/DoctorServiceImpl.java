@@ -332,6 +332,7 @@ public class DoctorServiceImpl implements DoctorService{
         return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Prescription Edited successfully!");
     }
 
+
     @Override
     public ResponseEntity<?> addFollowUp(FollowUpCreationByDoctorDTO followUpDTO) {
         FollowUp followUp = new FollowUp();
@@ -366,8 +367,119 @@ public class DoctorServiceImpl implements DoctorService{
         followUp.setStatus("Assigned");
         followUp.setRecurrenceStartTime(new Date());
         followUpRepository.save(followUp);
+
         return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "FollowUp Added successfully!");
     }
+
+
+    @Override
+    public ResponseEntity<?> addFollowUpNew(FollowUpCreationByDoctorDTO followUpDTO) {
+        FollowUp followUp = new FollowUp();
+        Long healthRecordId = followUpDTO.getHealthRecordId();
+        if(healthRecordId != null) {
+            HealthRecord healthRecord = healthRecordRepository.findById(healthRecordId)
+                    .orElseThrow(() -> new NotFoundException("HealthRecord not found with id: " + healthRecordId));
+            List<FollowUp> assignedFollowUps = followUpRepository.findByHealthRecordAndStatus(healthRecord, "assigned");
+            if(assignedFollowUps != null && !assignedFollowUps.isEmpty()) {
+                throw new NotFoundException("Follow up already assigned to the follow up");
+            }
+            followUp.setHealthRecord(healthRecord);
+        }
+        String workerUsername = followUpDTO.getWorkerUsername();
+        if(workerUsername != null) {
+            FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(workerUsername)
+                    .orElseThrow(() -> new NotFoundException("Field Health care Worker not found with id: " + healthRecordId));
+            followUp.setFieldHealthCareWorker(worker);
+        }
+        if (followUpDTO.getScheduledDateTime() != null) {
+            followUp.setDate(followUpDTO.getScheduledDateTime());
+        }
+        if (followUpDTO.getFrequency() != null) {
+            followUp.setFrequency(followUpDTO.getFrequency());
+        }
+        if (followUpDTO.getRecurrenceEndTime() != null) {
+            followUp.setRecurrenceEndTime(followUpDTO.getRecurrenceEndTime());
+        }
+        if (followUpDTO.getInstructions() != null) {
+            followUp.setInstructions(followUpDTO.getInstructions());
+        }
+
+        if (followUp.getFrequency() != null && followUp.getFrequency() != Frequency.NONE) {
+            // Create new follow-up instances for recurring follow-ups
+            createRecurringFollowUps(followUp);
+        } else {
+            // For one-time follow-ups, save the current follow-up
+            followUp.setStatus("Assigned");
+            followUp.setRecurrenceStartTime(new Date());
+            followUpRepository.save(followUp);
+        }
+
+        return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "FollowUp Added successfully!");
+    }
+
+
+    private void createRecurringFollowUps(FollowUp originalFollowUp) {
+        Frequency frequency = originalFollowUp.getFrequency();
+        Date recurrenceEndTime = originalFollowUp.getRecurrenceEndTime();
+
+        int interval = determineInterval(frequency);
+
+        Date nextScheduledDate = originalFollowUp.getDate();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(nextScheduledDate);
+
+        while (nextScheduledDate.before(recurrenceEndTime) && calendar.getTime().before(getMaximumDate())) {
+            FollowUp recurringFollowUp = new FollowUp();
+            recurringFollowUp.setHealthRecord(originalFollowUp.getHealthRecord());
+            recurringFollowUp.setFieldHealthCareWorker(originalFollowUp.getFieldHealthCareWorker());
+            recurringFollowUp.setInstructions(originalFollowUp.getInstructions());
+            recurringFollowUp.setStatus("Assigned");
+            recurringFollowUp.setFrequency(frequency);
+
+            // Adjust the date for the next scheduled follow-up
+            calendar.add(Calendar.DAY_OF_MONTH, interval);
+            Date nextDate = calendar.getTime();
+
+            if (nextDate.after(recurrenceEndTime)) {
+                break;
+            }
+
+            recurringFollowUp.setDate(nextDate);
+
+            followUpRepository.save(recurringFollowUp);
+        }
+    }
+
+
+    private Date getMaximumDate() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.YEAR, 1);
+        return calendar.getTime();
+    }
+
+
+    private int determineInterval(Frequency frequency) {
+        return switch (frequency) {
+            case NONE -> 0; // No recurrence
+            case DAILY -> 1; // Every day
+            case WEEKLY -> 7; // Every week
+            case TWICE_A_WEEK -> 3; // Every 3 days
+            case ALTERNATE_DAY -> 2; // Every alternate day
+            case EVERY_FEW_DAYS -> 3; // Example: Every 3 days
+            case MONTHLY -> 30; // Approximately every month (30 days)
+            case TWICE_A_MONTH -> 15; // Approximately every 15 days
+            case ALTERNATE_MONTH -> 60; // Approximately every 2 months (60 days)
+            case EVERY_FEW_WEEKS -> 14; // Example: Every 2 weeks (14 days)
+            case SPECIFIC_DAYS_OF_WEEK -> 7; // Every week (assuming the follow-up is scheduled on specific days)
+            case SPECIFIC_DATES -> 30; // Example: Every 30 days (monthly)
+            case QUARTERLY -> 90; // Every 3 months (approximately)
+            case BIANNUALLY -> 180; // Every 6 months
+            case ANNUALLY -> 365; // Every year
+            default -> 0;
+        };
+    }
+
+
 
     @Transactional
     public void setActiveStatusByUsername(String username, boolean active) {

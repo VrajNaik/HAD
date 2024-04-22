@@ -1,11 +1,10 @@
 package com.Team12.HADBackEnd.services.FieldHealthCareWorker;
 
-import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForAdminDTO;
-import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
-import com.Team12.HADBackEnd.DTOs.Citizen.CitizensRegistrationDTO;
+import com.Team12.HADBackEnd.DTOs.Citizen.*;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusRequest;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
 import com.Team12.HADBackEnd.DTOs.Hospital.HospitalDTO;
 import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
@@ -462,7 +461,50 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
     }
 
 
+    @Override
+    public List<CitizenForFHWDTO> getCitizensByFHWId(String username) {
+        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("Healthcare Worker not found with this username:" + username));
+        List<Citizen> citizens = citizenRepository.findByFieldHealthCareWorker(worker)
+                .orElseThrow(() -> new NotFoundException("Citizens not found with worker: " + username));
+        List<FollowUp> allFollowUps = followUpRepository.findByFieldHealthCareWorker(worker)
+                .orElseThrow(() -> new NotFoundException("FollowUps not found with worker: " + username));
+        if(allFollowUps.isEmpty()) {
+            throw new NotFoundException("FollowUps not found with worker: " + username);
+        }
+        List<FollowUpReturnDTO> followUpsForToday = getFollowUpsForToday(username);
+        List<CitizenForFHWDTO> citizenDTOs = new ArrayList<>();
+        for (Citizen citizen : citizens) {
+            // Filter follow-ups for this citizen
+            List<FollowUpReturnDTO> citizenFollowUps = followUpsForToday.stream()
+                    .filter(followUp -> followUp.getId().equals(citizen.getId()))
+                    .collect(Collectors.toList());
+            CitizenForFHWDTO dto = dtoConverter.convertToCitizenForFHWDTO(citizen, citizenFollowUps);
+            citizenDTOs.add(dto);
+        }
+        return citizenDTOs;
+    }
+
+
+    @Override
     public List<FollowUpReturnDTO> getFollowUpsForToday(String username) {
+        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("Healthcare Worker not found with this username:" + username));
+        Date today = new Date();
+        List<FollowUp> allFollowUps = followUpRepository.findByFieldHealthCareWorker(worker)
+                .orElseThrow(() -> new NotFoundException("FollowUps not found with worker: " + username));
+        if(allFollowUps.isEmpty()) {
+            throw new NotFoundException("FollowUps not found with worker: " + username);
+        }
+        return filterFollowUpsForToday(allFollowUps, today)
+                .stream()
+                .map(dtoConverter::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public List<FollowUpReturnDTO> getFollowUpsForTodayNew(String username) {
         FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("Healthcare Worker not found with this username:" + username));
         Date today = new Date();
@@ -552,11 +594,12 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
 
 
     @Override
-    public void updateFollowUpStatus(Long followUpId, String status) {
-        FollowUp followUp = followUpRepository.findById(followUpId)
-                .orElseThrow(() -> new NotFoundException("Follow-up not found with ID: " + followUpId));
+    public void updateFollowUpStatus(UpdateFollowUpStatusRequest request) {
+        FollowUp followUp = followUpRepository.findById(request.getFollowUpId())
+                .orElseThrow(() -> new NotFoundException("Follow-up not found with ID: " + request.getFollowUpId()));
 
-        followUp.setStatus(status);
+        followUp.setStatus(request.getStatus());
+        followUp.setMeasureOfVitals(request.getMeasureOfVitals());
         followUpRepository.save(followUp);
     }
 

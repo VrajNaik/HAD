@@ -9,6 +9,7 @@ public class Hospital {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String UHID;
     private String name;
     private String address;
     private String phoneNumber;
@@ -36,6 +37,14 @@ public class Hospital {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUHID() {
+        return UHID;
+    }
+
+    public void setUHID(String UHID) {
+        this.UHID = UHID;
     }
 
     public String getName() {

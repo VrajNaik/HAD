@@ -1,12 +1,11 @@
 package com.Team12.HADBackEnd.services.FieldHealthCareWorker;
 
-import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForAdminDTO;
-import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
-import com.Team12.HADBackEnd.DTOs.Citizen.CitizensRegistrationDTO;
+import com.Team12.HADBackEnd.DTOs.Citizen.*;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusRequest;
 import com.Team12.HADBackEnd.DTOs.Response.ResponseDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.response.FollowUpReturnDTO;
@@ -43,11 +42,15 @@ public interface FieldHealthCareWorkerService {
 
     List<FollowUpReturnDTO> getFollowUpsForToday(String username);
 
+    List<FollowUpReturnDTO> getFollowUpsForTodayNew(String username);
+
+    List<CitizenForFHWDTO> getCitizensByFHWId(String username);
+
     List<FollowUp> filterFollowUpsForToday(List<FollowUp> followUps, Date today);
 
     int calculateScore(List<String> answers);
 
-    void updateFollowUpStatus(Long followUpId, String status);
+    void updateFollowUpStatus(UpdateFollowUpStatusRequest request);
 
     ResponseEntity<?> getHealthRecordByCitizenId(Long citizenId);
 

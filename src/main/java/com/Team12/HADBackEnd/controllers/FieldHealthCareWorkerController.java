@@ -1,5 +1,7 @@
 package com.Team12.HADBackEnd.controllers;
 
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForFHWDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizensRegistrationDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorListRequest;
@@ -21,6 +23,7 @@ import com.Team12.HADBackEnd.repository.UserRepository;
 
 import com.Team12.HADBackEnd.services.BlackBox.Questionnaire.QuestionnaireService;
 import com.Team12.HADBackEnd.services.BlackBox.smsService.SendSmsForFollowUp;
+import com.Team12.HADBackEnd.services.Doctor.DoctorService;
 import com.Team12.HADBackEnd.services.Translation.TranslationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,17 +55,21 @@ public class FieldHealthCareWorkerController {
 
     private final TranslationService translationService;
 
+    private final DoctorService doctorService;
+
     @Autowired
     public FieldHealthCareWorkerController(FieldHealthCareWorkerService fieldHealthCareWorkerService,
                                            UserRepository userRepository,
                                            SendSmsForFollowUp sendSmsForFollowUp,
                                            QuestionnaireService questionnaireService,
-                                           TranslationService translationService) {
+                                           TranslationService translationService,
+                                           DoctorService doctorService) {
         this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
         this.userRepository = userRepository;
         this.sendSmsForFollowUp = sendSmsForFollowUp;
         this.questionnaireService = questionnaireService;
         this.translationService = translationService;
+        this.doctorService = doctorService;
     }
 
 
@@ -90,7 +97,7 @@ public class FieldHealthCareWorkerController {
 //    }
 
     @GetMapping("/getQuestionnaire")
-//    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> getQuestionnaireById(@RequestParam Long id) {
         QuestionnaireResponseDTO questionnaireResponse = questionnaireService.getQuestionnaireById(id);
         return ResponseEntity.ok(questionnaireResponse);
@@ -110,7 +117,7 @@ public class FieldHealthCareWorkerController {
 
 
     @GetMapping("/getDoctorsByDistID")
-//    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> getDoctorsByFHWUsername(@RequestParam String username) {
         return fieldHealthCareWorkerService.getDoctorsByFHWUsername(username);
     }
@@ -128,6 +135,21 @@ public class FieldHealthCareWorkerController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public List<FollowUpReturnDTO> getFollowUpsForToday(@RequestParam String username) {
         return fieldHealthCareWorkerService.getFollowUpsForToday(username);
+    }
+
+
+    @GetMapping("/getFollowUpsForTodayNew")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public List<FollowUpReturnDTO> getFollowUpsForTodayNew(@RequestParam String username) {
+        return fieldHealthCareWorkerService.getFollowUpsForTodayNew(username);
+    }
+
+
+    @GetMapping("/getFollowUps")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<List<CitizenForFHWDTO>> getFollowUps(@RequestParam String username) {
+        List<CitizenForFHWDTO> citizens = fieldHealthCareWorkerService.getCitizensByFHWId(username);
+        return ResponseEntity.ok(citizens);
     }
 
 
@@ -149,7 +171,7 @@ public class FieldHealthCareWorkerController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> updateFollowUpStatus(@RequestBody UpdateFollowUpStatusRequest request) {
         try {
-            fieldHealthCareWorkerService.updateFollowUpStatus(request.getFollowUpId(), request.getStatus());
+            fieldHealthCareWorkerService.updateFollowUpStatus(request);
             return ResponseEntity.ok(new MessageResponse("Follow-up status updated successfully."));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(e.getMessage()));
@@ -209,7 +231,7 @@ public class FieldHealthCareWorkerController {
     }
 
     @PostMapping("/addResponses")
-//    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> addResponses(@RequestBody ResponseListDTO response) {
         return fieldHealthCareWorkerService.addResponses(response.getResponses());
     }
@@ -228,7 +250,7 @@ public class FieldHealthCareWorkerController {
     }
 
     @PostMapping("/assignDoctorsToCitizens")
-//    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
     public ResponseEntity<?> assignDoctorsToCitizens(@RequestBody AssignDoctorListRequest request) {
 //        boolean success = fieldHealthCareWorkerService.assignDoctorsToCitizens(request.getDoctorAssignments());
 //

@@ -96,7 +96,7 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
             QuestionnaireResponseDTO questionnaireDTO = new QuestionnaireResponseDTO();
             questionnaireDTO.setId(questionnaire.getId());
             questionnaireDTO.setName(questionnaire.getName());
-            questionnaireDTO.setQuestions(new ArrayList<>());
+            List<QuestionResponseDTO> questionDTOList = new ArrayList<>();
             for (Question question : questionnaire.getQuestions()) {
                 QuestionResponseDTO questionDTO = new QuestionResponseDTO();
                 questionDTO.setId(question.getId());
@@ -111,7 +111,9 @@ public class QuestionnaireServiceImpl implements QuestionnaireService {
                     optionValues.add(option.getOptionValue());
                 }
                 questionDTO.setOptionValue(optionValues);
+                questionDTOList.add(questionDTO);
             }
+            questionnaireDTO.setQuestions(questionDTOList);
             questionnaireDTOList.add(questionnaireDTO);
         }
         return questionnaireDTOList;

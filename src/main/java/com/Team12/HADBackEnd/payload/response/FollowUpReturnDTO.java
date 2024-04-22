@@ -1,20 +1,28 @@
 package com.Team12.HADBackEnd.payload.response;
 
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenDTO;
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
+import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForFHWDTO;
+
 import java.util.Date;
 
 public class FollowUpReturnDTO {
     private Long id;
+    private Long citizenId;
     private Date date;
     private String status;
     private String instructions;
+    private CitizenForDoctorDTO citizen;
 
     // Constructors, getters, and setters
 
-    public FollowUpReturnDTO(Long id, Date date, String status, String instructions) {
+    public FollowUpReturnDTO(Long id, Long citizenId, Date date, String status, String instructions, CitizenForDoctorDTO citizen) {
         this.id = id;
         this.date = date;
+        this.citizenId = citizenId;
         this.status = status;
         this.instructions = instructions;
+        this.citizen = citizen;
     }
 
     public Long getId() {
@@ -23,6 +31,14 @@ public class FollowUpReturnDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getCitizenId() {
+        return citizenId;
+    }
+
+    public void setCitizenId(Long citizenId) {
+        this.citizenId = citizenId;
     }
 
     public Date getDate() {
@@ -47,6 +63,14 @@ public class FollowUpReturnDTO {
 
     public void setInstructions(String instructions) {
         this.instructions = instructions;
+    }
+
+    public CitizenForDoctorDTO getCitizen() {
+        return citizen;
+    }
+
+    public void setCitizen(CitizenForDoctorDTO citizen) {
+        this.citizen = citizen;
     }
 }
 
