@@ -237,11 +237,10 @@ public class DoctorServiceImpl implements DoctorService{
         if(healthRecordCreationDTO.getDiagnosis() != null) {
             healthRecord.setDiagnosis(healthRecordCreationDTO.getDiagnosis());
         }
+        healthRecord.setTimestamp(new Date());
 //        if(healthRecordCreationDTO.getTimestamp() != null) {
 //            healthRecord.setTimestamp(healthRecordCreationDTO.getTimestamp());
 //        }
-        healthRecord.setTimestamp(new Date());
-
         healthRecordRepository.save(healthRecord);
 
         return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Health record created successfully!");
