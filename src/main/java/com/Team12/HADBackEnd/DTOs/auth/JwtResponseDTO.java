@@ -4,6 +4,7 @@ import java.util.List;
 
 public class JwtResponseDTO {
   private String token;
+//  private String refreshToken;
   private String type = "Bearer";
   private Long id;
   private String username;
@@ -12,8 +13,9 @@ public class JwtResponseDTO {
   private boolean logInFirst;
 
 
-  public JwtResponseDTO(String accessToken, Long id, String username, String email, List<String> roles, boolean logInFirst) {
+  public JwtResponseDTO(String accessToken, /*String refreshToken ,*/ Long id, String username, String email, List<String> roles, boolean logInFirst) {
     this.token = accessToken;
+//    this.refreshToken = refreshToken;
     this.id = id;
     this.username = username;
     this.email = email;
@@ -21,6 +23,14 @@ public class JwtResponseDTO {
     this.logInFirst = logInFirst;
 
   }
+
+//  public String getRefreshToken() {
+//    return refreshToken;
+//  }
+//
+//  public void setRefreshToken(String refreshToken) {
+//    this.refreshToken = refreshToken;
+//  }
 
   public String getAccessToken() {
     return token;

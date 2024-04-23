@@ -111,6 +111,7 @@ public class AuthController {
       SecurityContextHolder.getContext().setAuthentication(authentication);
       String jwt = jwtUtils.generateJwtToken(authentication);
       Object userRole = null;
+//      RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
       boolean isAdmin = userDetails.getAuthorities().stream()
               .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
       if (isAdmin) {
@@ -119,6 +120,7 @@ public class AuthController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(new AuthResponseDTO(
                 new JwtResponseDTO(jwt,
+//                        refreshToken.getToken(),
                         userDetails.getId(),
                         userDetails.getUsername(),
                         userDetails.getEmail(),
@@ -148,6 +150,7 @@ public class AuthController {
         }
         return ResponseEntity.ok(new AuthResponseDTO(
                 new JwtResponseDTO(jwt,
+//                        refreshToken.getToken(),
                         userDetails.getId(),
                         userDetails.getUsername(),
                         userDetails.getEmail(),

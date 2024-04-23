@@ -21,6 +21,7 @@ public class JwtUtils {
   @Value("${HADBackEnd.app.jwtSecret}")
   private String jwtSecret;
 
+
   @Value("${HADBackEnd.app.jwtExpirationMs}")
   private int jwtExpirationMs;
 

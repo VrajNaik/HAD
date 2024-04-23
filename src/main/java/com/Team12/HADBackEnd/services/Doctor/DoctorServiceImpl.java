@@ -206,6 +206,7 @@ public class DoctorServiceImpl implements DoctorService{
     }
 
 
+    @Transactional
     @Override
     public ResponseEntity<?> createHealthRecord(HealthRecordCreationDTO healthRecordCreationDTO) {
 
@@ -241,6 +242,7 @@ public class DoctorServiceImpl implements DoctorService{
 //            healthRecord.setTimestamp(healthRecordCreationDTO.getTimestamp());
 //        }
         healthRecord.setTimestamp(new Date());
+        citizen.setStatus("Ongoing");
 
         healthRecordRepository.save(healthRecord);
 

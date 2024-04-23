@@ -202,7 +202,7 @@ public class AdminController {
         long doctorCount = doctorRepository.countByActiveTrue();
         long supervisorCount = supervisorRepository.countByActiveTrue();
         long fieldWorkerCount = fieldHealthCareWorkerRepository.countByActiveTrue();
-        long receptionistCount = receptionistRepository.countByActiveTrue();
+//        long receptionistCount = receptionistRepository.countByActiveTrue();
         long citizen = citizenRepository.count();
         Map<String, Object> response = new HashMap<>();
         Map<String, Long> counts = new HashMap<>();
@@ -210,7 +210,7 @@ public class AdminController {
         counts.put("supervisors", supervisorCount);
         counts.put("fieldHealthcareWorkers", fieldWorkerCount);
         counts.put("citizens", citizen);
-        counts.put("receptionist", receptionistCount);
+//        counts.put("receptionist", receptionistCount);
         response.put("counts", counts);
         return response;
     }

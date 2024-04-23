@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 @Service
 public class RefreshTokenService {
-    @Value("${HADBackEnd.app.jwtExpirationMs}")
+    @Value("${HADBackEnd.app.jwtRefreshExpirationMs}")
     private Long refreshTokenDurationMs;
 
     @Autowired
