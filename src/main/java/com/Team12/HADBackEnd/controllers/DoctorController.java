@@ -81,7 +81,7 @@ public class DoctorController {
     @PostMapping("/addFollowUp")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
     public ResponseEntity<?> addFollowUp(@RequestBody FollowUpCreationByDoctorDTO followUpDTO) {
-        return doctorService.addFollowUp(followUpDTO);
+        return doctorService.addFollowUpNew(followUpDTO);
     }
 
 
