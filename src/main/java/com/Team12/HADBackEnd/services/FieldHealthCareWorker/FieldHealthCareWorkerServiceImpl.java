@@ -515,11 +515,18 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
     }
 
     @Override
-    public List<CitizenForAdminDTO> getAllCitizens() {
+    public List<CitizenForAdminDTO> getAllCitizens(){
         List<Citizen> citizens = citizenRepository.findByStatus("ongoing");
         List<CitizenForAdminDTO> citizenDTOs = new ArrayList<>();
+        Set<Citizen> citizenSet = new HashSet<>();
         for (Citizen citizen : citizens) {
-            citizenDTOs.add(dtoConverter.convertToCitizenForAdminDTO(citizen));
+            try {
+                Constant.getDecryptedCitizen(citizen, citizenSet);
+                citizenDTOs.add(dtoConverter.convertToCitizenForAdminDTO(citizen));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //citizenDTOs.add(dtoConverter.convertToCitizenForAdminDTO(citizen));
         }
         return citizenDTOs;
     }
