@@ -488,6 +488,7 @@ public class DTOConverter {
                 followUp.getDate(),
                 followUp.getStatus(),
                 followUp.getInstructions(),
+                convertToDoctorForAdminDTO(followUp.getHealthRecord().getDoctor()),
                 convertToCitizenForDoctorDTO(followUp.getHealthRecord().getCitizen())
         );
     }
