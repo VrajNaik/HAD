@@ -7,6 +7,7 @@ import com.Team12.HADBackEnd.DTOs.Citizen.CitizensRegistrationDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorListRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusListRequest;
 import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusRequest;
 import com.Team12.HADBackEnd.DTOs.Questionnaire.AnswersDTO;
 import com.Team12.HADBackEnd.DTOs.Questionnaire.QuestionnaireResponseDTO;
@@ -169,9 +170,9 @@ public class FieldHealthCareWorkerController {
 
     @PostMapping("/updateFollowUpStatus")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
-    public ResponseEntity<?> updateFollowUpStatus(@RequestBody UpdateFollowUpStatusRequest request) {
+    public ResponseEntity<?> updateFollowUpStatus(@RequestBody UpdateFollowUpStatusListRequest request) {
         try {
-            fieldHealthCareWorkerService.updateFollowUpStatus(request);
+            fieldHealthCareWorkerService.updateFollowUpStatusList(request);
             return ResponseEntity.ok(new MessageResponse("Follow-up status updated successfully."));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(e.getMessage()));
