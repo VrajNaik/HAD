@@ -6,7 +6,6 @@ import com.Team12.HADBackEnd.DTOs.Doctor.DoctorUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpCreationByDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordCreationDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordUpdateDTO;
-import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionForHealthRecordDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ResponseDTO;
 import com.Team12.HADBackEnd.models.*;
@@ -47,6 +46,8 @@ public class DoctorServiceImpl implements DoctorService{
     private final DTOConverter dtoConverter;
     private final ResponseRepository responseRepository;
 
+    private final PrescriptionRepository prescriptionRepository;
+
     @Autowired
     public DoctorServiceImpl(DoctorRepository doctorRepository,
                              DistrictRepository districtRepository,
@@ -60,7 +61,9 @@ public class DoctorServiceImpl implements DoctorService{
                              CredentialService credentialService,
                              EmailService emailService,
                              PasswordEncoder passwordEncoder,
-                             DTOConverter dtoConverter, ResponseRepository responseRepository) {
+                             DTOConverter dtoConverter,
+                             ResponseRepository responseRepository,
+                             PrescriptionRepository prescriptionRepository) {
         this.doctorRepository = doctorRepository;
         this.districtRepository = districtRepository;
         this.roleRepository = roleRepository;
@@ -75,6 +78,7 @@ public class DoctorServiceImpl implements DoctorService{
         this.encoder = passwordEncoder;
         this.dtoConverter = dtoConverter;
         this.responseRepository = responseRepository;
+        this.prescriptionRepository = prescriptionRepository;
     }
 
     @Override
@@ -215,7 +219,6 @@ public class DoctorServiceImpl implements DoctorService{
         return prescriptionList;
     }
 
-
     public Prescription convertDtoToPrescription(PrescriptionForHealthRecordDTO dto) {
         Prescription prescription = new Prescription();
         prescription.setMedication(dto.getMedication());
@@ -227,16 +230,16 @@ public class DoctorServiceImpl implements DoctorService{
         return prescription;
     }
 
-
     @Override
     public ResponseEntity<?> createHealthRecord(HealthRecordCreationDTO healthRecordCreationDTO) {
-
+        // Find the citizen
         Citizen citizen = citizenRepository.findByAbhaId(healthRecordCreationDTO.getAbhaId())
                 .orElseThrow(() -> new NotFoundException("Citizen not found with ID: " + healthRecordCreationDTO.getAbhaId()));
 
         if (citizen.getHealthRecord() != null) {
             throw new NotFoundException("Health record already exists for citizen with ID: " + healthRecordCreationDTO.getAbhaId());
         }
+
         FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findByUsername(healthRecordCreationDTO.getWorkerUsername())
                 .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with ID: " + healthRecordCreationDTO.getWorkerUsername()));
 
@@ -247,17 +250,10 @@ public class DoctorServiceImpl implements DoctorService{
         List<ICD10Code> icd10Codes = icd10CodeRepository.findAllById(healthRecordCreationDTO.getIcd10CodeId());
 
 
-
         HealthRecord healthRecord = new HealthRecord();
         healthRecord.setCitizen(citizen);
         healthRecord.setFieldHealthCareWorker(fieldHealthCareWorker);
         healthRecord.setDoctor(doctor);
-        Prescription prescription= new Prescription();
-        List<PrescriptionForHealthRecordDTO> prescriptionForHealthRecordDTOS = healthRecordCreationDTO.getPrescription();
-
-        if(prescriptionForHealthRecordDTOS.size()>0) {
-            healthRecord.setPrescriptions(convertDtoListToPrescriptionList(prescriptionForHealthRecordDTOS));
-        }
         healthRecord.setIcd10Codes(icd10Codes);
         if(healthRecordCreationDTO.getConclusion() != null) {
             healthRecord.setConclusion(healthRecordCreationDTO.getConclusion());
@@ -265,13 +261,27 @@ public class DoctorServiceImpl implements DoctorService{
         if(healthRecordCreationDTO.getDiagnosis() != null) {
             healthRecord.setDiagnosis(healthRecordCreationDTO.getDiagnosis());
         }
-        healthRecord.setTimestamp(new Date());
-//        if(healthRecordCreationDTO.getTimestamp() != null) {
-//            healthRecord.setTimestamp(healthRecordCreationDTO.getTimestamp());
-//        }
+        healthRecord.setTimestamp(healthRecordCreationDTO.getTimestamp() != null ? healthRecordCreationDTO.getTimestamp() : new Date());
+
+        if (healthRecordCreationDTO.getPrescription() != null && !healthRecordCreationDTO.getPrescription().isEmpty()) {
+            List<Prescription> prescriptions = new ArrayList<>();
+            for (PrescriptionForHealthRecordDTO prescriptionDTO : healthRecordCreationDTO.getPrescription()) {
+                Prescription prescription = new Prescription();
+                prescription.setMedication(prescriptionDTO.getMedication());
+                prescription.setDosage(prescriptionDTO.getDosage());
+                prescription.setMedicationType(prescriptionDTO.getMedicationType());
+                prescription.setFrequency(prescriptionDTO.getFrequency());
+                prescription.setCustomFrequency(prescriptionDTO.getCustomFrequency());
+                prescription.setCustomInstructions(prescriptionDTO.getCustomInstructions());
+                prescriptionRepository.save(prescription);
+                prescriptions.add(prescription);
+            }
+            healthRecord.setPrescriptions(prescriptions);
+        }
+
         healthRecordRepository.save(healthRecord);
 
-        return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Health record created successfully!");
+        return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Health record created successfully!");
     }
 
 
@@ -283,10 +293,23 @@ public class DoctorServiceImpl implements DoctorService{
         HealthRecord healthRecord = healthRecordRepository.findByCitizen_Id(citizen.getId())
                 .orElseThrow(() -> new NotFoundException("Health record not found with ID: " + citizen.getId()));
 
-        // Update fields that can be changed
-        if (healthRecordUpdateDTO.getPrescription() != null) {
-            healthRecord.setPrescriptions(healthRecordUpdateDTO.getPrescription());
+
+        if (healthRecordUpdateDTO.getPrescription() != null && !healthRecordUpdateDTO.getPrescription().isEmpty()) {
+            List<Prescription> prescriptions = new ArrayList<>();
+            for (PrescriptionForHealthRecordDTO prescriptionDTO : healthRecordUpdateDTO.getPrescription()) {
+                Prescription prescription = new Prescription();
+                prescription.setMedication(prescriptionDTO.getMedication());
+                prescription.setDosage(prescriptionDTO.getDosage());
+                prescription.setMedicationType(prescriptionDTO.getMedicationType());
+                prescription.setFrequency(prescriptionDTO.getFrequency());
+                prescription.setCustomFrequency(prescriptionDTO.getCustomFrequency());
+                prescription.setCustomInstructions(prescriptionDTO.getCustomInstructions());
+                prescriptionRepository.save(prescription);
+                prescriptions.add(prescription);
+            }
+            healthRecord.setPrescriptions(prescriptions);
         }
+
         if (healthRecordUpdateDTO.getConclusion() != null) {
             healthRecord.setConclusion(healthRecordUpdateDTO.getConclusion());
         }

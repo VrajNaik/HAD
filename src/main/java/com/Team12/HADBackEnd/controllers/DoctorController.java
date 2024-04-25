@@ -5,7 +5,6 @@ import com.Team12.HADBackEnd.DTOs.Doctor.DoctorDTO;
 import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpCreationByDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordCreationDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordUpdateDTO;
-import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionDTO;
 import com.Team12.HADBackEnd.models.User;
 import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;

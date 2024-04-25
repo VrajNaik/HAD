@@ -6,7 +6,7 @@ import java.util.List;
 
 public class HealthRecordUpdateDTO {
     private String abhaId;
-    private List<Prescription> prescription;
+    private List<PrescriptionForHealthRecordDTO> prescription;
     private String conclusion;
     private String diagnosis;
     private List<Long> icd10CodeIds;
@@ -20,11 +20,12 @@ public class HealthRecordUpdateDTO {
         this.abhaId = abhaId;
     }
 
-    public List<Prescription> getPrescription() {
+
+    public List<PrescriptionForHealthRecordDTO> getPrescription() {
         return prescription;
     }
 
-    public void setPrescription(List<Prescription> prescription) {
+    public void setPrescription(List<PrescriptionForHealthRecordDTO> prescription) {
         this.prescription = prescription;
     }
 
