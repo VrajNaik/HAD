@@ -6,8 +6,6 @@ import com.Team12.HADBackEnd.DTOs.Doctor.DoctorDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ReceptionistUpdateRequestDTO;
-import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorDTO;
-import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;

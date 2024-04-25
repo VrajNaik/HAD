@@ -33,9 +33,9 @@ public interface DoctorService {
 
     ResponseEntity<?> updateHealthRecord(HealthRecordUpdateDTO healthRecordUpdateDTO);
 
-    ResponseEntity<?> addPrescriptionToHealthRecord(PrescriptionDTO prescriptionDTO);
-
-    ResponseEntity<?> editLastPrescription(PrescriptionDTO editPrescriptionDTO);
+//    ResponseEntity<?> addPrescriptionToHealthRecord(PrescriptionDTO prescriptionDTO);
+//
+//    ResponseEntity<?> editLastPrescription(PrescriptionDTO editPrescriptionDTO);
 
     ResponseEntity<?> addFollowUp(FollowUpCreationByDoctorDTO followUpDTO);
 

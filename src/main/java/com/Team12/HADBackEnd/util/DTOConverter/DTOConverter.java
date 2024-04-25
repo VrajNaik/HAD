@@ -14,6 +14,7 @@ import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpDTO;
 import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordForDoctorDTO;
+import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionsDTO;
 import com.Team12.HADBackEnd.DTOs.Hospital.HospitalDTO;
 import com.Team12.HADBackEnd.DTOs.ICD10Code.ICD10CodesForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.ICD10Code.ICDCodesDTO;
@@ -129,11 +130,34 @@ public class DTOConverter {
         return followUpDTO;
     }
 
+
+    public PrescriptionsDTO convertToPrescriptionsDTO(Prescription prescription) {
+        PrescriptionsDTO prescriptionsDTO = new PrescriptionsDTO();
+        prescriptionsDTO.setId(prescription.getId());
+        prescriptionsDTO.setCustomFrequency(prescription.getCustomFrequency());
+        prescriptionsDTO.setFrequency(prescription.getFrequency());
+        prescriptionsDTO.setDosage(prescription.getDosage());
+        prescriptionsDTO.setMedication(prescription.getMedication());
+        prescriptionsDTO.setMedicationType(prescription.getMedicationType());
+        prescriptionsDTO.setCustomInstructions(prescription.getCustomInstructions());
+        return prescriptionsDTO;
+    }
+
+
+    public List<PrescriptionsDTO> convertToPrescriptionsDTOList(List<Prescription> prescriptions) {
+        List<PrescriptionsDTO> prescriptionsDTOList = new ArrayList<>();
+        for (Prescription prescription : prescriptions) {
+            prescriptionsDTOList.add(convertToPrescriptionsDTO(prescription));
+        }
+        return prescriptionsDTOList;
+    }
+
+
     public HealthRecordForDoctorDTO convertToHealthRecordForDoctorDTO(HealthRecord healthRecord) {
         HealthRecordForDoctorDTO healthRecordDTO = new HealthRecordForDoctorDTO();
         healthRecordDTO.setId(healthRecord.getId());
         if(healthRecord.getPrescriptions() != null) {
-            healthRecordDTO.setPrescriptions(healthRecord.getPrescriptions());
+            healthRecordDTO.setPrescriptions(convertToPrescriptionsDTOList(healthRecord.getPrescriptions()));
         }
         if (healthRecord.getConclusion() != null) {
             healthRecordDTO.setConclusion(healthRecord.getConclusion());
@@ -339,7 +363,7 @@ public class DTOConverter {
         healthRecordDTO.setId(healthRecord.getId());
 
         if (healthRecord.getPrescriptions() != null) {
-            healthRecordDTO.setPrescriptions(healthRecord.getPrescriptions());
+            healthRecordDTO.setPrescriptions(convertToPrescriptionsDTOList(healthRecord.getPrescriptions()));
         }
 
         if (healthRecord.getConclusion() != null) {

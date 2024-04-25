@@ -17,11 +17,17 @@ public class RefreshTokenService {
     @Value("${HADBackEnd.app.jwtExpirationMs}")
     private Long refreshTokenDurationMs;
 
-    @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
+
+    final private RefreshTokenRepository refreshTokenRepository;
+
+    final private UserRepository userRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository,
+                               UserRepository userRepository) {
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.userRepository = userRepository;
+    }
 
     public Optional<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);

@@ -1,7 +1,6 @@
 package com.Team12.HADBackEnd.repository;
 
 import com.Team12.HADBackEnd.models.FieldHealthCareWorker;
-import com.Team12.HADBackEnd.models.Supervisor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -19,7 +18,6 @@ public interface FieldHealthCareWorkerRepository extends JpaRepository<FieldHeal
     @Query("SELECT w FROM FieldHealthCareWorker w WHERE w.username = :username")
     FieldHealthCareWorker findUsername(String username);
 
-    List<FieldHealthCareWorker> findByLocalAreaIsNull();
     List<FieldHealthCareWorker> findByLocalAreaIsNullAndDistrictId(Long districtId);
     List<FieldHealthCareWorker> findByDistrictId(Long districtId);
 

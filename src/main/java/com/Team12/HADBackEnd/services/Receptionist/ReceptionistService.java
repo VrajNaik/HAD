@@ -3,7 +3,6 @@ package com.Team12.HADBackEnd.services.Receptionist;
 import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ReceptionistUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.Receptionist;
-import com.Team12.HADBackEnd.models.Supervisor;
 import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
 import org.springframework.http.ResponseEntity;
 

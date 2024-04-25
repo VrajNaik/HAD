@@ -1,12 +1,12 @@
 package com.Team12.HADBackEnd.controllers;
 
-import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForFHWDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenRegistrationDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizensRegistrationDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorListRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusListRequest;
 import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusRequest;
 import com.Team12.HADBackEnd.DTOs.Questionnaire.AnswersDTO;
 import com.Team12.HADBackEnd.DTOs.Questionnaire.QuestionnaireResponseDTO;
@@ -23,8 +23,6 @@ import com.Team12.HADBackEnd.repository.UserRepository;
 
 import com.Team12.HADBackEnd.services.BlackBox.Questionnaire.QuestionnaireService;
 import com.Team12.HADBackEnd.services.BlackBox.smsService.SendSmsForFollowUp;
-import com.Team12.HADBackEnd.services.Doctor.DoctorService;
-import com.Team12.HADBackEnd.services.Translation.TranslationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,23 +51,15 @@ public class FieldHealthCareWorkerController {
 
     private final QuestionnaireService questionnaireService;
 
-    private final TranslationService translationService;
-
-    private final DoctorService doctorService;
-
     @Autowired
     public FieldHealthCareWorkerController(FieldHealthCareWorkerService fieldHealthCareWorkerService,
                                            UserRepository userRepository,
                                            SendSmsForFollowUp sendSmsForFollowUp,
-                                           QuestionnaireService questionnaireService,
-                                           TranslationService translationService,
-                                           DoctorService doctorService) {
+                                           QuestionnaireService questionnaireService) {
         this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
         this.userRepository = userRepository;
         this.sendSmsForFollowUp = sendSmsForFollowUp;
         this.questionnaireService = questionnaireService;
-        this.translationService = translationService;
-        this.doctorService = doctorService;
     }
 
 
@@ -172,6 +162,18 @@ public class FieldHealthCareWorkerController {
     public ResponseEntity<?> updateFollowUpStatus(@RequestBody UpdateFollowUpStatusRequest request) {
         try {
             fieldHealthCareWorkerService.updateFollowUpStatus(request);
+            return ResponseEntity.ok(new MessageResponse("Follow-up status updated successfully."));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(e.getMessage()));
+        }
+    }
+
+
+    @PostMapping("/updateFollowUpsStatus")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FIELD_HEALTHCARE_WORKER')")
+    public ResponseEntity<?> updateFollowUpsStatus(@RequestBody UpdateFollowUpStatusListRequest request) {
+        try {
+            fieldHealthCareWorkerService.updateFollowUpStatusList(request);
             return ResponseEntity.ok(new MessageResponse("Follow-up status updated successfully."));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse(e.getMessage()));

@@ -11,7 +11,7 @@ import java.util.List;
 
 public class HealthRecordDTO {
     private Long id;
-    private List<String> prescriptions;
+    private List<PrescriptionsDTO> prescriptions;
     private String conclusion;
     private String diagnosis;
     private Date timestamp;
@@ -30,11 +30,11 @@ public class HealthRecordDTO {
         this.id = id;
     }
 
-    public List<String> getPrescriptions() {
+    public List<PrescriptionsDTO> getPrescriptions() {
         return prescriptions;
     }
 
-    public void setPrescriptions(List<String> prescriptions) {
+    public void setPrescriptions(List<PrescriptionsDTO> prescriptions) {
         this.prescriptions = prescriptions;
     }
 

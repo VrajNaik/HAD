@@ -1,9 +1,7 @@
 package com.Team12.HADBackEnd.repository;
 
-import com.Team12.HADBackEnd.models.Doctor;
 import com.Team12.HADBackEnd.models.Supervisor;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 

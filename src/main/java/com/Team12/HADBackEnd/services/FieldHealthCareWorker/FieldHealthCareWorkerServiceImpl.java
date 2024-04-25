@@ -4,6 +4,7 @@ import com.Team12.HADBackEnd.DTOs.Citizen.*;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusListRequest;
 import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusRequest;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
 import com.Team12.HADBackEnd.DTOs.Hospital.HospitalDTO;
@@ -597,10 +598,34 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
     public void updateFollowUpStatus(UpdateFollowUpStatusRequest request) {
         FollowUp followUp = followUpRepository.findById(request.getFollowUpId())
                 .orElseThrow(() -> new NotFoundException("Follow-up not found with ID: " + request.getFollowUpId()));
-
-        followUp.setStatus(request.getStatus());
-        followUp.setMeasureOfVitals(request.getMeasureOfVitals());
+        if(request.getStatus() != null) {
+            followUp.setStatus(request.getStatus());
+        }
+        if(request.getMeasureOfVitals() != null) {
+            followUp.setMeasureOfVitals(request.getMeasureOfVitals());
+        }
         followUpRepository.save(followUp);
+    }
+
+
+    @Override
+    public void updateFollowUpStatusList(UpdateFollowUpStatusListRequest request) {
+        List<UpdateFollowUpStatusRequest> followUpStatusRequests = request.getFollowUpStatusRequests();
+
+        for (UpdateFollowUpStatusRequest followUpStatusRequest : followUpStatusRequests) {
+            Long followUpId = followUpStatusRequest.getFollowUpId();
+            FollowUp followUp = followUpRepository.findById(followUpId)
+                    .orElseThrow(() -> new NotFoundException("Follow-up not found with ID: " + followUpId));
+
+            if (followUpStatusRequest.getStatus() != null) {
+                followUp.setStatus(followUpStatusRequest.getStatus());
+            }
+            if (followUpStatusRequest.getMeasureOfVitals() != null) {
+                followUp.setMeasureOfVitals(followUpStatusRequest.getMeasureOfVitals());
+            }
+
+            followUpRepository.save(followUp);
+        }
     }
 
 

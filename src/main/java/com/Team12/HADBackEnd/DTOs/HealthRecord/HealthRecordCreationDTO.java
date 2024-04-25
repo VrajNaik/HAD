@@ -1,5 +1,7 @@
 package com.Team12.HADBackEnd.DTOs.HealthRecord;
 
+import com.Team12.HADBackEnd.models.Prescription;
+
 import java.util.Date;
 import java.util.List;
 
@@ -9,7 +11,7 @@ public class HealthRecordCreationDTO {
     private String workerUsername;
     private String doctorUsername;
     private List<Long> icd10CodeId;
-    private String prescription;
+    private List<PrescriptionForHealthRecordDTO> prescription;
     private String conclusion;
     private String diagnosis;
     private Date timestamp;
@@ -45,14 +47,6 @@ public class HealthRecordCreationDTO {
         this.doctorUsername = doctorUsername;
     }
 
-    public String getPrescription() {
-        return prescription;
-    }
-
-    public void setPrescription(String prescription) {
-        this.prescription = prescription;
-    }
-
     public String getConclusion() {
         return conclusion;
     }
@@ -83,6 +77,14 @@ public class HealthRecordCreationDTO {
 
     public void setIcd10CodeId(List<Long> icd10CodeId) {
         this.icd10CodeId = icd10CodeId;
+    }
+
+    public List<PrescriptionForHealthRecordDTO> getPrescription() {
+        return prescription;
+    }
+
+    public void setPrescription(List<PrescriptionForHealthRecordDTO> prescription) {
+        this.prescription = prescription;
     }
 }
 

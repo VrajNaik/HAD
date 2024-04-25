@@ -1,10 +1,12 @@
 package com.Team12.HADBackEnd.DTOs.HealthRecord;
 
+import com.Team12.HADBackEnd.models.Prescription;
+
 import java.util.List;
 
 public class HealthRecordUpdateDTO {
     private String abhaId;
-    private String prescription;
+    private List<Prescription> prescription;
     private String conclusion;
     private String diagnosis;
     private List<Long> icd10CodeIds;
@@ -18,12 +20,11 @@ public class HealthRecordUpdateDTO {
         this.abhaId = abhaId;
     }
 
-
-    public String getPrescription() {
+    public List<Prescription> getPrescription() {
         return prescription;
     }
 
-    public void setPrescription(String prescription) {
+    public void setPrescription(List<Prescription> prescription) {
         this.prescription = prescription;
     }
 

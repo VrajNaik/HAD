@@ -8,7 +8,6 @@ import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerFor
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
 import com.Team12.HADBackEnd.DTOs.Hospital.HospitalCreationDTO;
-import com.Team12.HADBackEnd.DTOs.Hospital.HospitalDTO;
 import com.Team12.HADBackEnd.DTOs.Hospital.HospitalUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ReceptionistUpdateRequestDTO;

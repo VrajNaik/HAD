@@ -5,6 +5,7 @@ import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
+import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusListRequest;
 import com.Team12.HADBackEnd.DTOs.FollowUp.UpdateFollowUpStatusRequest;
 import com.Team12.HADBackEnd.DTOs.Response.ResponseDTO;
 import com.Team12.HADBackEnd.models.*;
@@ -51,6 +52,8 @@ public interface FieldHealthCareWorkerService {
     int calculateScore(List<String> answers);
 
     void updateFollowUpStatus(UpdateFollowUpStatusRequest request);
+
+    void updateFollowUpStatusList(UpdateFollowUpStatusListRequest request);
 
     ResponseEntity<?> getHealthRecordByCitizenId(Long citizenId);
 

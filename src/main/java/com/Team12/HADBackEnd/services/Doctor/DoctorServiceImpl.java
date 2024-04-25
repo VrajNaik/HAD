@@ -7,6 +7,7 @@ import com.Team12.HADBackEnd.DTOs.FollowUp.FollowUpCreationByDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordCreationDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordUpdateDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionDTO;
+import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionForHealthRecordDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ResponseDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.*;
@@ -205,6 +206,27 @@ public class DoctorServiceImpl implements DoctorService{
                 .collect(Collectors.toList());
     }
 
+    public List<Prescription> convertDtoListToPrescriptionList(List<PrescriptionForHealthRecordDTO> dtoList) {
+        List<Prescription> prescriptionList = new ArrayList<>();
+        for (PrescriptionForHealthRecordDTO dto : dtoList) {
+            Prescription prescription = this.convertDtoToPrescription(dto);
+            prescriptionList.add(prescription);
+        }
+        return prescriptionList;
+    }
+
+
+    public Prescription convertDtoToPrescription(PrescriptionForHealthRecordDTO dto) {
+        Prescription prescription = new Prescription();
+        prescription.setMedication(dto.getMedication());
+        prescription.setDosage(dto.getDosage());
+        prescription.setMedicationType(dto.getMedicationType());
+        prescription.setFrequency(dto.getFrequency());
+        prescription.setCustomFrequency(dto.getCustomFrequency());
+        prescription.setCustomInstructions(dto.getCustomInstructions());
+        return prescription;
+    }
+
 
     @Override
     public ResponseEntity<?> createHealthRecord(HealthRecordCreationDTO healthRecordCreationDTO) {
@@ -223,13 +245,19 @@ public class DoctorServiceImpl implements DoctorService{
 
 
         List<ICD10Code> icd10Codes = icd10CodeRepository.findAllById(healthRecordCreationDTO.getIcd10CodeId());
-        List<String> prescriptions = Collections.singletonList(healthRecordCreationDTO.getPrescription());
+
+
 
         HealthRecord healthRecord = new HealthRecord();
         healthRecord.setCitizen(citizen);
         healthRecord.setFieldHealthCareWorker(fieldHealthCareWorker);
         healthRecord.setDoctor(doctor);
-        healthRecord.setPrescriptions(prescriptions);
+        Prescription prescription= new Prescription();
+        List<PrescriptionForHealthRecordDTO> prescriptionForHealthRecordDTOS = healthRecordCreationDTO.getPrescription();
+
+        if(prescriptionForHealthRecordDTOS.size()>0) {
+            healthRecord.setPrescriptions(convertDtoListToPrescriptionList(prescriptionForHealthRecordDTOS));
+        }
         healthRecord.setIcd10Codes(icd10Codes);
         if(healthRecordCreationDTO.getConclusion() != null) {
             healthRecord.setConclusion(healthRecordCreationDTO.getConclusion());
@@ -256,10 +284,8 @@ public class DoctorServiceImpl implements DoctorService{
                 .orElseThrow(() -> new NotFoundException("Health record not found with ID: " + citizen.getId()));
 
         // Update fields that can be changed
-        List<String> prescriptions = Collections.singletonList(healthRecordUpdateDTO.getPrescription());
-
         if (healthRecordUpdateDTO.getPrescription() != null) {
-            healthRecord.setPrescriptions(prescriptions);
+            healthRecord.setPrescriptions(healthRecordUpdateDTO.getPrescription());
         }
         if (healthRecordUpdateDTO.getConclusion() != null) {
             healthRecord.setConclusion(healthRecordUpdateDTO.getConclusion());
@@ -294,42 +320,43 @@ public class DoctorServiceImpl implements DoctorService{
         return ResponseEntity.ok(responseDTO);
     }
 
-    @Override
-    public ResponseEntity<?> addPrescriptionToHealthRecord(PrescriptionDTO prescriptionDTO) {
-        HealthRecord healthRecord = healthRecordRepository.findById(prescriptionDTO.getHealthRecordId())
-                .orElseThrow(() -> new NotFoundException("Health record not found with ID: " + prescriptionDTO.getHealthRecordId()));
+//    @Override
+//    public ResponseEntity<?> addPrescriptionToHealthRecord(PrescriptionDTO prescriptionDTO) {
+//        HealthRecord healthRecord = healthRecordRepository.findById(prescriptionDTO.getHealthRecordId())
+//                .orElseThrow(() -> new NotFoundException("Health record not found with ID: " + prescriptionDTO.getHealthRecordId()));
+//
+//        List<Prescription> prescriptions = healthRecord.getPrescriptions();
+//        if (prescriptions == null) {
+//            prescriptions = new ArrayList<>();
+//        }
+//
+//        prescriptions.add(prescriptionDTO.getPrescription());
+//        healthRecord.setPrescriptions(prescriptions);
+//
+//        healthRecordRepository.save(healthRecord);
+////        return convertToDTO(updatedHealthRecord);
+//        return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Prescription added successfully!");
+//    }
 
-        List<String> prescriptions = healthRecord.getPrescriptions();
-        if (prescriptions == null) {
-            prescriptions = new ArrayList<>();
-        }
-        prescriptions.add(prescriptionDTO.getPrescription());
-        healthRecord.setPrescriptions(prescriptions);
-
-        healthRecordRepository.save(healthRecord);
-//        return convertToDTO(updatedHealthRecord);
-        return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Prescription added successfully!");
-    }
-
-    @Override
-    public ResponseEntity<?> editLastPrescription(PrescriptionDTO editPrescriptionDTO) {
-        HealthRecord healthRecord = healthRecordRepository.findById(editPrescriptionDTO.getHealthRecordId())
-                .orElseThrow(() -> new NotFoundException("Health record not found with ID: " + editPrescriptionDTO.getHealthRecordId()));
-
-        List<String> prescriptions = healthRecord.getPrescriptions();
-        if (prescriptions == null || prescriptions.isEmpty()) {
-            throw new NotFoundException("No prescriptions found for the health record");
-        }
-
-        // Update the last prescription
-        int lastIndex = prescriptions.size() - 1;
-        prescriptions.set(lastIndex, editPrescriptionDTO.getPrescription());
-        healthRecord.setPrescriptions(prescriptions);
-
-        healthRecordRepository.save(healthRecord);
-//        return convertToDTO(updatedHealthRecord);
-        return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Prescription Edited successfully!");
-    }
+//    @Override
+//    public ResponseEntity<?> editLastPrescription(PrescriptionDTO editPrescriptionDTO) {
+//        HealthRecord healthRecord = healthRecordRepository.findById(editPrescriptionDTO.getHealthRecordId())
+//                .orElseThrow(() -> new NotFoundException("Health record not found with ID: " + editPrescriptionDTO.getHealthRecordId()));
+//
+//        List<String> prescriptions = healthRecord.getPrescriptions();
+//        if (prescriptions == null || prescriptions.isEmpty()) {
+//            throw new NotFoundException("No prescriptions found for the health record");
+//        }
+//
+//        // Update the last prescription
+//        int lastIndex = prescriptions.size() - 1;
+//        prescriptions.set(lastIndex, editPrescriptionDTO.getPrescription());
+//        healthRecord.setPrescriptions(prescriptions);
+//
+//        healthRecordRepository.save(healthRecord);
+////        return convertToDTO(updatedHealthRecord);
+//        return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Prescription Edited successfully!");
+//    }
 
 
     @Override

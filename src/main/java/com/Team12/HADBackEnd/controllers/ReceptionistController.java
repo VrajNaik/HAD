@@ -1,8 +1,6 @@
 package com.Team12.HADBackEnd.controllers;
 
 
-import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
-import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorRequest;
 import com.Team12.HADBackEnd.services.Receptionist.ReceptionistService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)

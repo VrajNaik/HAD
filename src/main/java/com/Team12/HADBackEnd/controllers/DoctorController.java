@@ -59,17 +59,17 @@ public class DoctorController {
         return doctorService.createHealthRecord(healthRecordCreationDTO);
     }
 
-    @PostMapping("/addPrescription")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public ResponseEntity<?> addPrescriptionToHealthRecord(@RequestBody PrescriptionDTO prescriptionDTO) {
-        return doctorService.addPrescriptionToHealthRecord(prescriptionDTO);
-    }
-
-    @PostMapping("/editPrescription")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
-    public ResponseEntity<?> editPrescription(@RequestBody PrescriptionDTO editPrescriptionDTO) {
-        return doctorService.editLastPrescription(editPrescriptionDTO);
-    }
+//    @PostMapping("/addPrescription")
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
+//    public ResponseEntity<?> addPrescriptionToHealthRecord(@RequestBody PrescriptionDTO prescriptionDTO) {
+//        return doctorService.addPrescriptionToHealthRecord(prescriptionDTO);
+//    }
+//
+//    @PostMapping("/editPrescription")
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
+//    public ResponseEntity<?> editPrescription(@RequestBody PrescriptionDTO editPrescriptionDTO) {
+//        return doctorService.editLastPrescription(editPrescriptionDTO);
+//    }
 
     @PostMapping("/editHealthRecord")
     @PreAuthorize("hasRole('ADMIN') or hasRole('DOCTOR')")
