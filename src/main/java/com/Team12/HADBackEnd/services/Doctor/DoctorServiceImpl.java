@@ -200,9 +200,9 @@ public class DoctorServiceImpl implements DoctorService{
         Citizen citizen = citizenRepository.findById(healthRecordCreationDTO.getCitizenId())
                 .orElseThrow(() -> new NotFoundException("Citizen not found with ID: " + healthRecordCreationDTO.getCitizenId()));
 
-        if (citizen.getHealthRecord() != null) {
-            throw new NotFoundException("Health record already exists for citizen with ID: " + healthRecordCreationDTO.getCitizenId());
-        }
+//        if (citizen.getHealthRecord() != null) {
+//            throw new NotFoundException("Health record already exists for citizen with ID: " + healthRecordCreationDTO.getCitizenId());
+//        }
         FieldHealthCareWorker fieldHealthCareWorker = fieldHealthCareWorkerRepository.findById(healthRecordCreationDTO.getWorkerId())
                 .orElseThrow(() -> new NotFoundException("Field healthcare worker not found with ID: " + healthRecordCreationDTO.getWorkerId()));
 

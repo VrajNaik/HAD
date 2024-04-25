@@ -648,8 +648,11 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
     public Optional<FollowUp> findAssignedFollowUpByAbhaId(String abhaId) {
         Optional<Citizen> citizenOptional = citizenRepository.findByAbhaId(abhaId);
         if (citizenOptional.isPresent()) {
-            HealthRecord healthRecord = citizenOptional.get().getHealthRecord();
-            if (healthRecord != null) {
+            Citizen citizen = citizenOptional.get();
+            List<HealthRecord> healthRecords = citizen.getHealthRecord();
+            //List<HealthRecord> healthRecord = citizenOptional.getHealthRecord();
+            //if (healthRecord != null)
+            for (HealthRecord healthRecord : healthRecords){
                 List<FollowUp> followUps = healthRecord.getFollowUps();
                 for (FollowUp followUp : followUps) {
                     if ("assigned".equals(followUp.getStatus())) {

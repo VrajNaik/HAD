@@ -3,6 +3,8 @@ package com.Team12.HADBackEnd.DTOs.Citizen;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordForDoctorDTO;
 
+import java.util.List;
+
 public class CitizenForDoctorDTO {
     private Long id;
     private String name;
@@ -16,7 +18,7 @@ public class CitizenForDoctorDTO {
     private String district;
     private String abhaId;
     private FieldHealthCareWorkerForAdminDTO fieldHealthCareWorker;
-    private HealthRecordForDoctorDTO healthRecordDTO;
+    private List<HealthRecordForDoctorDTO> healthRecordDTO;
 
     public Long getId() {
         return id;
@@ -114,11 +116,19 @@ public class CitizenForDoctorDTO {
         this.fieldHealthCareWorker = fieldHealthCareWorker;
     }
 
-    public HealthRecordForDoctorDTO getHealthRecordDTO() {
+//    public HealthRecordForDoctorDTO getHealthRecordDTO() {
+//        return healthRecordDTO;
+//    }
+//
+//    public void setHealthRecordDTO(HealthRecordForDoctorDTO healthRecordDTO) {
+//        this.healthRecordDTO = healthRecordDTO;
+//    }
+
+    public List<HealthRecordForDoctorDTO> getHealthRecordDTO() {
         return healthRecordDTO;
     }
 
-    public void setHealthRecordDTO(HealthRecordForDoctorDTO healthRecordDTO) {
+    public void setHealthRecordDTO(List<HealthRecordForDoctorDTO> healthRecordDTO) {
         this.healthRecordDTO = healthRecordDTO;
     }
 }

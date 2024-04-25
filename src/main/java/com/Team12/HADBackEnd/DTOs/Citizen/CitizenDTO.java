@@ -5,6 +5,8 @@ import com.Team12.HADBackEnd.DTOs.Doctor.DoctorDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.List;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CitizenDTO {
     private Long id;
@@ -20,7 +22,7 @@ public class CitizenDTO {
     private String abhaId;
     private FieldHealthCareWorkerWithHealthRecordDTO fieldHealthCareWorker;
     private DoctorDTO doctorDTO;
-    private HealthRecordDTO healthRecordDTO;
+    private List<HealthRecordDTO> healthRecordDTO;
 
     public Long getId() {
         return id;
@@ -126,11 +128,19 @@ public class CitizenDTO {
         this.doctorDTO = doctorDTO;
     }
 
-    public HealthRecordDTO getHealthRecordDTO() {
+//    public HealthRecordDTO getHealthRecordDTO() {
+//        return healthRecordDTO;
+//    }
+//
+//    public void setHealthRecordDTO(HealthRecordDTO healthRecordDTO) {
+//        this.healthRecordDTO = healthRecordDTO;
+//    }
+
+    public List<HealthRecordDTO> getHealthRecordDTO() {
         return healthRecordDTO;
     }
 
-    public void setHealthRecordDTO(HealthRecordDTO healthRecordDTO) {
+    public void setHealthRecordDTO(List<HealthRecordDTO> healthRecordDTO) {
         this.healthRecordDTO = healthRecordDTO;
     }
 }

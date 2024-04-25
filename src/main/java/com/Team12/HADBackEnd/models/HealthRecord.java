@@ -12,7 +12,7 @@ public class HealthRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "citizen_id")
     private Citizen citizen;
 
@@ -26,7 +26,9 @@ public class HealthRecord {
     @OneToMany(mappedBy = "healthRecord")
     private List<FollowUp> followUps;
 
+
     private List<String> prescriptions;
+
     private String conclusion;
     private String diagnosis;
     private Date timestamp;

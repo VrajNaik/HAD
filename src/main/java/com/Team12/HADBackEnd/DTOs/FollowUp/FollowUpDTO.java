@@ -4,6 +4,7 @@ import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
 
 import java.util.Date;
+import java.util.List;
 
 public class FollowUpDTO {
     private Long id;
@@ -12,7 +13,7 @@ public class FollowUpDTO {
     private String instructions;
     private String measureOfVitals;
     private FieldHealthCareWorkerWithHealthRecordDTO fieldHealthCareWorker;
-    private HealthRecordDTO healthRecord;
+    private List<HealthRecordDTO> healthRecord;
 
     public Long getId() {
         return id;
@@ -62,11 +63,20 @@ public class FollowUpDTO {
         this.fieldHealthCareWorker = fieldHealthCareWorker;
     }
 
-    public HealthRecordDTO getHealthRecord() {
+//    public HealthRecordDTO getHealthRecord() {
+//        return healthRecord;
+//    }
+//
+//    public void setHealthRecord(HealthRecordDTO healthRecord) {
+//        this.healthRecord = healthRecord;
+//    }
+
+
+    public List<HealthRecordDTO> getHealthRecord() {
         return healthRecord;
     }
 
-    public void setHealthRecord(HealthRecordDTO healthRecord) {
+    public void setHealthRecord(List<HealthRecordDTO> healthRecord) {
         this.healthRecord = healthRecord;
     }
 }

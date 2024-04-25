@@ -232,12 +232,24 @@ public class DTOConverter {
             citizenDTO.setFieldHealthCareWorker(convertToFieldHealthCareWorkerForAdminDTO(fieldHealthCareWorker));
         }
 
-        HealthRecord healthRecord = citizen.getHealthRecord();
-        if (healthRecord != null) {
-            citizenDTO.setHealthRecordDTO(convertToHealthRecordForDoctorDTO(healthRecord));
+//        List<HealthRecord> healthRecords = citizen.getHealthRecord();
+//        if (!healthRecords.isEmpty()) {
+//            HealthRecord lastHealthRecord = healthRecords.get(healthRecords.size() - 1);
+//            //citizenDTO.setHealthRecordDTO(convertToHealthRecordForDoctorDTO(lastHealthRecord));
+//            HealthRecordForDoctorDTO lastHealthRecordDTO = convertToHealthRecordForDoctorDTO(lastHealthRecord);
+//            List<HealthRecordForDoctorDTO> healthRecordDTOList = new ArrayList<>();
+//            healthRecordDTOList.add(lastHealthRecordDTO);
+//            citizenDTO.setHealthRecordDTO(healthRecordDTOList);
+//        }
+        List<HealthRecord> healthRecords = citizen.getHealthRecord();
+        List<HealthRecordForDoctorDTO> healthRecordDTOs = new ArrayList<>();
+        for (HealthRecord healthRecord : healthRecords) {
+            healthRecordDTOs.add(convertToHealthRecordForDoctorDTO(healthRecord));
         }
+        citizenDTO.setHealthRecordDTO(healthRecordDTOs);
         return citizenDTO;
     }
+
     public DoctorDTO convertToDTO(Doctor doctor) {
         DoctorDTO doctorDTO = new DoctorDTO();
 

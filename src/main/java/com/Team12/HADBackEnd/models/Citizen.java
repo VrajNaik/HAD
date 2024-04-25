@@ -29,8 +29,11 @@ public class Citizen {
     private FieldHealthCareWorker fieldHealthCareWorker;
 
 
-    @OneToOne(mappedBy = "citizen")
-    private HealthRecord healthRecord;
+    @OneToMany(mappedBy = "citizen")
+    private List<HealthRecord> healthRecord;
+
+//    @OneToMany(mappedBy = "citizen")
+//    private List<HealthRecord> healthRecords;
 
     @ManyToOne
     @JoinColumn(name = "district_id")
@@ -145,11 +148,21 @@ public class Citizen {
         this.fieldHealthCareWorker = fieldHealthCareWorker;
     }
 
-    public HealthRecord getHealthRecord() {
+//    public HealthRecord getHealthRecord() {
+//        return healthRecord;
+//    }
+
+//    public void setHealthRecord(HealthRecord healthRecord) {
+//        this.healthRecord = healthRecord;
+//    }
+
+
+    public List<HealthRecord> getHealthRecord() {
+
         return healthRecord;
     }
 
-    public void setHealthRecord(HealthRecord healthRecord) {
+    public void setHealthRecord(List<HealthRecord> healthRecord) {
         this.healthRecord = healthRecord;
     }
 
