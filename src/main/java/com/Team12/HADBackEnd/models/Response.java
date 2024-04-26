@@ -15,6 +15,8 @@ public class Response {
     @JoinColumn(name = "citizen_id")
     private Citizen citizen;
     private Long followUpNo;
+
+    @ElementCollection
     private List<String> answers;
 
     public Long getId() {

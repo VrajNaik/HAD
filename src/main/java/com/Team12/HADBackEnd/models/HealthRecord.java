@@ -26,6 +26,7 @@ public class HealthRecord {
     @OneToMany(mappedBy = "healthRecord")
     private List<FollowUp> followUps;
 
+    @ElementCollection
     private List<String> prescriptions;
     private String conclusion;
     private String diagnosis;
@@ -150,5 +151,7 @@ public class HealthRecord {
         }
         icd10Codes.add(icd10Code);
     }
+
+
 }
 
