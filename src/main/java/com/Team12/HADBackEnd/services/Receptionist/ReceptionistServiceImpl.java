@@ -4,7 +4,9 @@ import com.Team12.HADBackEnd.DTOs.Citizen.CitizenDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Hospital.HospitalDTO;
 import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
+import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistForAdminDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
@@ -77,9 +79,9 @@ public class ReceptionistServiceImpl implements ReceptionistService{
                 encoder.encode(generatedRandomPassword));
 
         Set<Role> roles = new HashSet<>();
-        Role supervisorRole = roleRepository.findByName(ERole.ROLE_SUPERVISOR)
-                .orElseThrow(() -> new RuntimeException("Error: SUPERVISOR role not found."));
-        roles.add(supervisorRole);
+        Role receptionistRole = roleRepository.findByName(ERole.ROLE_RECEPTIONIST)
+                .orElseThrow(() -> new RuntimeException("Error: RECEPTIONIST role not found."));
+        roles.add(receptionistRole);
         user.setRoles(roles);
         userRepository.save(user);
 
@@ -165,5 +167,32 @@ public class ReceptionistServiceImpl implements ReceptionistService{
         citizen.setDoctor(doctor);
         citizenRepository.save(citizen);
         return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizen Assigned to the Doctor Successfully!");
+    }
+
+    @Override
+    public ReceptionistForAdminDTO convertToReceptionistForAdminDTO(Receptionist receptionist) {
+        if (receptionist == null) {
+            return null;
+        }
+
+        ReceptionistForAdminDTO receptionistDTO = new ReceptionistForAdminDTO();
+        if(receptionist.getName() != null) {
+            receptionistDTO.setName(receptionist.getName());
+        }
+        if(receptionist.getPhoneNumber() != null) {
+            receptionistDTO.setPhoneNumber(receptionist.getPhoneNumber());
+        }
+        if(receptionist.getEmail() != null) {
+            receptionistDTO.setEmail(receptionist.getEmail());
+        }
+        if(receptionist.getUsername() != null) {
+            receptionistDTO.setUsername(receptionist.getUsername());
+        }
+        receptionistDTO.setAge(receptionist.getAge());
+        if(receptionist.getHospital() != null) {
+            receptionistDTO.setHospitalDTO(dtoConverter.toDTO(receptionist.getHospital()));
+        }
+
+        return receptionistDTO;
     }
 }

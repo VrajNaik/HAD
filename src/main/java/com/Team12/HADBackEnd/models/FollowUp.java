@@ -26,7 +26,7 @@ public class FollowUp {
 
     @Column(name = "followup_date")
     private Date date;
-    private String status;
+    private boolean status;
     private String instructions;
     private String measureOfVitals;
 
@@ -62,11 +62,11 @@ public class FollowUp {
         this.date = date;
     }
 
-    public String getStatus() {
+    public boolean isStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(boolean status) {
         this.status = status;
     }
 

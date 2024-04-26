@@ -16,6 +16,7 @@ import com.Team12.HADBackEnd.security.services.*;
 import com.Team12.HADBackEnd.services.Common.ForgotPasswordService;
 import com.Team12.HADBackEnd.services.Doctor.DoctorService;
 import com.Team12.HADBackEnd.services.FieldHealthCareWorker.FieldHealthCareWorkerService;
+import com.Team12.HADBackEnd.services.Receptionist.ReceptionistService;
 import com.Team12.HADBackEnd.services.Supervisor.SupervisorService;
 import jakarta.validation.Valid;
 
@@ -53,6 +54,8 @@ public class AuthController {
 
   private final FieldHealthCareWorkerRepository fieldHealthcareWorkerRepository;
 
+  private final ReceptionistRepository receptionistRepository;
+
   private final DoctorService doctorService;
 
   private final SupervisorService supervisorService;
@@ -62,6 +65,8 @@ public class AuthController {
   private final ForgotPasswordService forgotPasswordService;
 
   private final RefreshTokenService refreshTokenService;
+
+  private final ReceptionistService receptionistService;
 
   private final PasswordEncoder encoder;
 
@@ -74,11 +79,13 @@ public class AuthController {
                         DoctorRepository doctorRepository,
                         SupervisorRepository supervisorRepository,
                         FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository,
+                        ReceptionistRepository receptionistRepository,
                         DoctorService doctorService,
                         SupervisorService supervisorService,
                         FieldHealthCareWorkerService fieldHealthCareWorkerService,
                         ForgotPasswordService forgotPasswordService,
                         RefreshTokenService refreshTokenService,
+                        ReceptionistService receptionistService,
                         PasswordEncoder encoder,
                         JwtUtils jwtUtils) {
     this.authenticationManager = authenticationManager;
@@ -87,11 +94,13 @@ public class AuthController {
     this.doctorRepository = doctorRepository;
     this.supervisorRepository = supervisorRepository;
     this.fieldHealthcareWorkerRepository = fieldHealthCareWorkerRepository;
+    this.receptionistRepository = receptionistRepository;
     this.fieldHealthCareWorkerService = fieldHealthCareWorkerService;
     this.doctorService = doctorService;
     this.supervisorService = supervisorService;
     this.forgotPasswordService = forgotPasswordService;
     this.refreshTokenService = refreshTokenService;
+    this.receptionistService = receptionistService;
     this.encoder = encoder;
     this.jwtUtils = jwtUtils;
   }
@@ -147,6 +156,12 @@ public class AuthController {
           FieldHealthCareWorker fieldHealthCareWorker = fieldHealthcareWorkerRepository.findByUsername(userDetails.getUsername())
                   .orElseThrow(() -> new RuntimeException("Error: FIELD HEALTH CARE WORKER role not found."));
           userRole = fieldHealthCareWorkerService.convertToFieldHealthCareWorkerWithHealthRecordDTO(fieldHealthCareWorker);
+        }
+        else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_RECEPTIONIST"))) {
+          role = "receptionist";
+          Receptionist receptionist = receptionistRepository.findByUsername(userDetails.getUsername())
+                  .orElseThrow(() -> new RuntimeException("Error: RECEPTIONIST role not found."));
+          userRole = receptionistService.convertToReceptionistForAdminDTO(receptionist);
         }
         return ResponseEntity.ok(new AuthResponseDTO(
                 new JwtResponseDTO(jwt,
@@ -230,6 +245,12 @@ public class AuthController {
             Role fhwRole = roleRepository.findByName(ERole.ROLE_FIELD_HEALTHCARE_WORKER)
                     .orElseThrow(() -> new RuntimeException("Error: FIELD HEALTHCARE WORKER is not found."));
             roles.add(fhwRole);
+
+            break;
+          case "receptionist":
+            Role recpRole = roleRepository.findByName(ERole.ROLE_RECEPTIONIST)
+                    .orElseThrow(() -> new RuntimeException("Error: RECEPTIONIST is not found."));
+            roles.add(recpRole);
 
             break;
         default:
