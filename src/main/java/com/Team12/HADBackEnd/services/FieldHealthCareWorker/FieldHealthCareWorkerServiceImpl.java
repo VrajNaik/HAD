@@ -614,9 +614,10 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
             FollowUp followUp = followUpRepository.findById(followUpId)
                     .orElseThrow(() -> new NotFoundException("Follow-up not found with ID: " + followUpId));
 
-            if (followUpStatusRequest.getStatus() != null) {
-                followUp.setStatus(followUpStatusRequest.getStatus());
-            }
+//            if (followUpStatusRequest.getStatus() != null) {
+//                followUp.setStatus(followUpStatusRequest.getStatus());
+//            }
+            followUp.setStatus("completed");
             if (followUpStatusRequest.getInstructions() != null) {
                 followUp.setMeasureOfVitals(followUpStatusRequest.getInstructions());
             }
@@ -809,7 +810,7 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
             if (healthRecord != null) {
                 List<FollowUp> followUps = healthRecord.getFollowUps();
                 for (FollowUp followUp : followUps) {
-                    if ("assigned".equals(followUp.getStatus())) {
+                    if ("Assigned".equals(followUp.getStatus())) {
                         return Optional.of(followUp);
                     }
                 }
