@@ -17,4 +17,5 @@ public interface CitizenRepository extends JpaRepository<Citizen, Long> {
     List<Citizen> findByStatus(String status);
     Optional<List<Citizen>> findByHospital(Hospital hospital);
     Optional<List<Citizen>> findByFieldHealthCareWorker(FieldHealthCareWorker fieldHealthCareWorker);
+
 }

@@ -8,6 +8,7 @@ import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordCreationDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordUpdateDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ResponseDTO;
+import com.Team12.HADBackEnd.DTOs.Response.ResponseListDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
@@ -279,20 +280,49 @@ public class DoctorServiceImpl implements DoctorService{
         return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Health record created successfully!");
     }
 
+//    @Override
+//    public ResponseEntity<?> getResponseByABHAId(String abhaId) {
+//        Citizen citizen = citizenRepository.findByAbhaId(abhaId)
+//                .orElseThrow(() -> new NotFoundException("Citizen not found with ID: " + abhaId));
+//
+////        Response response = responseRepository.findFirstByCitizenOrderByFollowUpNoDesc(citizen)
+////                .orElseThrow(() -> new NotFoundException("Response not found with ID: " + abhaId));
+//
+//        List<Response> response = responseRepository.findAllByCitizen_Id(citizen.getId());
+//
+//        ResponseListDTO responseListDTO = new ResponseListDTO();
+//
+//        ResponseDTO responseDTO = new ResponseDTO();
+//        responseDTO.setAbhaId(response.getCitizen().getAbhaId());
+//        responseDTO.setAnswers(response.getAnswers());
+//        responseDTO.setScore(response.getScore());
+//        return ResponseEntity.ok(responseDTO);
+//    }
+
+
     @Override
     public ResponseEntity<?> getResponseByABHAId(String abhaId) {
         Citizen citizen = citizenRepository.findByAbhaId(abhaId)
                 .orElseThrow(() -> new NotFoundException("Citizen not found with ID: " + abhaId));
 
-        Response response = responseRepository.findFirstByCitizenOrderByFollowUpNoDesc(citizen)
-                .orElseThrow(() -> new NotFoundException("Response not found with ID: " + abhaId));
+        List<Response> responses = responseRepository.findAllByCitizen_Id(citizen.getId());
 
-        ResponseDTO responseDTO = new ResponseDTO();
-        responseDTO.setAbhaId(response.getCitizen().getAbhaId());
-        responseDTO.setAnswers(response.getAnswers());
-        responseDTO.setScore(response.getScore());
-        return ResponseEntity.ok(responseDTO);
+        List<ResponseDTO> responseDTOs = new ArrayList<>();
+
+        for (Response response : responses) {
+            ResponseDTO responseDTO = new ResponseDTO();
+            responseDTO.setAbhaId(response.getCitizen().getAbhaId());
+            responseDTO.setAnswers(response.getAnswers());
+            responseDTO.setScore(response.getScore());
+            responseDTOs.add(responseDTO);
+        }
+
+        ResponseListDTO responseListDTO = new ResponseListDTO();
+        responseListDTO.setResponses(responseDTOs);
+
+        return ResponseEntity.ok(responseListDTO);
     }
+
 
     @Override
     public ResponseEntity<?> addPrescriptionToHealthRecord(PrescriptionDTO prescriptionDTO) {
@@ -310,6 +340,7 @@ public class DoctorServiceImpl implements DoctorService{
 //        return convertToDTO(updatedHealthRecord);
         return  ResponseMessage.createSuccessResponse(HttpStatus.OK, "Prescription added successfully!");
     }
+
 
     @Override
     public ResponseEntity<?> editLastPrescription(PrescriptionDTO editPrescriptionDTO) {
