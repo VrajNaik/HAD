@@ -485,15 +485,16 @@ public class DoctorServiceImpl implements DoctorService{
             recurringFollowUp.setStatus("Assigned");
             recurringFollowUp.setFrequency(frequency);
 
-            // Adjust the date for the next scheduled follow-up
             calendar.add(Calendar.DAY_OF_MONTH, interval);
             Date nextDate = calendar.getTime();
 
             if (nextDate.after(recurrenceEndTime)) {
+                recurringFollowUp.setLastFollowUp(true);
                 break;
             }
 
             recurringFollowUp.setDate(nextDate);
+            recurringFollowUp.setLastFollowUp(false);
 
             followUpRepository.save(recurringFollowUp);
         }
