@@ -9,6 +9,8 @@ public class ReceptionistForAdminDTO {
     private String phoneNumber;
     private String email;
     private int age;
+
+    private String gender;
     private HospitalDTO hospitalDTO;
 
     public String getUsername() {
@@ -49,6 +51,14 @@ public class ReceptionistForAdminDTO {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
     public HospitalDTO getHospitalDTO() {

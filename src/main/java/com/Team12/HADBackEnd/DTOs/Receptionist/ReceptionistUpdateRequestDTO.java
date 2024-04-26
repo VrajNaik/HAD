@@ -1,13 +1,20 @@
 package com.Team12.HADBackEnd.DTOs.Receptionist;
 
-public class ReceptionistDTO {
-
+public class ReceptionistUpdateRequestDTO {
+    private String username;
     private String name;
     private String phoneNumber;
     private String email;
     private int age;
-
     private String gender;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public String getName() {
         return name;

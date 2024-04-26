@@ -4,10 +4,17 @@ package com.Team12.HADBackEnd.controllers;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignDoctorRequest;
+import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
+import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
+import com.Team12.HADBackEnd.models.Receptionist;
+import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
 import com.Team12.HADBackEnd.services.Receptionist.ReceptionistService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -56,4 +63,26 @@ public class ReceptionistController {
 //        }
         return receptionistService.assignDoctorToCitizen(request.getAbhaId(), request.getDoctorUsername());
     }
+
+
+    @GetMapping("/getByUsername")
+    @PreAuthorize("hasRole('ADMIN') or hasRole ('RECEPTIONIST')")
+    public ResponseEntity<ReceptionistDTO> getReceptionistByUsername(@RequestParam String username) {
+        ReceptionistDTO receptionistDTO = receptionistService.getReceptionistByUsername(username);
+        return ResponseEntity.ok(receptionistDTO);
+    }
+
+
+    @PostMapping("/updateReceptionist")
+    @PreAuthorize("hasRole('ADMIN') or hasRole ('RECEPTIONIST')")
+    public ResponseEntity<?> updateReceptionist(@RequestBody ReceptionistUpdateRequestDTO request) {
+        try {
+            ReceptionistDTO updatedReceptionistDTO = receptionistService.updateReceptionist(request);
+            return ResponseEntity.ok(updatedReceptionistDTO);
+        }
+        catch (DuplicateEmailIdException e) {
+            throw new AuthenticationServiceException(e.getMessage(), e);
+        }
+    }
+
 }

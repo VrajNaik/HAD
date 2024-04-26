@@ -238,6 +238,9 @@ public class DTOConverter {
         if (healthRecord != null) {
             citizenDTO.setHealthRecordDTO(convertToHealthRecordForDoctorDTO(healthRecord));
         }
+        if(citizen.getDoctor() != null) {
+            citizenDTO.setDoctor(convertToDoctorForAdminDTO(citizen.getDoctor()));
+        }
         return citizenDTO;
     }
     public DoctorDTO convertToDTO(Doctor doctor) {
@@ -517,6 +520,8 @@ public class DTOConverter {
         receptionistDTO.setName(receptionist.getName());
         receptionistDTO.setPhoneNumber(receptionist.getPhoneNumber());
         receptionistDTO.setEmail(receptionist.getEmail());
+        receptionistDTO.setGender(receptionist.getGender());
+        receptionistDTO.setAge(receptionist.getAge());
         return receptionistDTO;
     }
 }

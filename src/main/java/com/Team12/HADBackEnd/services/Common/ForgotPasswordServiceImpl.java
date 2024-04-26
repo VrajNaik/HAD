@@ -1,14 +1,8 @@
 package com.Team12.HADBackEnd.services.Common;
 
-import com.Team12.HADBackEnd.models.Doctor;
-import com.Team12.HADBackEnd.models.FieldHealthCareWorker;
-import com.Team12.HADBackEnd.models.Supervisor;
-import com.Team12.HADBackEnd.models.User;
+import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
-import com.Team12.HADBackEnd.repository.DoctorRepository;
-import com.Team12.HADBackEnd.repository.FieldHealthCareWorkerRepository;
-import com.Team12.HADBackEnd.repository.SupervisorRepository;
-import com.Team12.HADBackEnd.repository.UserRepository;
+import com.Team12.HADBackEnd.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -25,6 +19,7 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
     private final FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository;
     private final SupervisorRepository supervisorRepository;
     private final DoctorRepository doctorRepository;
+    private final ReceptionistRepository receptionistRepository;
     private final PasswordEncoder encoder;
     private final JavaMailSender javaMailSender;
 
@@ -33,12 +28,14 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
                                  FieldHealthCareWorkerRepository fieldHealthCareWorkerRepository,
                                  SupervisorRepository supervisorRepository,
                                  DoctorRepository doctorRepository,
+                                 ReceptionistRepository receptionistRepository,
                                  PasswordEncoder passwordEncoder,
                                  JavaMailSender javaMailSender) {
         this.userRepository = userRepository;
         this.fieldHealthCareWorkerRepository = fieldHealthCareWorkerRepository;
         this.supervisorRepository = supervisorRepository;
         this.doctorRepository = doctorRepository;
+        this.receptionistRepository = receptionistRepository;
         this.encoder = passwordEncoder;
         this.javaMailSender = javaMailSender;
     }
@@ -100,8 +97,13 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
                     break;
                 case "DR":
                     Doctor doctor = doctorRepository.findByUsername(username)
-                            .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + username));
+                            .orElseThrow(() -> new NotFoundException("Doctor not found with username: " + username));
                     doctor.setPassword(password);
+                    break;
+                case "RE":
+                    Receptionist receptionist = receptionistRepository.findByUsername(username)
+                            .orElseThrow(() -> new NotFoundException("Receptionist not found with username: " + username));
+                    receptionist.setPassword(password);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid user type prefix in username: " + userTypePrefix);

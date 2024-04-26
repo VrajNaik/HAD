@@ -7,6 +7,9 @@ import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerFor
 import com.Team12.HADBackEnd.DTOs.Hospital.HospitalDTO;
 import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
 import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorDTO;
+import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
 import com.Team12.HADBackEnd.payload.exception.NotFoundException;
@@ -26,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -169,6 +173,48 @@ public class ReceptionistServiceImpl implements ReceptionistService{
         return ResponseMessage.createSuccessResponse(HttpStatus.OK, "Citizen Assigned to the Doctor Successfully!");
     }
 
+
+    @Override
+    public ReceptionistDTO getReceptionistByUsername(String username) {
+        Receptionist receptionist = receptionistRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("Receptionist not found with username: " + username));
+        return dtoConverter.convertToReceptionistDTO(receptionist);
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ReceptionistDTO updateReceptionist(ReceptionistUpdateRequestDTO request) {
+        Receptionist receptionist = receptionistRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new NotFoundException("Receptionist not found with Username: " + request.getUsername()));
+
+        if (receptionistRepository.existsByEmail(request.getEmail()) && !Objects.equals(receptionist.getEmail(), request.getEmail())) {
+            throw new DuplicateEmailIdException("Receptionist with the same Email ID already exists.");
+        }
+
+        if (receptionistRepository.existsByPhoneNumber(request.getPhoneNumber()) && !Objects.equals(receptionist.getPhoneNumber(), request.getPhoneNumber())) {
+            throw new DuplicateEmailIdException("Receptionist with the same Phone Number already exists.");
+        }
+        if (request.getName() != null) {
+            receptionist.setName(request.getName());
+        }
+        if (request.getAge() != 0) {
+            receptionist.setAge(request.getAge());
+        }
+        if (request.getEmail() != null) {
+            receptionist.setEmail(request.getEmail());
+        }
+        if (request.getPhoneNumber() != null) {
+            receptionist.setPhoneNumber(request.getPhoneNumber());
+        }
+
+        Receptionist updatedReceptionist = receptionistRepository.save(receptionist);
+        return dtoConverter.convertToReceptionistDTO(updatedReceptionist);
+    }
+
+
+
+
     @Override
     public ReceptionistForAdminDTO convertToReceptionistForAdminDTO(Receptionist receptionist) {
         if (receptionist == null) {
@@ -187,6 +233,9 @@ public class ReceptionistServiceImpl implements ReceptionistService{
         }
         if(receptionist.getUsername() != null) {
             receptionistDTO.setUsername(receptionist.getUsername());
+        }
+        if(receptionist.getGender() != null) {
+            receptionistDTO.setGender(receptionist.getGender());
         }
         receptionistDTO.setAge(receptionist.getAge());
         if(receptionist.getHospital() != null) {

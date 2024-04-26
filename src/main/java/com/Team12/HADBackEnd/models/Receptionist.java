@@ -10,6 +10,7 @@ public class Receptionist {
     private String name;
     private String username;
     private String password;
+    private String gender;
     private String phoneNumber;
     private String email;
     private int age;
@@ -73,6 +74,14 @@ public class Receptionist {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
     public Hospital getHospital() {

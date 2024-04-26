@@ -1,5 +1,7 @@
 package com.Team12.HADBackEnd.DTOs.Citizen;
 
+import com.Team12.HADBackEnd.DTOs.Doctor.DoctorDTO;
+import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.HealthRecord.HealthRecordForDoctorDTO;
 
@@ -15,6 +17,8 @@ public class CitizenForDoctorDTO {
     private String state;
     private String district;
     private String abhaId;
+
+    private DoctorForAdminDTO doctor;
     private FieldHealthCareWorkerForAdminDTO fieldHealthCareWorker;
     private HealthRecordForDoctorDTO healthRecordDTO;
 
@@ -120,5 +124,13 @@ public class CitizenForDoctorDTO {
 
     public void setHealthRecordDTO(HealthRecordForDoctorDTO healthRecordDTO) {
         this.healthRecordDTO = healthRecordDTO;
+    }
+
+    public DoctorForAdminDTO getDoctor() {
+        return doctor;
+    }
+
+    public void setDoctor(DoctorForAdminDTO doctor) {
+        this.doctor = doctor;
     }
 }
