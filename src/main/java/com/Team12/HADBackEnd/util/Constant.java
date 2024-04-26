@@ -4,7 +4,7 @@ public interface Constant {
 
     //----------------------Twilio Credentials----------------------------//
     String ACCOUNT_SID = "AC0518276df4ce7808b4641885bf208809";
-    String AUTH_TOKEN = "e50d7af6eb8ba7f58fe2f1c1c962d1e2";
+    String AUTH_TOKEN = "60038aaa23541d0d53ea6ce3a336b11c";
     //--------------------------------------------------------------------//
 
     //---------------------Numbers-----------------------------------//

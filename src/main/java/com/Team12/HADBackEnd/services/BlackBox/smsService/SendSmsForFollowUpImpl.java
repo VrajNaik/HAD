@@ -114,14 +114,18 @@ public class SendSmsForFollowUpImpl implements SendSmsForFollowUp {
                 return message;
             case "mr":
                 // Marathi message
-                return message + "\n\nनमस्कार"
-                        + ", आशा आहे की तुम्ही छान करत आहात. आपली फॉलो-अप तारीख "
-                        + "आयडीच्या ";
+                return message.replace("Hello", "नमस्ते")
+                        .replace("Your follow-up is scheduled for the date:", "आपला फॉलो-अप तारीखा स्थिर केला गेला आहे:")
+                        .replace("for the citizen:", "नागरिकासाठी:")
+                        .replace("with abha Id:", "आयडीच्या:")
+                        .replace("with adress :", "पत्ता:");
             case "hi":
                 // Hindi message
-                return message + "\n\nनमस्ते"
-                        + ", आपका स्वास्थ्य अवलोकन " // Example Hindi message
-                        + "आयडीच्या की तारीख तक निर्धारित किया गया है। ";
+                return message.replace("Hello", "नमस्ते")
+                        .replace("Your follow-up is scheduled for the date:", "आपका फॉलो-अप दिनांक के लिए निर्धारित है:")
+                        .replace("for the citizen:", "नागरिक के लिए:")
+                        .replace("with abha Id:", "आयडी के साथ:")
+                        .replace("with adress :", "पता:");
 
             default:
                 return message;
