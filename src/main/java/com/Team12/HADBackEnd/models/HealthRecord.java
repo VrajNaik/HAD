@@ -26,8 +26,6 @@ public class HealthRecord {
     @OneToMany(mappedBy = "healthRecord")
     private List<FollowUp> followUps;
 
-    @OneToMany(mappedBy = "healthRecord")
-    private List<Prescription> prescription;
 
     private List<String> prescriptions;
     private String conclusion;
@@ -154,12 +152,5 @@ public class HealthRecord {
         icd10Codes.add(icd10Code);
     }
 
-    public List<Prescription> getPrescription() {
-        return prescription;
-    }
-
-    public void setPrescription(List<Prescription> prescription) {
-        this.prescription = prescription;
-    }
 }
 
