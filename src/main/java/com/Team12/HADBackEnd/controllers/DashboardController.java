@@ -1,5 +1,6 @@
 package com.Team12.HADBackEnd.controllers;
 
+import com.Team12.HADBackEnd.models.Dashboard;
 import com.Team12.HADBackEnd.services.dashboardService.DashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -28,16 +29,29 @@ public class DashboardController {
 //        return dashboardService.getTotalCitizens();
 //    }
 
-    @GetMapping("/totalConsent")
-    public long getTotalConsent(@RequestParam(required = false) String city) {
+//    @GetMapping("/totalConsent")
+//    public long getTotalConsent(@RequestParam(required = false) String city) {
+//        if (city != null && !city.isEmpty()) {
+//            return dashboardService.getTotalConsentByCity(city);
+//        } else {
+//            return dashboardService.getTotalConsent();
+//        }
+//    }
+//    public long getTotalConsent() {
+//        return dashboardService.getTotalConsent();
+//    }
+
+    @GetMapping("/consentStatus")
+    public Map<String, Long> getConsentStatus(@RequestParam(required = false) String city) {
+        Map<String, Long> consentCounts = new HashMap<>();
         if (city != null && !city.isEmpty()) {
-            return dashboardService.getTotalConsentByCity(city);
+            consentCounts.put("trueCount", dashboardService.getConsentStatusByCity(city, true));
+            consentCounts.put("falseCount", dashboardService.getConsentStatusByCity(city, false));
         } else {
-            return dashboardService.getTotalConsent();
+            consentCounts.put("trueCount", dashboardService.getConsentStatus(true));
+            consentCounts.put("falseCount", dashboardService.getConsentStatus(false));
         }
-    }
-    public long getTotalConsent() {
-        return dashboardService.getTotalConsent();
+        return consentCounts;
     }
 
     @GetMapping("/citizensByFollowupStatus")
@@ -77,5 +91,64 @@ public class DashboardController {
             ageDistribution.put("61+", dashboardService.getCountOfCitizensInAgeRange(61, Integer.MAX_VALUE));
         }
         return ageDistribution;
+    }
+
+
+
+//    @GetMapping("/monthwiseData")
+//    public Map<String, Object> getMonthWiseData(@RequestParam String month, @RequestParam(required = false) String city) {
+//        Map<String, Object> data = new HashMap<>();
+//
+//        // Total citizens
+//        List<Dashboard> totalCitizens;
+//        if (city != null && !city.isEmpty()) {
+//            totalCitizens = dashboardService.getTotalCitizensByMonthAndCity(month, city);
+//        } else {
+//            totalCitizens = dashboardService.getTotalCitizensByMonth(month);
+//        }
+//        data.put("totalCitizens", totalCitizens.size());
+//
+//        // Consent status
+//        long consentTrueCount = dashboardService.getTotalConsentByMonth(month, true);
+//        long consentFalseCount = dashboardService.getTotalConsentByMonth(month, false);
+//        Map<String, Long> consentStatus = new HashMap<>();
+//        consentStatus.put("trueCount", consentTrueCount);
+//        consentStatus.put("falseCount", consentFalseCount);
+//        data.put("consentStatus", consentStatus);
+//
+//        // Followup status
+//        List<Object[]> followupStatus = dashboardService.getCitizensByFollowupStatus(month);
+//        data.put("followupStatus", followupStatus);
+//
+//        return data;
+//    }
+
+
+
+    @GetMapping("/monthwiseData")
+    public Map<String, Object> getMonthWiseData(@RequestParam String month, @RequestParam(required = false) String city) {
+        Map<String, Object> data = new HashMap<>();
+
+        // Total citizens
+        List<Dashboard> totalCitizens = dashboardService.getTotalCitizens(month, city);
+        data.put("totalCitizens", totalCitizens.size());
+
+        // Consent status
+        long consentTrueCount = dashboardService.getTotalConsent(month, city, true);
+        long consentFalseCount = dashboardService.getTotalConsent(month, city, false);
+        Map<String, Long> consentStatus = new HashMap<>();
+        consentStatus.put("trueCount", consentTrueCount);
+        consentStatus.put("falseCount", consentFalseCount);
+        data.put("consentStatus", consentStatus);
+
+        List<Object[]> followupStatus;
+        if (city != null && !city.isEmpty()) {
+            followupStatus = dashboardService.getCitizensByFollowupStatus(month, city);
+        } else {
+            followupStatus = dashboardService.getCitizensByFollowupStatus(month);
+        }
+        data.put("followupStatus", followupStatus);
+
+        return data;
     }
 }

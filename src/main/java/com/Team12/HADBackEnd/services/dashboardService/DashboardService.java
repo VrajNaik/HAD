@@ -1,5 +1,6 @@
 package com.Team12.HADBackEnd.services.dashboardService;
 
+import com.Team12.HADBackEnd.models.Dashboard;
 import com.Team12.HADBackEnd.repository.DashboardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,13 +21,21 @@ public class DashboardService {
         return dashboardRepository.count();
     }
 
-    public long getTotalConsentByCity(String city) {
-        return dashboardRepository.countConsentByCity(city);
+    public long getConsentStatusByCity(String city, boolean consent) {
+        return dashboardRepository.countByCityAndConsent(city, consent);
     }
 
-    public long getTotalConsent() {
-        return dashboardRepository.countByConsentTrue();
+    public long getConsentStatus(boolean consent) {
+        return dashboardRepository.countByConsent(consent);
     }
+
+//    public long getTotalConsentByCity(String city) {
+//        return dashboardRepository.countConsentByCity(city);
+//    }
+//
+//    public long getTotalConsent() {
+//        return dashboardRepository.countByConsentTrue();
+//    }
 
     public List<Object[]> getCitizensByFollowupStatus() {
         return dashboardRepository.countCitizensByFollowupStatus();
@@ -62,5 +71,35 @@ public class DashboardService {
 
     public long getCountOfCitizensInAgeRange(int startAge, int endAge) {
         return dashboardRepository.countByAgeBetween(startAge, endAge);
+    }
+
+
+
+    public List<Dashboard> getTotalCitizens(String month, String city) {
+        if (city != null && !city.isEmpty()) {
+            return dashboardRepository.findByMonthAndCity(month, city);
+        } else {
+            return dashboardRepository.findByMonth(month);
+        }
+    }
+
+    public long getTotalConsent(String month, String city, boolean consent) {
+        if (city != null && !city.isEmpty()) {
+            return dashboardRepository.countByMonthAndCityAndConsent(month, city, consent);
+        } else {
+            return dashboardRepository.countByMonthAndConsent(month, consent);
+        }
+    }
+
+    public List<Object[]> getCitizensByFollowupStatus(String month) {
+        return dashboardRepository.countCitizensByFollowupStatus(month);
+    }
+
+    public List<Object[]> getCitizensByFollowupStatus(String month, String city) {
+        if (city != null && !city.isEmpty()) {
+            return dashboardRepository.countCitizensByFollowupStatusAndCity(month, city);
+        } else {
+            return dashboardRepository.countCitizensByFollowupStatus(month);
+        }
     }
 }
