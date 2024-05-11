@@ -125,32 +125,32 @@ public class DashboardController {
 
 
 
-    @GetMapping("/monthwiseData")
-    public Map<String, Object> getMonthWiseData(@RequestParam String month, @RequestParam(required = false) String city) {
-        Map<String, Object> data = new HashMap<>();
-
-        // Total citizens
-        List<Dashboard> totalCitizens = dashboardService.getTotalCitizens(month, city);
-        data.put("totalCitizens", totalCitizens.size());
-
-        // Consent status
-        long consentTrueCount = dashboardService.getTotalConsent(month, city, true);
-        long consentFalseCount = dashboardService.getTotalConsent(month, city, false);
-        Map<String, Long> consentStatus = new HashMap<>();
-        consentStatus.put("trueCount", consentTrueCount);
-        consentStatus.put("falseCount", consentFalseCount);
-        data.put("consentStatus", consentStatus);
-
-        List<Object[]> followupStatus;
-        if (city != null && !city.isEmpty()) {
-            followupStatus = dashboardService.getCitizensByFollowupStatus(month, city);
-        } else {
-            followupStatus = dashboardService.getCitizensByFollowupStatus(month);
-        }
-        data.put("followupStatus", followupStatus);
-
-        return data;
-    }
+//    @GetMapping("/monthwiseData")
+//    public Map<String, Object> getMonthWiseData(@RequestParam String month, @RequestParam(required = false) String city) {
+//        Map<String, Object> data = new HashMap<>();
+//
+//        // Total citizens
+//        List<Dashboard> totalCitizens = dashboardService.getTotalCitizens(month, city);
+//        data.put("totalCitizens", totalCitizens.size());
+//
+//        // Consent status
+//        long consentTrueCount = dashboardService.getTotalConsent(month, city, true);
+//        long consentFalseCount = dashboardService.getTotalConsent(month, city, false);
+//        Map<String, Long> consentStatus = new HashMap<>();
+//        consentStatus.put("trueCount", consentTrueCount);
+//        consentStatus.put("falseCount", consentFalseCount);
+//        data.put("consentStatus", consentStatus);
+//
+//        List<Object[]> followupStatus;
+//        if (city != null && !city.isEmpty()) {
+//            followupStatus = dashboardService.getCitizensByFollowupStatus(month, city);
+//        } else {
+//            followupStatus = dashboardService.getCitizensByFollowupStatus(month);
+//        }
+//        data.put("followupStatus", followupStatus);
+//
+//        return data;
+//    }
 
     //new city wise data
     @GetMapping("/cityWiseData")
@@ -162,4 +162,44 @@ public class DashboardController {
 //    public Map<String, Object> getCityAggregatedData(@RequestParam String city) {
 //        return dashboardService.getCityAggregatedData(city);
 //    }
+
+    @GetMapping("/cityData")
+    public Map<String, Object> getCityDataWithMonthWiseData(@RequestParam String city) {
+        return dashboardService.getCityDataWithMonthWiseData(city);
+    }
+
+    @GetMapping("/monthwiseData")
+    public Map<String, Object> getMonthWiseData(@RequestParam(required = false) String city) {
+        Map<String, Object> data = new HashMap<>();
+        List<String> allMonths = dashboardService.getAllMonths();
+
+        for (String month : allMonths) {
+            Map<String, Object> monthData = new HashMap<>();
+            // Total citizens
+            List<Dashboard> totalCitizens = dashboardService.getTotalCitizens(month, city);
+            monthData.put("totalCitizens", totalCitizens.size());
+
+            // Consent status
+            long consentTrueCount = dashboardService.getTotalConsent(month, city, true);
+            long consentFalseCount = dashboardService.getTotalConsent(month, city, false);
+            Map<String, Long> consentStatus = new HashMap<>();
+            consentStatus.put("trueCount", consentTrueCount);
+            consentStatus.put("falseCount", consentFalseCount);
+            monthData.put("consentStatus", consentStatus);
+
+            // Follow-up status
+            List<Object[]> followupStatus;
+            if (city != null && !city.isEmpty()) {
+                followupStatus = dashboardService.getCitizensByFollowupStatus(month, city);
+            } else {
+                followupStatus = dashboardService.getCitizensByFollowupStatus(month);
+            }
+            monthData.put("followupStatus", followupStatus);
+
+            data.put(month, monthData);
+        }
+
+        return data;
+    }
+
 }

@@ -3,6 +3,7 @@ package com.Team12.HADBackEnd.repository;
 import com.Team12.HADBackEnd.models.Dashboard;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -52,5 +53,8 @@ public interface DashboardRepository extends JpaRepository<Dashboard,Long> {
     @Query("SELECT DISTINCT d.city FROM Dashboard d")
     List<String> findAllCities();
 
+    // Custom queries to fetch distinct months and cities
+    @Query("SELECT DISTINCT d.month FROM Dashboard d")
+    List<String> findAllMonths();
 
 }

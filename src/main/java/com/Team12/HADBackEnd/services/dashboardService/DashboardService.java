@@ -97,13 +97,13 @@ public class DashboardService {
         return dashboardRepository.countCitizensByFollowupStatus(month);
     }
 
-    public List<Object[]> getCitizensByFollowupStatus(String month, String city) {
-        if (city != null && !city.isEmpty()) {
-            return dashboardRepository.countCitizensByFollowupStatusAndCity(month, city);
-        } else {
-            return dashboardRepository.countCitizensByFollowupStatus(month);
-        }
-    }
+//    public List<Object[]> getCitizensByFollowupStatus(String month, String city) {
+//        if (city != null && !city.isEmpty()) {
+//            return dashboardRepository.countCitizensByFollowupStatusAndCity(month, city);
+//        } else {
+//            return dashboardRepository.countCitizensByFollowupStatus(month);
+//        }
+//    }
 
     //----------------------------------------------------------------------------------//
 
@@ -142,5 +142,98 @@ public class DashboardService {
         genderDistribution.put("femaleCount", dashboardRepository.countByCityAndGender(city, "Female"));
         return genderDistribution;
     }
-    
+
+    //-------------------------------------------------------------------------------//
+//    public Map<String, Map<String, Object>> getCityWiseAggregatedDataWithMonthWiseData() {
+//        Map<String, Map<String, Object>> cityWiseAggregatedData = new HashMap<>();
+//        List<String> cities = getAllCities();
+//
+//        for (String city : cities) {
+//            Map<String, Object> cityData = new HashMap<>();
+//            cityData.put("totalCitizens", dashboardRepository.countByCity(city));
+//            cityData.put("consentStatus", getConsentStatusByCity(city));
+//            cityData.put("genderDistribution", getGenderDistribution(city));
+//            cityData.put("ageDistribution", getAgeDistribution(city));
+//            // Add more data as needed...
+//
+//            // Fetch month-wise data for this city
+//            Map<String, Map<String, Object>> monthWiseData = getMonthWiseDataForCity(city);
+//            cityData.put("monthWiseData", monthWiseData);
+//
+//            cityWiseAggregatedData.put(city, cityData);
+//        }
+//
+//        return cityWiseAggregatedData;
+//    }
+//
+//    private Map<String, Map<String, Object>> getMonthWiseDataForCity(String city) {
+//        Map<String, Map<String, Object>> monthWiseData = new HashMap<>();
+//        List<String> allMonths = getAllMonths();
+//
+//        for (String month : allMonths) {
+//            Map<String, Object> data = new HashMap<>();
+//            List<Dashboard> totalCitizens = dashboardRepository.findByMonthAndCity(month, city);
+//            data.put("totalCitizens", totalCitizens.size());
+//            // Add more month-wise data as needed...
+//            monthWiseData.put(month, data);
+//        }
+//
+//        return monthWiseData;
+//    }
+//    public Map<String, Long> getAgeDistribution(String city) {
+//        Map<String, Long> ageDistribution = new HashMap<>();
+//        ageDistribution.put("13-18", getCountOfCitizensInAgeRangeByCity(city, 13, 18));
+//        ageDistribution.put("31-45", getCountOfCitizensInAgeRangeByCity(city, 31, 45));
+//        ageDistribution.put("46-60", getCountOfCitizensInAgeRangeByCity(city, 46, 60));
+//        ageDistribution.put("61+", getCountOfCitizensInAgeRangeByCity(city, 61, Integer.MAX_VALUE));
+//        return ageDistribution;
+//    }
+
+
+
+    public Map<String, Object> getCityDataWithMonthWiseData(String city) {
+        Map<String, Object> cityData = new HashMap<>();
+        cityData.put("totalCitizens", dashboardRepository.countByCity(city));
+        cityData.put("consentStatus", getConsentStatusByCity(city));
+        cityData.put("genderDistribution", getGenderDistribution(city));
+        cityData.put("ageDistribution", getAgeDistribution(city));
+
+        List<String> months = dashboardRepository.findAllMonths();
+        Map<String, Map<String, Object>> monthWiseData = new HashMap<>();
+        for (String month : months) {
+            Map<String, Object> data = new HashMap<>();
+            List<Dashboard> totalCitizens = dashboardRepository.findByMonthAndCity(month, city);
+            data.put("totalCitizens", totalCitizens.size());
+            data.put("consentStatusTrue", dashboardRepository.countByMonthAndCityAndConsent(month, city, true));
+            data.put("consentStatusFalse", dashboardRepository.countByMonthAndCityAndConsent(month, city, false));
+            data.put("followupStatus", getFollowupStatusForMonthAndCity(month, city));
+            monthWiseData.put(month, data);
+        }
+        cityData.put("monthWiseData", monthWiseData);
+
+        return cityData;
+    }
+
+    private List<Object[]> getFollowupStatusForMonthAndCity(String month, String city) {
+        return dashboardRepository.countCitizensByFollowupStatusAndCity(month, city);
+    }
+
+
+    public Map<String, Long> getAgeDistribution(String city) {
+        Map<String, Long> ageDistribution = new HashMap<>();
+        ageDistribution.put("13-18", getCountOfCitizensInAgeRangeByCity(city, 13, 18));
+        ageDistribution.put("31-45", getCountOfCitizensInAgeRangeByCity(city, 31, 45));
+        ageDistribution.put("46-60", getCountOfCitizensInAgeRangeByCity(city, 46, 60));
+        ageDistribution.put("61+", getCountOfCitizensInAgeRangeByCity(city, 61, Integer.MAX_VALUE));
+        return ageDistribution;
+    }
+
+    public List<String> getAllMonths() {
+        return dashboardRepository.findAllMonths();
+    }
+
+    public List<Object[]> getCitizensByFollowupStatus(String month, String city) {
+        return dashboardRepository.countCitizensByFollowupStatusAndCity(month, city);
+    }
+
 }
