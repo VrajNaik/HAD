@@ -86,6 +86,16 @@ public class HospitalServiceImpl implements HospitalService {
     }
 
     @Override
+    public ResponseEntity<?> getHospitalsInDistrict(Long districtID) {
+        List<Hospital> hospitals = hospitalRepository.findByDistrictId(districtID)
+                .orElseThrow(() -> new NotFoundException("Hospital not found in this District. Check District Please."));
+        List<HospitalDTO> hospitalDTOs = hospitals.stream()
+                .map(dtoConverter::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(hospitalDTOs);
+    }
+
+    @Override
     public ResponseEntity<?> getAllHospitals() {
         List<Hospital> hospitals = hospitalRepository.findAll();
         List<HospitalDTO> hospitalDTOs = hospitals.stream()

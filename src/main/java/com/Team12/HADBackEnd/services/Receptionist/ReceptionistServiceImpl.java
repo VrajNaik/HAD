@@ -4,6 +4,7 @@ import com.Team12.HADBackEnd.DTOs.Citizen.CitizenDTO;
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForDoctorDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistCreation;
 import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ReceptionistUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorDTO;
@@ -73,9 +74,13 @@ public class ReceptionistServiceImpl implements ReceptionistService{
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Receptionist addReceptionist(Receptionist receptionist) throws DuplicateEmailIdException {
+    public Receptionist addReceptionist(ReceptionistCreation receptionist) throws DuplicateEmailIdException {
         String generatedUsername = credentialService.generateUniqueUsername("receptionist");
         String generatedRandomPassword = credentialService.generateRandomPassword();
+
+        Hospital hospital = hospitalRepository.findById(receptionist.getHospitalId())
+                .orElseThrow(() -> new NotFoundException("Hospital not found"));
+        Receptionist receptionist1 = new Receptionist();
 
 
         User user = new User(generatedUsername,
@@ -97,10 +102,22 @@ public class ReceptionistServiceImpl implements ReceptionistService{
             throw new DuplicateEmailIdException("Receptionist with the same Phone Number already exists.");
         }
 
-        receptionist.setUsername(generatedUsername);
-        receptionist.setPassword(encoder.encode(generatedRandomPassword));
+        receptionist1.setUsername(generatedUsername);
+        receptionist1.setPassword(encoder.encode(generatedRandomPassword));
+        if(receptionist.getEmail() != null) {
+            receptionist1.setEmail(receptionist.getEmail());
+        }
+        if(receptionist.getPhoneNumber() != null) {
+            receptionist1.setPhoneNumber(receptionist.getPhoneNumber());
+        }
+        receptionist1.setHospital(hospital);
+        if (receptionist.getGender() != null) {
+            receptionist1.setGender(receptionist.getGender());
+        }
+        receptionist1.setAge(receptionist.getAge());
+        receptionist1.setActive(true);
 
-        Receptionist savedReceptionist = receptionistRepository.save(receptionist);
+        Receptionist savedReceptionist = receptionistRepository.save(receptionist1);
 
         try {
             emailService.sendCredentialsByEmail(savedReceptionist.getEmail(), generatedUsername, generatedRandomPassword);

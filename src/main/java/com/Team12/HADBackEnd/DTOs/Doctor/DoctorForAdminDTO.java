@@ -11,7 +11,7 @@ public class DoctorForAdminDTO {
     private Long phoneNum;
     private String email;
     private String username;
-    private boolean active = true;
+    private boolean active;
     private DistrictForAdminDTO district;
 
     public String getName() {

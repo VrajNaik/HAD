@@ -9,5 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface HospitalService {
     ResponseEntity<?> addHospital(HospitalCreationDTO hospital);
     ResponseEntity<?> getAllHospitals();
+    ResponseEntity<?> getHospitalsInDistrict(Long districtID);
     ResponseEntity<?> updateHospital(HospitalUpdateRequestDTO request);
 }

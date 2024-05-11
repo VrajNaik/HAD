@@ -11,6 +11,7 @@ public class SupervisorForAdminDTO {
 
     private String email;
 
+    private boolean active;
     private Long phoneNum;
 
     private String username;
@@ -71,5 +72,13 @@ public class SupervisorForAdminDTO {
 
     public void setDistrict(DistrictForAdminDTO district) {
         this.district = district;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

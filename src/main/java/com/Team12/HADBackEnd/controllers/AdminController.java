@@ -1,6 +1,7 @@
 package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.District.DistrictDTO;
 import com.Team12.HADBackEnd.DTOs.District.SupervisorAssignment;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
@@ -12,6 +13,7 @@ import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWit
 import com.Team12.HADBackEnd.DTOs.Hospital.HospitalCreationDTO;
 import com.Team12.HADBackEnd.DTOs.Hospital.HospitalDTO;
 import com.Team12.HADBackEnd.DTOs.Hospital.HospitalUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistCreation;
 import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ReceptionistUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorDTO;
@@ -206,7 +208,7 @@ public class AdminController {
 
     @PostMapping("/addReceptionist")
     @PreAuthorize("hasRole('ADMIN')")
-    public Receptionist addReceptionist(@RequestBody Receptionist receptionist) {
+    public Receptionist addReceptionist(@RequestBody ReceptionistCreation receptionist) {
         try{
             return receptionistService.addReceptionist(receptionist);
         }
@@ -248,6 +250,15 @@ public class AdminController {
     public ResponseEntity<?> getAllHospitals() {
         return hospitalService.getAllHospitals();
     }
+
+
+
+    @GetMapping("/getHospitalsInDistrict")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getHospitalsInDistrict(@RequestParam Long districtId) {
+        return hospitalService.getHospitalsInDistrict(districtId);
+    }
+
 
 
     @PostMapping("/updateHospital")

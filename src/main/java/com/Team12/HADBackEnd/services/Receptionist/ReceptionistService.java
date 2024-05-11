@@ -1,5 +1,6 @@
 package com.Team12.HADBackEnd.services.Receptionist;
 
+import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistCreation;
 import com.Team12.HADBackEnd.DTOs.Receptionist.ReceptionistDTO;
 import com.Team12.HADBackEnd.DTOs.Response.ReceptionistUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.Receptionist;
@@ -17,7 +18,7 @@ public interface ReceptionistService {
 
     ResponseEntity<?> assignDoctorToCitizen(String abhaId, String doctorUsername);
 
-    Receptionist addReceptionist(Receptionist receptionist) throws DuplicateEmailIdException;
+    Receptionist addReceptionist(ReceptionistCreation receptionist) throws DuplicateEmailIdException;
 
     ResponseEntity<List<ReceptionistDTO>> getAllRecptionist();
 

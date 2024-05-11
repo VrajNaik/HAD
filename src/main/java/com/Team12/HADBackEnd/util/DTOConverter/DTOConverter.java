@@ -74,6 +74,7 @@ public class DTOConverter {
         if (doctor.getPhoneNum() != null) {
             doctorDTO.setPhoneNum(doctor.getPhoneNum());
         }
+        doctorDTO.setActive(doctor.isActive());
         if (doctor.getDistrict() != null) {
             doctorDTO.setDistrict(convertToDistrictForAdminDTO(doctor.getDistrict()));
         }
@@ -95,6 +96,7 @@ public class DTOConverter {
         if (supervisor.getEmail() != null) {
             supervisorDTO.setEmail(supervisor.getEmail());
         }
+        supervisorDTO.setActive(supervisor.isActive());
         if (supervisor.getPhoneNum() != null) {
             supervisorDTO.setPhoneNum(supervisor.getPhoneNum());
         }

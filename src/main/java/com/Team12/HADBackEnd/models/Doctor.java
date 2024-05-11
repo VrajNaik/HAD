@@ -19,7 +19,7 @@ public class Doctor {
     private String email;
     private String username;
     private String password;
-    private boolean active = true;
+    private boolean active;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "district_id")
     private District district;
