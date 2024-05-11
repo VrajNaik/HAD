@@ -11,7 +11,6 @@ public class Dashboard {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String followup_status;
     private Integer age;
     private String abhaId;
@@ -83,4 +82,5 @@ public class Dashboard {
     public void setMonth(String month) {
         this.month = month;
     }
+
 }

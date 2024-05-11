@@ -46,4 +46,11 @@ public interface DashboardRepository extends JpaRepository<Dashboard,Long> {
 
     @Query("SELECT d.followup_status, COUNT(d) FROM Dashboard d WHERE d.month = :month AND d.city = :city GROUP BY d.followup_status")
     List<Object[]> countCitizensByFollowupStatusAndCity(String month, String city);
+
+
+    //-----------------------------------------------------------------//
+    @Query("SELECT DISTINCT d.city FROM Dashboard d")
+    List<String> findAllCities();
+
+
 }

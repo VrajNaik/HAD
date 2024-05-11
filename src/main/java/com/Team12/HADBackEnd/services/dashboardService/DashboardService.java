@@ -5,7 +5,9 @@ import com.Team12.HADBackEnd.repository.DashboardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DashboardService {
@@ -102,4 +104,43 @@ public class DashboardService {
             return dashboardRepository.countCitizensByFollowupStatus(month);
         }
     }
+
+    //----------------------------------------------------------------------------------//
+
+    public Map<String, Map<String, Object>> getAllCityData() {
+        Map<String, Map<String, Object>> allCityData = new HashMap<>();
+        List<String> cities = getAllCities(); // Implement this method to fetch all cities from your database
+        for (String city : cities) {
+            Map<String, Object> cityData = new HashMap<>();
+            // Fetch and add data for each city
+            cityData.put("totalCitizens", dashboardRepository.countByCity(city));
+            cityData.put("consentStatus", getConsentStatusByCity(city));
+            cityData.put("followupStatus", getCitizensByFollowupStatusAndCity(city));
+            //cityData.put("genderDistribution", getGenderDistribution(city));
+            // Add more data as needed...
+            allCityData.put(city, cityData);
+        }
+        return allCityData;
+    }
+
+
+   //----------------------------------------------------------------------------//
+    public List<String> getAllCities() {
+        return dashboardRepository.findAllCities(); // Assuming you have a method in the repository to fetch all cities
+    }
+
+    public Map<String, Long> getConsentStatusByCity(String city) {
+        Map<String, Long> consentStatus = new HashMap<>();
+        consentStatus.put("trueCount", dashboardRepository.countByCityAndConsent(city, true));
+        consentStatus.put("falseCount", dashboardRepository.countByCityAndConsent(city, false));
+        return consentStatus;
+    }
+
+    public Map<String, Long> getGenderDistribution(String city) {
+        Map<String, Long> genderDistribution = new HashMap<>();
+        genderDistribution.put("maleCount", dashboardRepository.countByCityAndGender(city, "Male"));
+        genderDistribution.put("femaleCount", dashboardRepository.countByCityAndGender(city, "Female"));
+        return genderDistribution;
+    }
+    
 }

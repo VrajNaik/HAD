@@ -151,4 +151,15 @@ public class DashboardController {
 
         return data;
     }
+
+    //new city wise data
+    @GetMapping("/cityWiseData")
+    public Map<String, Map<String, Object>> getCityWiseData() {
+        return dashboardService.getAllCityData();
+    }
+
+//    @GetMapping("/cityAggregatedData")
+//    public Map<String, Object> getCityAggregatedData(@RequestParam String city) {
+//        return dashboardService.getCityAggregatedData(city);
+//    }
 }
