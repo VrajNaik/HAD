@@ -29,6 +29,7 @@ public class FollowUp {
     private String status;
     private String instructions;
     private String measureOfVitals;
+    private String isLastFollowUp;
 
     public Long getId() {
         return id;
@@ -108,6 +109,14 @@ public class FollowUp {
 
     public void setRecurrenceEndTime(Date recurrenceEndTime) {
         this.recurrenceEndTime = recurrenceEndTime;
+    }
+
+    public String getIsLastFollowUp() {
+        return isLastFollowUp;
+    }
+
+    public void setIsLastFollowUp(String isLastFollowUp) {
+        this.isLastFollowUp = isLastFollowUp;
     }
 }
 

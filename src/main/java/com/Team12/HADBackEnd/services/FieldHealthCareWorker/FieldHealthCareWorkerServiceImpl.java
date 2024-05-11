@@ -95,7 +95,10 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
         String generatedUsername = credentialService.generateUniqueUsername("FieldHealthCareWorker");
         String generatedRandomPassword = credentialService.generateRandomPassword();
 
-        District district = worker.getDistrict();
+        District district = null;
+        if(worker.getDistrict() != null) {
+            district = worker.getDistrict();
+        }
 
         User user = new User(generatedUsername,
                 worker.getEmail(),
@@ -503,6 +506,67 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
                 .collect(Collectors.toList());
     }
 
+//
+//    @Override
+//    public List<FollowUpReturnDTO> getFollowUpsForTodayNew(String username) {
+//        FieldHealthCareWorker worker = fieldHealthCareWorkerRepository.findByUsername(username)
+//                .orElseThrow(() -> new NotFoundException("Healthcare Worker not found with this username:" + username));
+//        Date today = new Date();
+//        List<FollowUp> allFollowUps = followUpRepository.findByFieldHealthCareWorker(worker)
+//                .orElseThrow(() -> new NotFoundException("FollowUps not found with worker: " + username));
+//        if(allFollowUps.isEmpty()) {
+//            throw new NotFoundException("FollowUps not found with worker: " + username);
+//        }
+//        return filterFollowUpsForToday(allFollowUps, today)
+//                .stream()
+//                .map(dtoConverter::mapToDTO)
+//                .collect(Collectors.toList());
+//    }
+//
+//
+//    @Override
+//    public List<FollowUp> filterFollowUpsForToday(List<FollowUp> followUps, Date today) {
+//        return followUps.stream()
+//                .filter(followUp -> followUp.getDate().equals(today) || isRecurringFollowUpForToday(followUp, today))
+//                .collect(Collectors.toList());
+//    }
+//
+//
+//    private boolean isRecurringFollowUpForToday(FollowUp followUp, Date today) {
+//        Date recurrenceStartTime = followUp.getRecurrenceStartTime();
+//        Date recurrenceEndTime = followUp.getRecurrenceEndTime();
+//
+//        return recurrenceStartTime != null && recurrenceEndTime != null &&
+//                today.after(recurrenceStartTime) && today.before(recurrenceEndTime) &&
+//                isTodayMatchingFrequency(followUp, today);
+//    }
+//
+//
+//    private boolean isTodayMatchingFrequency(FollowUp followUp, Date today) {
+//        Frequency frequency = followUp.getFrequency();
+//        Date followUpDate = followUp.getDate(); // Keep as Date
+//
+//        // Convert today to LocalDate to perform comparisons
+//        LocalDate localToday = today.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//        LocalDate localFollowUpDate = followUpDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//
+//        return switch (frequency) {
+//            case DAILY -> true;
+//            case WEEKLY -> localToday.getDayOfWeek() == localFollowUpDate.getDayOfWeek();
+//            case TWICE_A_WEEK -> localToday.getDayOfWeek() == localFollowUpDate.getDayOfWeek() ||
+//                    localToday.getDayOfWeek() == localFollowUpDate.plusDays(3).getDayOfWeek();
+//            case ALTERNATE_DAY -> ChronoUnit.DAYS.between(localToday, localFollowUpDate) % 2 != 0;
+//            case MONTHLY -> localToday.getDayOfMonth() == localFollowUpDate.getDayOfMonth();
+//            case TWICE_A_MONTH -> localToday.getDayOfMonth() == localFollowUpDate.getDayOfMonth() ||
+//                    localToday.getDayOfMonth() == localFollowUpDate.plusDays(15).getDayOfMonth();
+//            case ALTERNATE_MONTH -> ChronoUnit.MONTHS.between(localToday, localFollowUpDate) % 2 != 0;
+//            case QUARTERLY -> (localToday.getMonthValue() % 3) == (localFollowUpDate.getMonthValue() % 3);
+//            case BIANNUALLY -> (localToday.getMonthValue() % 6) == (localFollowUpDate.getMonthValue() % 6);
+//            case ANNUALLY -> localToday.getMonthValue() == localFollowUpDate.getMonthValue() &&
+//                    localToday.getDayOfMonth() == localFollowUpDate.getDayOfMonth();
+//            default -> false;
+//        };
+//    }
 
     @Override
     public List<FollowUpReturnDTO> getFollowUpsForTodayNew(String username) {
@@ -514,12 +578,130 @@ public class FieldHealthCareWorkerServiceImpl implements FieldHealthCareWorkerSe
         if(allFollowUps.isEmpty()) {
             throw new NotFoundException("FollowUps not found with worker: " + username);
         }
-        return filterFollowUpsForToday(allFollowUps, today)
-                .stream()
+        List<FollowUp> followUpsForToday = filterFollowUpsForToday(allFollowUps, today);
+        List<FollowUp> followUpsIncludingMissed = includeMissedFollowUps(followUpsForToday, today);
+
+        return followUpsIncludingMissed.stream()
                 .map(dtoConverter::mapToDTO)
                 .collect(Collectors.toList());
     }
 
+
+    private boolean isFollowUpTaken(FollowUp followUp) {
+        // Assuming follow-up status "Completed" indicates it's taken
+        return "Completed".equals(followUp.getStatus());
+    }
+
+
+
+
+    public List<FollowUp> includeMissedFollowUps(List<FollowUp> followUpsForToday, Date today) {
+        List<FollowUp> followUpsIncludingMissed = new ArrayList<>();
+        for (FollowUp followUp : followUpsForToday) {
+            if (!isFollowUpTaken(followUp)) {
+                switch (followUp.getFrequency()) {
+                    case DAILY:
+                        // For daily follow-ups, no need to add missed follow-ups
+                        break;
+                    case WEEKLY:
+                        // For weekly follow-ups, add follow-ups for the next 3-4 days
+                        addMissedFollowUpsForWeekly(followUpsIncludingMissed, followUp, today);
+                        break;
+                    case TWICE_A_WEEK:
+                        // For twice a week follow-ups, add follow-ups for the next 2 days
+                        addMissedFollowUpsForTwiceAWeek(followUpsIncludingMissed, followUp, today);
+                        break;
+                    case ALTERNATE_DAY:
+                        // For alternate day follow-ups, add follow-ups for the next 1 day
+                        addMissedFollowUpsForAlternateDay(followUpsIncludingMissed, followUp, today);
+                        break;
+                    case EVERY_FEW_DAYS:
+                        // For every few days follow-ups, add follow-ups for the next 2 days
+                        addMissedFollowUpsForEveryFewDays(followUpsIncludingMissed, followUp, today);
+                        break;
+                    case MONTHLY:
+                        // For monthly follow-ups, add follow-ups for the next 15 days
+                        addMissedFollowUpsForMonthly(followUpsIncludingMissed, followUp, today);
+                        break;
+                    default:
+                        // Handle unknown frequency types
+                        break;
+                }
+            }
+            // Add the original follow-up as well
+            followUpsIncludingMissed.add(followUp);
+        }
+        return followUpsIncludingMissed;
+    }
+
+
+    private FollowUp createMissedFollowUp(FollowUp originalFollowUp, Date date) {
+        FollowUp missedFollowUp = new FollowUp();
+        // Copy necessary attributes from the original follow-up
+        missedFollowUp.setHealthRecord(originalFollowUp.getHealthRecord());
+        missedFollowUp.setFieldHealthCareWorker(originalFollowUp.getFieldHealthCareWorker());
+        missedFollowUp.setInstructions(originalFollowUp.getInstructions());
+        missedFollowUp.setStatus("Missed");
+        missedFollowUp.setFrequency(originalFollowUp.getFrequency());
+        missedFollowUp.setDate(date);
+        return missedFollowUp;
+    }
+
+
+    private Date addDaysToDate(Date date, int days) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DAY_OF_MONTH, days);
+        return calendar.getTime();
+    }
+
+    private void addMissedFollowUpsForWeekly(List<FollowUp> followUpsIncludingMissed, FollowUp originalFollowUp, Date today) {
+        for (int i = 1; i <= 4; i++) { // Add follow-ups for the next 3-4 days
+            Date nextDate = addDaysToDate(originalFollowUp.getDate(), i);
+            if (nextDate.after(today)) {
+                FollowUp missedFollowUp = createMissedFollowUp(originalFollowUp, nextDate);
+                followUpsIncludingMissed.add(missedFollowUp);
+            }
+        }
+    }
+
+    private void addMissedFollowUpsForTwiceAWeek(List<FollowUp> followUpsIncludingMissed, FollowUp originalFollowUp, Date today) {
+        for (int i = 1; i <= 2; i++) { // Add follow-ups for the next 2 days
+            Date nextDate = addDaysToDate(originalFollowUp.getDate(), i * 3); // Every 3 days
+            if (nextDate.after(today)) {
+                FollowUp missedFollowUp = createMissedFollowUp(originalFollowUp, nextDate);
+                followUpsIncludingMissed.add(missedFollowUp);
+            }
+        }
+    }
+
+    private void addMissedFollowUpsForAlternateDay(List<FollowUp> followUpsIncludingMissed, FollowUp originalFollowUp, Date today) {
+        Date nextDate = addDaysToDate(originalFollowUp.getDate(), 2); // Every alternate day
+        if (nextDate.after(today)) {
+            FollowUp missedFollowUp = createMissedFollowUp(originalFollowUp, nextDate);
+            followUpsIncludingMissed.add(missedFollowUp);
+        }
+    }
+
+    private void addMissedFollowUpsForEveryFewDays(List<FollowUp> followUpsIncludingMissed, FollowUp originalFollowUp, Date today) {
+        for (int i = 1; i <= 2; i++) { // Add follow-ups for the next 2 days
+            Date nextDate = addDaysToDate(originalFollowUp.getDate(), i * 3); // Every 3 days
+            if (nextDate.after(today)) {
+                FollowUp missedFollowUp = createMissedFollowUp(originalFollowUp, nextDate);
+                followUpsIncludingMissed.add(missedFollowUp);
+            }
+        }
+    }
+
+    private void addMissedFollowUpsForMonthly(List<FollowUp> followUpsIncludingMissed, FollowUp originalFollowUp, Date today) {
+        for (int i = 1; i <= 15; i++) { // Add follow-ups for the next 15 days
+            Date nextDate = addDaysToDate(originalFollowUp.getDate(), i * 30); // Approximately every month
+            if (nextDate.after(today)) {
+                FollowUp missedFollowUp = createMissedFollowUp(originalFollowUp, nextDate);
+                followUpsIncludingMissed.add(missedFollowUp);
+            }
+        }
+    }
 
     @Override
     public List<FollowUp> filterFollowUpsForToday(List<FollowUp> followUps, Date today) {

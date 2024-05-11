@@ -7,18 +7,16 @@ import com.Team12.HADBackEnd.DTOs.LocalArea.LocalAreaDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
-import com.Team12.HADBackEnd.payload.exception.NotFoundException;
+import com.Team12.HADBackEnd.payload.exception.*;
 import com.Team12.HADBackEnd.services.FieldHealthCareWorker.FieldHealthCareWorkerService;
 import com.Team12.HADBackEnd.models.*;
-import com.Team12.HADBackEnd.payload.exception.DoctorAlreadyDeactivatedException;
-import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
-import com.Team12.HADBackEnd.payload.exception.UserNotFoundException;
 import com.Team12.HADBackEnd.repository.*;
 import com.Team12.HADBackEnd.util.CredentialGenerator.CredentialService;
 import com.Team12.HADBackEnd.util.DTOConverter.DTOConverter;
 import com.Team12.HADBackEnd.util.MailService.EmailService;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,8 +78,10 @@ public class SupervisorServiceImpl implements SupervisorService {
         String generatedUsername = credentialService.generateUniqueUsername("supervisor");
         String generatedRandomPassword = credentialService.generateRandomPassword();
 
-        District district = supervisor.getDistrict();
-
+        District district = null;
+        if(supervisor.getDistrict() != null) {
+            district = supervisor.getDistrict();
+        }
         User user = new User(generatedUsername,
                 supervisor.getEmail(),
                 encoder.encode(generatedRandomPassword));
@@ -126,10 +126,30 @@ public class SupervisorServiceImpl implements SupervisorService {
     }
 
     @Override
+    public List<SupervisorForAdminDTO> getFreeActiveSupervisors() {
+        List<Supervisor> supervisors = supervisorRepository.findAll();
+
+        // Filter supervisors with null district and active status
+        List<Supervisor> freeActiveSupervisors = supervisors.stream()
+                .filter(supervisor -> supervisor.getDistrict() == null && supervisor.isActive())
+                .collect(Collectors.toList());
+
+        // Convert filtered supervisors to DTOs
+        return freeActiveSupervisors.stream()
+                .map(dtoConverter::convertToSupervisorAdminDTO)
+                .collect(Collectors.toList());
+    }
+
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public SupervisorDTO updateSupervisor(SupervisorUpdateRequestDTO request) {
         Supervisor supervisor = supervisorRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new NotFoundException("Supervisor not found with Username: " + request.getUsername()));
+
+        if (!supervisor.isActive()) {
+            throw new DeactivatedException("Supervisor is already deactivated by Admin. Contact Admin for the further Details.");
+        }
 
         if (supervisorRepository.existsByEmail(request.getEmail()) && !Objects.equals(supervisor.getEmail(), request.getEmail())) {
             throw new DuplicateEmailIdException("Supervisor with the same Email ID already exists.");
@@ -168,6 +188,9 @@ public class SupervisorServiceImpl implements SupervisorService {
     public SupervisorDTO getSupervisorByUsername(String username) {
         Supervisor supervisor = supervisorRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + username));
+        if (!supervisor.isActive()) {
+            throw new DeactivatedException("Supervisor is already deactivated by Admin. Contact Admin for the further Details.");
+        }
         return convertToDTO(supervisor);
     }
 
@@ -197,7 +220,9 @@ public class SupervisorServiceImpl implements SupervisorService {
     public List<FollowUpsDTO> getFollowUpsForSupervisor(String supervisorUsername) {
         Supervisor supervisor = supervisorRepository.findByUsername(supervisorUsername)
                 .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + supervisorUsername));
-
+        if (!supervisor.isActive()) {
+            throw new DeactivatedException("Supervisor is already deactivated by Admin. Contact Admin for the further Details.");
+        }
         Long districtId = supervisor.getDistrict().getId();
         List<FollowUpsDTO> followUpDTOs = new ArrayList<>();
 
@@ -225,6 +250,9 @@ public class SupervisorServiceImpl implements SupervisorService {
     public List<FieldHealthCareWorkerWithHealthRecordDTO> getUnassignedFieldHealthCareWorkerDTOs(String username) {
         Supervisor supervisor = supervisorRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + username));
+        if (!supervisor.isActive()) {
+            throw new DeactivatedException("Supervisor is already deactivated by Admin. Contact Admin for the further Details.");
+        }
         District district = supervisor.getDistrict();
         List<FieldHealthCareWorker> unassignedWorkers = workerRepository.findByLocalAreaIsNullAndDistrictId(district.getId());
         return unassignedWorkers.stream()
@@ -235,6 +263,10 @@ public class SupervisorServiceImpl implements SupervisorService {
     @Override
     public String assignWorkerToLocalArea(String username, Long localAreaId) {
         FieldHealthCareWorker worker = workerRepository.findUsername(username);
+        Supervisor supervisor = worker.getDistrict().getSupervisor();
+        if (!supervisor.isActive()) {
+            throw new DeactivatedException("Supervisor is already deactivated by Admin. Contact Admin for the further Details.");
+        }
         if (worker == null) {
             return "Worker not found";
         }
@@ -250,6 +282,20 @@ public class SupervisorServiceImpl implements SupervisorService {
         return "Worker assigned successfully";
     }
 
+    @Override
+    public ResponseEntity<?> assignSupervisorToDistrict(String oldUsername, String newUsername, Long districtId) {
+        Supervisor oldSupervisor = supervisorRepository.findByUsername(oldUsername)
+                .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + oldUsername));
+        Supervisor newSupervisor = supervisorRepository.findByUsername(newUsername)
+                .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + newUsername));
+        District district = districtRepository.findById(districtId)
+                .orElseThrow(() -> new NotFoundException("District not found with gievn ID: " + districtId));
+        newSupervisor.setDistrict(district);
+        district.setSupervisor(newSupervisor);
+        supervisorRepository.save(newSupervisor);
+        return ResponseEntity.ok("Supervisor assigned successfully");
+    }
+
 
     @Override
     public List<LocalAreaDTO> getAllLocalAreasByUsername(String username) {
@@ -257,6 +303,9 @@ public class SupervisorServiceImpl implements SupervisorService {
         Supervisor supervisor = supervisorRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("Supervisor not found with username: " + username));
 
+        if (!supervisor.isActive()) {
+            throw new DeactivatedException("Supervisor is already deactivated by Admin. Contact Admin for the further Details.");
+        }
         District district = supervisor.getDistrict();
 
         if (district == null) {

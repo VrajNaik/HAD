@@ -9,6 +9,7 @@ import com.Team12.HADBackEnd.DTOs.auth.*;
 import com.Team12.HADBackEnd.exception.TokenRefreshException;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.CustomErrorResponse;
+import com.Team12.HADBackEnd.payload.exception.NotFoundException;
 import com.Team12.HADBackEnd.payload.exception.UserDeactivatedException;
 import com.Team12.HADBackEnd.payload.response.*;
 import com.Team12.HADBackEnd.repository.*;
@@ -97,6 +98,71 @@ public class AuthController {
   }
 
 
+//  @PostMapping("/signin")
+//  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
+//    try {
+//      Authentication authentication = authenticationManager.authenticate(
+//              new UsernamePasswordAuthenticationToken(loginRequestDTO.getUsername(), loginRequestDTO.getPassword()));
+//
+//      UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+//
+//      if (!userDetails.isActivate()) {
+//        throw new UserDeactivatedException("Sorry, you are deactivated by the Admin. Contact the Admin for further assistance.");
+//      }
+//      SecurityContextHolder.getContext().setAuthentication(authentication);
+//      String jwt = jwtUtils.generateJwtToken(authentication);
+//      Object userRole = null;
+//      boolean isAdmin = userDetails.getAuthorities().stream()
+//              .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+//      if (isAdmin) {
+//        List<String> roles = userDetails.getAuthorities().stream()
+//                .map(GrantedAuthority::getAuthority)
+//                .collect(Collectors.toList());
+//        return ResponseEntity.ok(new AuthResponseDTO(
+//                new JwtResponseDTO(jwt,
+//                        userDetails.getId(),
+//                        userDetails.getUsername(),
+//                        userDetails.getEmail(),
+//                        roles,
+//                        userDetails.isLogInFirst()
+//                        ),
+//                 null));
+//      }
+//      else {
+//        String role = null;
+//        if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_DOCTOR"))) {
+//          role = "doctor";
+//          Doctor doctor = doctorRepository.findByUsername(userDetails.getUsername())
+//                  .orElseThrow(() -> new RuntimeException("Error: DOCTOR role not found."));
+//          userRole = doctorService.convertToDTO(doctor);
+//        }
+//        else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_SUPERVISOR"))) {
+//          role = "supervisor";
+//          Supervisor supervisor = supervisorRepository.findByUsername(userDetails.getUsername())
+//                  .orElseThrow(() -> new RuntimeException("Error: SUPERVISOR role not found."));
+//          userRole = supervisorService.convertToDTO(supervisor);
+//        } else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_FIELD_HEALTHCARE_WORKER"))) {
+//          role = "fieldHealthcareWorker";
+//          FieldHealthCareWorker fieldHealthCareWorker = fieldHealthcareWorkerRepository.findByUsername(userDetails.getUsername())
+//                  .orElseThrow(() -> new RuntimeException("Error: FIELD HEALTH CARE WORKER role not found."));
+//          userRole = fieldHealthCareWorkerService.convertToFieldHealthCareWorkerWithHealthRecordDTO(fieldHealthCareWorker);
+//        }
+//        return ResponseEntity.ok(new AuthResponseDTO(
+//                new JwtResponseDTO(jwt,
+//                        userDetails.getId(),
+//                        userDetails.getUsername(),
+//                        userDetails.getEmail(),
+//                        Collections.singletonList(role),
+//                        userDetails.isLogInFirst()
+//                        ),
+//                userRole
+//        ));
+//      }
+//    } catch (UserDeactivatedException e) {
+//      return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+//    }
+//  }
+
   @PostMapping("/signin")
   public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
     try {
@@ -106,8 +172,9 @@ public class AuthController {
       UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
       if (!userDetails.isActivate()) {
-        throw new UserDeactivatedException("Sorry, you are deactivated by the Admin. Contact the Admin for further assistance.");
+        throw new NotFoundException("Sorry, you are deactivated by the Admin. Contact the Admin for further assistance.");
       }
+
       SecurityContextHolder.getContext().setAuthentication(authentication);
       String jwt = jwtUtils.generateJwtToken(authentication);
       Object userRole = null;
@@ -124,27 +191,32 @@ public class AuthController {
                         userDetails.getEmail(),
                         roles,
                         userDetails.isLogInFirst()
-                        ),
-                 null));
-      }
-      else {
+                ),
+                null));
+      } else {
         String role = null;
+        boolean isActive = true; // Assuming user is active by default
         if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_DOCTOR"))) {
           role = "doctor";
           Doctor doctor = doctorRepository.findByUsername(userDetails.getUsername())
                   .orElseThrow(() -> new RuntimeException("Error: DOCTOR role not found."));
+          isActive = doctor.isActive();
           userRole = doctorService.convertToDTO(doctor);
-        }
-        else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_SUPERVISOR"))) {
+        } else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_SUPERVISOR"))) {
           role = "supervisor";
           Supervisor supervisor = supervisorRepository.findByUsername(userDetails.getUsername())
                   .orElseThrow(() -> new RuntimeException("Error: SUPERVISOR role not found."));
+          isActive = supervisor.isActive();
           userRole = supervisorService.convertToDTO(supervisor);
         } else if (userDetails.getAuthorities().stream().anyMatch(authority -> authority.getAuthority().equals("ROLE_FIELD_HEALTHCARE_WORKER"))) {
           role = "fieldHealthcareWorker";
           FieldHealthCareWorker fieldHealthCareWorker = fieldHealthcareWorkerRepository.findByUsername(userDetails.getUsername())
                   .orElseThrow(() -> new RuntimeException("Error: FIELD HEALTH CARE WORKER role not found."));
+          isActive = fieldHealthCareWorker.isActive();
           userRole = fieldHealthCareWorkerService.convertToFieldHealthCareWorkerWithHealthRecordDTO(fieldHealthCareWorker);
+        }
+        if (!isActive) {
+          throw new NotFoundException("Sorry, your role as a " + role + " is deactivated by the Admin. Contact the Admin for further assistance.");
         }
         return ResponseEntity.ok(new AuthResponseDTO(
                 new JwtResponseDTO(jwt,
@@ -153,7 +225,7 @@ public class AuthController {
                         userDetails.getEmail(),
                         Collections.singletonList(role),
                         userDetails.isLogInFirst()
-                        ),
+                ),
                 userRole
         ));
       }
@@ -161,6 +233,7 @@ public class AuthController {
       return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
     }
   }
+
 
   @PostMapping("/refreshtoken")
   public ResponseEntity<?> refreshtoken(@Valid @RequestBody TokenRefreshRequest request) {

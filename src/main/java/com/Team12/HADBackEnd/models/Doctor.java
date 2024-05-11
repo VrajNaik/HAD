@@ -147,6 +147,13 @@ public class Doctor {
         this.healthRecords = healthRecords;
     }
 
+    public Hospital getHospital() {
+        return hospital;
+    }
+
+    public void setHospital(Hospital hospital) {
+        this.hospital = hospital;
+    }
 }
 
 //    @Transient

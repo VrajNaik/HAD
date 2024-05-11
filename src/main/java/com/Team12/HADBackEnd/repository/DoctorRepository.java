@@ -1,6 +1,7 @@
 package com.Team12.HADBackEnd.repository;
 
 import com.Team12.HADBackEnd.models.Doctor;
+import com.Team12.HADBackEnd.models.Hospital;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -17,4 +18,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
     List<Doctor> findAllByDistrictId(Long districtId);
     long countByActiveTrue();
     Optional<List<Doctor>> findByHospitalId(Long hospitalId);
+    Optional<List<Doctor>> findByHospitalIdAndActive(Long hospitalId, boolean active);
+    List<Doctor> findByHospital(Hospital hospital);
 }

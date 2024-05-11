@@ -168,8 +168,11 @@ public class ReceptionistServiceImpl implements ReceptionistService{
                 .orElseThrow(() -> new NotFoundException("Receptionist Not Found with given Username: " + username));
 
         Long hospitalId = receptionist.getHospital().getId();
-        List<Doctor> doctors = doctorRepository.findByHospitalId(hospitalId)
-                .orElseThrow(() -> new NotFoundException("No Doctors Found within this Hospital: " + hospitalId));
+//        List<Doctor> doctors = doctorRepository.findByHospitalId(hospitalId)
+//                .orElseThrow(() -> new NotFoundException("No Doctors Found within this Hospital: " + hospitalId));
+        List<Doctor> doctors = doctorRepository.findByHospitalIdAndActive(hospitalId, true)
+                .orElseThrow(() -> new NotFoundException("No Active Doctors Found within this Hospital: " + hospitalId));
+
         List<DoctorDTO> doctorDTOS = doctors.stream()
                 .map(doctorServiceImpl::convertToDTO)
                 .collect(Collectors.toList());

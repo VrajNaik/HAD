@@ -11,6 +11,8 @@ import com.Team12.HADBackEnd.DTOs.HealthRecord.PrescriptionDTO;
 import com.Team12.HADBackEnd.models.*;
 
 import org.springframework.http.ResponseEntity;
+
+import javax.print.Doc;
 import java.util.*;
 
 
@@ -43,9 +45,15 @@ public interface DoctorService {
 
     ResponseEntity<?> getResponseByABHAId(String abhaId);
 
-    void setActiveStatusByUsername(String username, boolean active);
+    ResponseEntity<?> setActiveStatusByUsername(String username, boolean active);
 
     DoctorDTO convertToDTO(Doctor doctor);
+
+    void clearReferencesToOldDoctor(Doctor oldDoctor);
+
+    void transferAssociatedEntities(Doctor oldDoctor, Doctor newDoctor);
+
+    Doctor findNextAvailableDoctorInHospital(Hospital hospital);
 }
 
 

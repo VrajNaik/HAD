@@ -8,6 +8,7 @@ import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Supervisor.SupervisorUpdateRequestDTO;
 import com.Team12.HADBackEnd.models.*;
 import com.Team12.HADBackEnd.payload.exception.DuplicateEmailIdException;
+import org.springframework.http.ResponseEntity;
 
 import java.util.*;
 
@@ -16,6 +17,10 @@ public interface SupervisorService {
     Supervisor addSupervisor(Supervisor supervisor) throws DuplicateEmailIdException;
 
     List<SupervisorForAdminDTO> getAllSupervisorsWithDistricts();
+
+    List<SupervisorForAdminDTO> getFreeActiveSupervisors();
+
+    ResponseEntity<?> assignSupervisorToDistrict(String oldUsername, String newUsername, Long districtId);
 
     SupervisorDTO updateSupervisor(SupervisorUpdateRequestDTO request);
 

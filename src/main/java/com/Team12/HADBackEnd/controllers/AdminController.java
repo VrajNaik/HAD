@@ -1,9 +1,11 @@
 package com.Team12.HADBackEnd.controllers;
 
 import com.Team12.HADBackEnd.DTOs.Citizen.CitizenForAdminDTO;
+import com.Team12.HADBackEnd.DTOs.District.SupervisorAssignment;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.Doctor.DoctorUpdateRequestDTO;
+import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.AssignmentRequest;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerForAdminDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerUpdateRequestDTO;
 import com.Team12.HADBackEnd.DTOs.FieldHealthCareWorker.FieldHealthCareWorkerWithHealthRecordDTO;
@@ -164,6 +166,23 @@ public class AdminController {
         return new ResponseEntity<>(supervisor, HttpStatus.OK);
     }
 
+    @GetMapping("/getFreeSupervisors")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<SupervisorForAdminDTO>> getFreeSupervisor() {
+        List<SupervisorForAdminDTO> supervisor = supervisorService.getFreeActiveSupervisors();
+        return new ResponseEntity<>(supervisor, HttpStatus.OK);
+    }
+
+    @PostMapping("/assignSupervisorToDistrict")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> assignSupervisorToDistrict(@RequestBody SupervisorAssignment request) {
+        return supervisorService.assignSupervisorToDistrict(request.getOldUsername(), request.getNewUsername(), request.getDistrictId());
+//        if (result.equals("Worker assigned successfully")) {
+//            return ResponseEntity.status(HttpStatus.OK).body(result);
+//        } else {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+//        }
+    }
 
     @PostMapping("/updateSupervisor")
     @PreAuthorize("hasRole('ADMIN')")
@@ -300,7 +319,7 @@ public class AdminController {
 
             String username = usernameDTO.getUsername();
             if (username.startsWith("DR")) {
-                doctorService.setActiveStatusByUsername(username, false);
+                return doctorService.setActiveStatusByUsername(username, false);
             } else if (username.startsWith("FHW")) {
                 fieldHealthCareWorkerService.setActiveStatusByUsername(username, false);
             } else if (username.startsWith("SV")) {
