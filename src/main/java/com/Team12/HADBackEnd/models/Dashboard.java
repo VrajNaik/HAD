@@ -18,4 +18,5 @@ public class Dashboard {
     private String city;
     private boolean consent;
     private String gender;
+    private String month;
 }
