@@ -1,19 +1,25 @@
 package com.Team12.HADBackEnd.services.dashboardService;
 
 import com.Team12.HADBackEnd.models.Dashboard;
+import com.Team12.HADBackEnd.repository.DashboardICD10CodeRepository;
 import com.Team12.HADBackEnd.repository.DashboardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DashboardService {
 
     @Autowired
     private DashboardRepository dashboardRepository;
+
+    @Autowired
+    private DashboardICD10CodeRepository dashboardICD10CodeRepository;
 
     public long getTotalCitizensByCity(String city) {
         return dashboardRepository.countByCity(city);
@@ -43,12 +49,36 @@ public class DashboardService {
         return dashboardRepository.countCitizensByFollowupStatus();
     }
 
-    public List<Object[]> getCitizensByFollowupStatusAndCity(String city) {
+    public Map<String, Long> getCitizensByFollowupStatusAndCity(String city) {
+//        if (city != null && !city.isEmpty()) {
+//            return dashboardRepository.countCitizensByFollowupStatusAndCity(city);
+//        } else {
+//            return dashboardRepository.countCitizensByFollowupStatus();
+//        }
+        Map<String, Long> followupStatusCounts = new HashMap<>();
+
+        // Fetch counts for each follow-up status and update the map
+        List<Object[]> statusCounts;
         if (city != null && !city.isEmpty()) {
-            return dashboardRepository.countCitizensByFollowupStatusAndCity(city);
+            statusCounts = dashboardRepository.countCitizensByFollowupStatusAndCity(city);
         } else {
-            return dashboardRepository.countCitizensByFollowupStatus();
+            statusCounts = dashboardRepository.countCitizensByFollowupStatus();
         }
+
+        // Process the data and update the counts in the map
+        for (Object[] row : statusCounts) {
+            String status = (String) row[0];
+            Long count = (Long) row[1];
+            followupStatusCounts.put(status, count);
+        }
+
+        // Ensure all possible follow-up statuses are present in the map with counts initialized to zero
+        List<String> allFollowupStatuses = Arrays.asList("ongoing", "pending", "completed");
+        for (String status : allFollowupStatuses) {
+            followupStatusCounts.putIfAbsent(status, 0L);
+        }
+
+        return followupStatusCounts;
     }
 
     public long getTotalMaleCitizensByCity(String city) {
@@ -218,6 +248,26 @@ public class DashboardService {
 //        return dashboardRepository.countCitizensByFollowupStatusAndCity(month, city);
 //    }
 
+
+
+
+    public Map<String, Long> getAgeDistribution(String city) {
+        Map<String, Long> ageDistribution = new HashMap<>();
+        ageDistribution.put("13-18", getCountOfCitizensInAgeRangeByCity(city, 13, 18));
+        ageDistribution.put("31-45", getCountOfCitizensInAgeRangeByCity(city, 31, 45));
+        ageDistribution.put("46-60", getCountOfCitizensInAgeRangeByCity(city, 46, 60));
+        ageDistribution.put("61+", getCountOfCitizensInAgeRangeByCity(city, 61, Integer.MAX_VALUE));
+        return ageDistribution;
+    }
+
+    public List<String> getAllMonths() {
+        return dashboardRepository.findAllMonths();
+    }
+
+    public List<Object[]> getCitizensByFollowupStatus(String month, String city) {
+        return dashboardRepository.countCitizensByFollowupStatusAndCity(month, city);
+    }
+
     public Map<String, Long> getFollowupStatusForMonthAndCity(String month, String city) {
         List<Object[]> followupStatusList = dashboardRepository.countCitizensByFollowupStatusAndCity(month, city);
         Map<String, Long> followupStatusCount = new HashMap<>();
@@ -238,21 +288,34 @@ public class DashboardService {
     }
 
 
-    public Map<String, Long> getAgeDistribution(String city) {
-        Map<String, Long> ageDistribution = new HashMap<>();
-        ageDistribution.put("13-18", getCountOfCitizensInAgeRangeByCity(city, 13, 18));
-        ageDistribution.put("31-45", getCountOfCitizensInAgeRangeByCity(city, 31, 45));
-        ageDistribution.put("46-60", getCountOfCitizensInAgeRangeByCity(city, 46, 60));
-        ageDistribution.put("61+", getCountOfCitizensInAgeRangeByCity(city, 61, Integer.MAX_VALUE));
-        return ageDistribution;
-    }
-
-    public List<String> getAllMonths() {
-        return dashboardRepository.findAllMonths();
-    }
-
-    public List<Object[]> getCitizensByFollowupStatus(String month, String city) {
-        return dashboardRepository.countCitizensByFollowupStatusAndCity(month, city);
-    }
+    //-----------------------------icd10code------------------------------------------//
+//    public Map<String, Object> getDashboardData() {
+//        List<Object[]> icd10Codes = dashboardICD10CodeRepository.findICD10CodeCounts();
+//
+//        // Calculate total count
+//        int totalCount = icd10Codes.size();
+//
+//        // Map the result to code and count
+//        Map<String, Long> countMap = icd10Codes.stream()
+//                .collect(Collectors.toMap(obj -> (String) obj[0], obj -> (Long) obj[1]));
+//
+//        // Sort by count in descending order
+//        List<Map.Entry<String, Long>> sortedCounts = countMap.entrySet()
+//                .stream()
+//                .sorted((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()))
+//                .collect(Collectors.toList());
+//
+//        // Extract top 3 and calculate count of "Other"
+//        List<Map.Entry<String, Long>> top3ICD10Codes = sortedCounts.stream().limit(3).collect(Collectors.toList());
+//        int otherCount = sortedCounts.stream().skip(3).mapToInt(entry -> entry.getValue().intValue()).sum();
+//
+//        // Create response map
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("totalICD10Codes", totalCount);
+//        response.put("top3ICD10Codes", top3ICD10Codes);
+//        response.put("otherCount", otherCount);
+//
+//        return response;
+//    }
 
 }

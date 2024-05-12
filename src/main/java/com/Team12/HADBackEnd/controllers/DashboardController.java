@@ -55,14 +55,14 @@ public class DashboardController {
         return consentCounts;
     }
 
-    @GetMapping("/citizensByFollowupStatus")
-    public List<Object[]> getCitizensByFollowupStatus(@RequestParam(required = false) String city) {
-        if (city != null && !city.isEmpty()) {
-            return dashboardService.getCitizensByFollowupStatusAndCity(city);
-        } else {
-            return dashboardService.getCitizensByFollowupStatus();
-        }
-    }
+//    @GetMapping("/citizensByFollowupStatus")
+//    public List<Object[]> getCitizensByFollowupStatus(@RequestParam(required = false) String city) {
+//        if (city != null && !city.isEmpty()) {
+//            return dashboardService.getCitizensByFollowupStatusAndCity(city);
+//        } else {
+//            return dashboardService.getCitizensByFollowupStatus();
+//        }
+//    }
 
     @GetMapping("/genderDistribution")
     public Map<String, Long> getGenderDistribution(@RequestParam(required = false) String city) {

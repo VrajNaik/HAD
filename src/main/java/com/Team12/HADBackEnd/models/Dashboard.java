@@ -1,9 +1,8 @@
 package com.Team12.HADBackEnd.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 public class Dashboard {
@@ -18,6 +17,14 @@ public class Dashboard {
     private boolean consent;
     private String gender;
     private String month;
+
+    @ManyToMany
+    @JoinTable(
+            name = "dashboard_icd10codes",
+            joinColumns = @JoinColumn(name = "dashboard_id"),
+            inverseJoinColumns = @JoinColumn(name = "icd10code_id")
+    )
+    private List<DashICD10codes> dashICD10codes;
 
     public Long getId() {
         return id;
@@ -83,4 +90,11 @@ public class Dashboard {
         this.month = month;
     }
 
+    public List<DashICD10codes> getDashICD10codes() {
+        return dashICD10codes;
+    }
+
+    public void setDashICD10codes(List<DashICD10codes> dashICD10codes) {
+        this.dashICD10codes = dashICD10codes;
+    }
 }
