@@ -55,14 +55,14 @@ public class DashboardController {
         return consentCounts;
     }
 
-//    @GetMapping("/citizensByFollowupStatus")
-//    public List<Object[]> getCitizensByFollowupStatus(@RequestParam(required = false) String city) {
-//        if (city != null && !city.isEmpty()) {
-//            return dashboardService.getCitizensByFollowupStatusAndCity(city);
-//        } else {
-//            return dashboardService.getCitizensByFollowupStatus();
-//        }
-//    }
+    @GetMapping("/citizensByFollowupStatus")
+    public List<Object[]> getCitizensByFollowupStatus(@RequestParam(required = false) String city) {
+        if (city != null && !city.isEmpty()) {
+            return dashboardService.getFollowupStatusAndCity(city);
+        } else {
+            return dashboardService.getCitizensByFollowupStatus();
+        }
+    }
 
     @GetMapping("/genderDistribution")
     public Map<String, Long> getGenderDistribution(@RequestParam(required = false) String city) {
@@ -213,6 +213,16 @@ public class DashboardController {
         }
 
         return data;
+    }
+
+//    @GetMapping("/icd10-codes")
+//    public Map<String, Object> getDashboardData() {
+//        return dashboardService.getDashboardData();
+//    }
+
+    @GetMapping("/icd10-codes")
+    public Map<String, Integer> getTop3ICD10Codes() {
+        return dashboardService.getTop3ICD10Codes();
     }
 
 }

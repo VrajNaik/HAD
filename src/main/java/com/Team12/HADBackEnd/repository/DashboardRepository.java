@@ -57,4 +57,7 @@ public interface DashboardRepository extends JpaRepository<Dashboard,Long> {
     @Query("SELECT DISTINCT d.month FROM Dashboard d")
     List<String> findAllMonths();
 
+    @Query("SELECT ic.code, COUNT(d) FROM Dashboard d JOIN d.dashICD10codes ic GROUP BY ic.code")
+    List<Object[]> findTopICD10CodesCounts();
+
 }

@@ -49,6 +49,14 @@ public class DashboardService {
         return dashboardRepository.countCitizensByFollowupStatus();
     }
 
+    public List<Object[]> getFollowupStatusAndCity(String city) {
+        if (city != null && !city.isEmpty()) {
+            return dashboardRepository.countCitizensByFollowupStatusAndCity(city);
+        } else {
+            return dashboardRepository.countCitizensByFollowupStatus();
+        }
+    }
+
     public Map<String, Long> getCitizensByFollowupStatusAndCity(String city) {
 //        if (city != null && !city.isEmpty()) {
 //            return dashboardRepository.countCitizensByFollowupStatusAndCity(city);
@@ -317,5 +325,61 @@ public class DashboardService {
 //
 //        return response;
 //    }
+
+    public Map<String, Object> getDashboardData() {
+        List<Object[]> icd10Codes = dashboardICD10CodeRepository.findICD10CodeCounts();
+
+        // Calculate total count
+        int totalCount = icd10Codes.size();
+
+        // Map the result to code and count
+        Map<String, Long> countMap = icd10Codes.stream()
+                .collect(Collectors.toMap(obj -> (String) obj[0], obj -> (Long) obj[1]));
+
+        // Sort by count in descending order
+        List<Map.Entry<String, Long>> sortedCounts = countMap.entrySet()
+                .stream()
+                .sorted((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()))
+                .collect(Collectors.toList());
+
+        // Extract top 3 and calculate count of "Other"
+        List<Map.Entry<String, Long>> top3ICD10Codes = sortedCounts.stream().limit(3).collect(Collectors.toList());
+        int otherCount = sortedCounts.stream().skip(3).mapToInt(entry -> entry.getValue().intValue()).sum();
+
+        // Create response map
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalICD10Codes", totalCount);
+        response.put("top3ICD10Codes", top3ICD10Codes);
+        response.put("otherCount", otherCount);
+
+        return response;
+    }
+
+
+
+    public Map<String, Integer> getTop3ICD10Codes() {
+        List<Object[]> results = dashboardRepository.findTopICD10CodesCounts();
+
+        // Count occurrences of each ICD10 code
+        Map<String, Integer> countMap = new HashMap<>();
+        for (Object[] result : results) {
+            String code = (String) result[0];
+            Long count = (Long) result[1];
+            countMap.put(code, count.intValue());
+        }
+
+        // Sort by count in descending order
+        Map<String, Integer> sortedCounts = countMap.entrySet()
+                .stream()
+                .sorted((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (oldValue, newValue) -> oldValue, HashMap::new));
+
+        // Extract top 3 codes
+        Map<String, Integer> top3ICD10Codes = sortedCounts.entrySet().stream()
+                .limit(3)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        return top3ICD10Codes;
+    }
 
 }
