@@ -220,9 +220,21 @@ public class DashboardController {
 //        return dashboardService.getDashboardData();
 //    }
 
+//    @GetMapping("/icd10-codes")
+//    public Map<String, Integer> getTop3ICD10Codes() {
+//        return dashboardService.getTop3ICD10Codes();
+//    }
+
+//    @GetMapping("/icd10-codes")
+//    public Map<String, Long> getICD10CodeCounts() {
+//        return dashboardService.getICD10CodeCounts();
+//    }
+
     @GetMapping("/icd10-codes")
-    public Map<String, Integer> getTop3ICD10Codes() {
-        return dashboardService.getTop3ICD10Codes();
+    public Map<String, Long> getICD10CodeCounts(@RequestParam(required = false) String city) {
+        return dashboardService.getICD10CodeCounts(city);
     }
+
+
 
 }
