@@ -5,6 +5,7 @@ import com.Team12.HADBackEnd.services.dashboardService.DashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -194,7 +195,19 @@ public class DashboardController {
             } else {
                 followupStatus = dashboardService.getCitizensByFollowupStatus(month);
             }
-            monthData.put("followupStatus", followupStatus);
+            // Creating a map to store follow-up status counts
+            Map<String, Long> followupStatusMap = new HashMap<>();
+            for (Object[] status : followupStatus) {
+                String followup = (String) status[0];
+                long count = (Long) status[1];
+                followupStatusMap.put(followup, count);
+            }
+            // Including all possible statuses with counts even if zero
+            List<String> allFollowupStatus = Arrays.asList("ongoing", "completed", "pending");
+            for (String status : allFollowupStatus) {
+                followupStatusMap.putIfAbsent(status, 0L);
+            }
+            monthData.put("followupStatus", followupStatusMap);
 
             data.put(month, monthData);
         }

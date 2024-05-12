@@ -214,8 +214,27 @@ public class DashboardService {
         return cityData;
     }
 
-    private List<Object[]> getFollowupStatusForMonthAndCity(String month, String city) {
-        return dashboardRepository.countCitizensByFollowupStatusAndCity(month, city);
+//    private List<Object[]> getFollowupStatusForMonthAndCity(String month, String city) {
+//        return dashboardRepository.countCitizensByFollowupStatusAndCity(month, city);
+//    }
+
+    public Map<String, Long> getFollowupStatusForMonthAndCity(String month, String city) {
+        List<Object[]> followupStatusList = dashboardRepository.countCitizensByFollowupStatusAndCity(month, city);
+        Map<String, Long> followupStatusCount = new HashMap<>();
+
+        // Initialize counts for all follow-up statuses to 0
+        followupStatusCount.put("pending", 0L);
+        followupStatusCount.put("ongoing", 0L);
+        followupStatusCount.put("completed", 0L);
+
+        // Update counts based on retrieved data
+        for (Object[] followupStatus : followupStatusList) {
+            String status = (String) followupStatus[0];
+            Long count = (Long) followupStatus[1];
+            followupStatusCount.put(status, count);
+        }
+
+        return followupStatusCount;
     }
 
 
