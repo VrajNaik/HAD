@@ -262,6 +262,7 @@ public class DashboardService {
     public Map<String, Long> getAgeDistribution(String city) {
         Map<String, Long> ageDistribution = new HashMap<>();
         ageDistribution.put("13-18", getCountOfCitizensInAgeRangeByCity(city, 13, 18));
+        ageDistribution.put("19-30", getCountOfCitizensInAgeRangeByCity(city, 19, 30));
         ageDistribution.put("31-45", getCountOfCitizensInAgeRangeByCity(city, 31, 45));
         ageDistribution.put("46-60", getCountOfCitizensInAgeRangeByCity(city, 46, 60));
         ageDistribution.put("61+", getCountOfCitizensInAgeRangeByCity(city, 61, Integer.MAX_VALUE));

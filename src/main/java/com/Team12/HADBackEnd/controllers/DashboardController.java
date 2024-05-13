@@ -82,11 +82,13 @@ public class DashboardController {
         Map<String, Long> ageDistribution = new HashMap<>();
         if (city != null && !city.isEmpty()) {
             ageDistribution.put("13-18", dashboardService.getCountOfCitizensInAgeRangeByCity(city, 13, 18));
+            ageDistribution.put("19-30", dashboardService.getCountOfCitizensInAgeRangeByCity(city, 19, 30));
             ageDistribution.put("31-45", dashboardService.getCountOfCitizensInAgeRangeByCity(city, 31, 45));
             ageDistribution.put("46-60", dashboardService.getCountOfCitizensInAgeRangeByCity(city, 46, 60));
             ageDistribution.put("61+", dashboardService.getCountOfCitizensInAgeRangeByCity(city, 61, Integer.MAX_VALUE));
         } else {
             ageDistribution.put("13-18", dashboardService.getCountOfCitizensInAgeRange(13, 18));
+            ageDistribution.put("19-30", dashboardService.getCountOfCitizensInAgeRange(19, 30));
             ageDistribution.put("31-45", dashboardService.getCountOfCitizensInAgeRange(31, 45));
             ageDistribution.put("46-60", dashboardService.getCountOfCitizensInAgeRange(46, 60));
             ageDistribution.put("61+", dashboardService.getCountOfCitizensInAgeRange(61, Integer.MAX_VALUE));
