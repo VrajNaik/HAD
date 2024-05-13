@@ -454,6 +454,81 @@ public class DashboardService {
 
 
 
+//    public Map<String, Long> getICD10CodeCounts(String city) {
+//        List<Object[]> results;
+//        if (city != null && !city.isEmpty()) {
+//            results = dashboardRepository.findTopICD10CodesCountsByCity(city);
+//        } else {
+//            results = dashboardRepository.findTopICD10CodesCounts();
+//        }
+//
+//        // Process results
+//        Map<String, Long> counts = new HashMap<>();
+//        long totalCount = 0;
+//        for (Object[] result : results) {
+//            String codeWithNames = (String) result[0] + " - " + (String) result[1];
+//            Long count = (Long) result[2];
+//            counts.put(codeWithNames, count);
+//            totalCount += count;
+//        }
+//
+//        // Calculate count for top codes until they cover 70%
+//        Map<String, Long> codeCounts = new HashMap<>();
+//        long topCodesCount = 0;
+//        for (Map.Entry<String, Long> entry : counts.entrySet()) {
+//            double percentage = (entry.getValue() * 100.0) / totalCount;
+//            if (topCodesCount < totalCount * 0.7) { // Adjusted this condition
+//                codeCounts.put(entry.getKey(), entry.getValue());
+//                topCodesCount += entry.getValue();
+//            } else {
+//                codeCounts.put("Other", codeCounts.getOrDefault("Other", 0L) + entry.getValue());
+//            }
+//        }
+//
+//        return codeCounts;
+//    }
+
+
+//    public Map<String, Long> getICD10CodeCounts(String city) {
+//        List<Object[]> results;
+//        if (city != null && !city.isEmpty()) {
+//            results = dashboardRepository.findTopICD10CodesCountsByCity(city);
+//        } else {
+//            results = dashboardRepository.findTopICD10CodesCounts();
+//        }
+//
+//        // Process results
+//        Map<String, Long> counts = new HashMap<>();
+//        long totalCount = 0;
+//        for (Object[] result : results) {
+//            String codeWithNames = (String) result[0] + " - " + (String) result[1];
+//            Long count = (Long) result[2];
+//            counts.put(codeWithNames, count);
+//            totalCount += count;
+//        }
+//
+//        // Sort by count in descending order
+//        List<Map.Entry<String, Long>> sortedCounts = counts.entrySet()
+//                .stream()
+//                .sorted((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()))
+//                .collect(Collectors.toList());
+//
+//        // Calculate count for top codes until they cover 70%
+//        Map<String, Long> codeCounts = new HashMap<>();
+//        long topCodesCount = 0;
+//        for (Map.Entry<String, Long> entry : sortedCounts) {
+//            double percentage = (entry.getValue() * 100.0) / totalCount;
+//            if (topCodesCount + entry.getValue() <= totalCount * 0.7) {
+//                codeCounts.put(entry.getKey(), entry.getValue());
+//                topCodesCount += entry.getValue();
+//            } else {
+//                codeCounts.put("Other", codeCounts.getOrDefault("Other", 0L) + entry.getValue());
+//            }
+//        }
+//
+//        return codeCounts;
+//    }
+
     public Map<String, Long> getICD10CodeCounts(String city) {
         List<Object[]> results;
         if (city != null && !city.isEmpty()) {
@@ -472,17 +547,29 @@ public class DashboardService {
             totalCount += count;
         }
 
+        // Sort by count in descending order
+        List<Map.Entry<String, Long>> sortedCounts = counts.entrySet()
+                .stream()
+                .sorted((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()))
+                .collect(Collectors.toList());
+
         // Calculate count for top codes until they cover 70%
         Map<String, Long> codeCounts = new HashMap<>();
         long topCodesCount = 0;
-        for (Map.Entry<String, Long> entry : counts.entrySet()) {
+        for (Map.Entry<String, Long> entry : sortedCounts) {
             double percentage = (entry.getValue() * 100.0) / totalCount;
             if (topCodesCount + entry.getValue() <= totalCount * 0.7) {
                 codeCounts.put(entry.getKey(), entry.getValue());
                 topCodesCount += entry.getValue();
             } else {
-                codeCounts.put("Other", codeCounts.getOrDefault("Other", 0L) + entry.getValue());
+                break; // Stop adding codes if top 70% threshold is reached
             }
+        }
+
+        // Add remaining count to "Other" category
+        long remainingCount = totalCount - topCodesCount;
+        if (remainingCount > 0) {
+            codeCounts.put("Other", remainingCount);
         }
 
         return codeCounts;
